@@ -108,3 +108,46 @@ jobs:
         name: ${{ matrix.output }}
         path: build/${{ matrix.output }}${{ matrix.extension }}
         retention-days: 7
+
+  create-universal-macos:
+    needs: build
+    runs-on: macos-latest
+    steps:
+    - name: Create build directory
+      run: mkdir -p build
+      shell: bash
+
+    - name: Download macOS x64 artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: hello-world-macos
+        path: build/
+
+    - name: Download macOS ARM artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: hello-world-macos-arm
+        path: build/
+
+    - name: Create universal binary
+      shell: bash
+      run: |
+        echo "Creating universal macOS binary..."
+        chmod +x build/hello-world-macos
+        chmod +x build/hello-world-macos-arm
+        lipo -create -output build/hello-world-macos-universal build/hello-world-macos build/hello-world-macos-arm
+        echo "Universal binary created"
+
+    - name: Verify universal binary architecture
+      shell: bash
+      run: |
+        echo "Checking universal binary architectures:"
+        lipo -archs build/hello-world-macos-universal
+        echo "Architecture check completed"
+
+    - name: Upload universal macOS artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: hello-world-macos-universal
+        path: build/hello-world-macos-universal
+        retention-days: 7
