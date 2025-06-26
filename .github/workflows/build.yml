@@ -1,0 +1,35 @@
+name: Build Executable
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:  # Allows manual triggering
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '22'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Run pkg command
+      run: npx @yao-pkg/pkg index.js -t node22-linux -o build/hello-world-linux
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: build/hello-world-linux
+        path: build/hello-world-linux
+        retention-days: 7
