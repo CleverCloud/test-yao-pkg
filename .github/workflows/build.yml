@@ -87,6 +87,13 @@ jobs:
     - name: Run pkg command for ${{ matrix.platform }}
       run: npx @yao-pkg/pkg build/index.single.cjs -t ${{ matrix.target }} -o build/${{ matrix.output }}${{ matrix.extension }}
 
+    - name: Verify binary execution
+      shell: bash
+      run: |
+        chmod +x build/${{ matrix.output }}${{ matrix.extension }}
+        ./build/${{ matrix.output }}${{ matrix.extension }}
+        echo "✅ Binary executed successfully with exit code $?"
+
     - name: Upload ${{ matrix.platform }} artifact
       uses: actions/upload-artifact@v4
       with:
