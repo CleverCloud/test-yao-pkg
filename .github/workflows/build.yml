@@ -93,6 +93,14 @@ jobs:
         chmod +x build/${{ matrix.output }}${{ matrix.extension }}
         ./build/${{ matrix.output }}${{ matrix.extension }}
         echo "✅ Binary executed successfully with exit code $?"
+        
+    - name: Check architecture (macOS only)
+      if: runner.os == 'macOS'
+      shell: bash
+      run: |
+        echo "Checking binary architecture with lipo..."
+        lipo -archs build/${{ matrix.output }}${{ matrix.extension }}
+        echo "Architecture check completed"
 
     - name: Upload ${{ matrix.platform }} artifact
       uses: actions/upload-artifact@v4
