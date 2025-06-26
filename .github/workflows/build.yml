@@ -8,8 +8,33 @@ on:
   workflow_dispatch:  # Allows manual triggering
 
 jobs:
-  build-linux:
-    runs-on: ubuntu-latest
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: linux
+            target: node22-linux
+            output: hello-world-linux
+            extension: ''
+          - os: windows-latest
+            platform: windows
+            target: node22-win
+            output: hello-world-win
+            extension: '.exe'
+          - os: macos-latest
+            platform: macos-x64
+            target: node22-macos-x64
+            output: hello-world-macos
+            extension: ''
+          - os: macos-latest
+            platform: macos-arm
+            target: node22-macos-arm64
+            output: hello-world-macos-arm
+            extension: ''
+
+    runs-on: ${{ matrix.os }}
+    
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -25,79 +50,14 @@ jobs:
 
     - name: Create build directory
       run: mkdir -p build
+      shell: bash
 
-    - name: Run pkg command for Linux
-      run: npx @yao-pkg/pkg index.js -t node22-linux -o build/hello-world-linux
+    - name: Run pkg command for ${{ matrix.platform }}
+      run: npx @yao-pkg/pkg index.js -t ${{ matrix.target }} -o build/${{ matrix.output }}${{ matrix.extension }}
 
-    - name: Upload Linux artifact
+    - name: Upload ${{ matrix.platform }} artifact
       uses: actions/upload-artifact@v4
       with:
-        name: hello-world-linux
-        path: build/hello-world-linux
-        retention-days: 7
-
-  build-windows:
-    runs-on: windows-latest
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '22'
-        cache: 'npm'
-
-    - name: Install dependencies
-      run: npm ci
-
-    - name: Create build directory
-      run: mkdir -p build
-
-    - name: Run pkg command for Windows
-      run: npx @yao-pkg/pkg index.js -t node22-win -o build/hello-world-win.exe
-
-    - name: Upload Windows artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: hello-world-win
-        path: build/hello-world-win.exe
-        retention-days: 7
-
-  build-macos:
-    runs-on: macos-latest
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '22'
-        cache: 'npm'
-
-    - name: Install dependencies
-      run: npm ci
-
-    - name: Create build directory
-      run: mkdir -p build
-
-    - name: Run pkg command for macOS (x64)
-      run: npx @yao-pkg/pkg index.js -t node22-macos-x64 -o build/hello-world-macos
-
-    - name: Upload macOS (x64) artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: hello-world-macos
-        path: build/hello-world-macos
-        retention-days: 7
-
-    - name: Run pkg command for macOS (ARM)
-      run: npx @yao-pkg/pkg index.js -t node22-macos-arm64 -o build/hello-world-macos-arm
-
-    - name: Upload macOS (ARM) artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: hello-world-macos-arm
-        path: build/hello-world-macos-arm
+        name: ${{ matrix.output }}
+        path: build/${{ matrix.output }}${{ matrix.extension }}
         retention-days: 7
