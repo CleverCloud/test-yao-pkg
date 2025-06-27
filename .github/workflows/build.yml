@@ -53,7 +53,7 @@ jobs:
       shell: bash
 
     - name: Run pkg command for ${{ matrix.platform }}
-      run: npx @yao-pkg/pkg index.cjs -t ${{ matrix.target }} -o build/${{ matrix.output }}${{ matrix.extension }}
+      run: npx @yao-pkg/pkg clever.cjs -t ${{ matrix.target }} -o build/${{ matrix.output }}${{ matrix.extension }}
 
     - name: Verify binary execution
       shell: bash
