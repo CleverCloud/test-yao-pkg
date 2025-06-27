@@ -36,7 +36,6 @@ jobs:
           path: build/
       - name: 'Build packaged binary'
         run: |
-          mkdir -p build
           cp build/index.cjs build/index-linux
           cp build/index.cjs build/index-mac
           cp build/index.cjs build/index-win.exe
@@ -62,10 +61,9 @@ jobs:
           path: build/
       - name: 'foo'
         run: |
-          mkdir -p build
-          cp build/index-linux build/index-linux.tar.gz
-          cp build/index-mac build/index-mac.tar.gz
-          cp build/index-win.exe build/index-win.zip
+          tar czf build/index-linux build/index-linux.tar.gz
+          tar czf build/index-mac build/index-mac.tar.gz
+          zip -r build/index-win.exe build/index-win.zip
       - name: 'Upload archives artifacts'
         uses: actions/upload-artifact@v4
         with:
@@ -88,7 +86,6 @@ jobs:
           path: build/
       - name: 'foo'
         run: |
-          mkdir -p build
           sha256sum build/index-linux.tar.gz | cut -d' ' -f1 > build/index-linux.tar.gz.sha256
           sha256sum build/index-mac.tar.gz | cut -d' ' -f1 > build/index-mac.tar.gz.sha256
           sha256sum build/index-win.zip | cut -d' ' -f1 > build/index-win.zip.sha256
