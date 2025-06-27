@@ -61,6 +61,7 @@ jobs:
           path: build/
       - name: 'foo'
         run: |
+          ls -la build
           tar czf build/index-linux build/index-linux.tar.gz
           tar czf build/index-mac build/index-mac.tar.gz
           zip -r build/index-win.exe build/index-win.zip
