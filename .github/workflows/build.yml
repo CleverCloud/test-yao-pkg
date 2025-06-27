@@ -15,6 +15,7 @@ jobs:
           fetch-depth: 0
       - name: 'foo'
         run: |
+          mkdir -p build
           cp index.js build/index.cjs
   build-packaged-binary:
     needs: bundle-rollup
@@ -23,6 +24,7 @@ jobs:
     steps:
       - name: 'foo'
         run: |
+          mkdir -p build
           cp build/index.cjs build/index-linux
           cp build/index.cjs build/index-mac
           cp build/index.cjs build/index-win.exe
@@ -33,6 +35,7 @@ jobs:
     steps:
       - name: 'foo'
         run: |
+          mkdir -p build
           cp build/index-linux build/index-linux.tar.gz
           cp build/index-mac build/index-mac.tar.gz
           cp build/index-win.exe build/index-win.zip
@@ -43,6 +46,7 @@ jobs:
     steps:
       - name: 'foo'
         run: |
+          mkdir -p build
           sha256sum build/index-linux.tar.gz | cut -d' ' -f1 > build/index-linux.tar.gz.sha256
           sha256sum build/index-mac.tar.gz | cut -d' ' -f1 > build/index-mac.tar.gz.sha256
           sha256sum build/index-win.zip | cut -d' ' -f1 > build/index-win.zip.sha256
