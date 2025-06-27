@@ -11,8 +11,7 @@ jobs:
     steps:
       - name: 'foo'
         run: |
-          sleep 10
-          echo cellar
+          cp index.js build/index.cjs
   build-packaged-binary:
     needs: bundle-rollup
     name: 'Build packaged binary'
@@ -20,8 +19,9 @@ jobs:
     steps:
       - name: 'foo'
         run: |
-          sleep 10
-          echo rpm-on-nexus
+          cp build/index.cjs build/index-linux
+          cp build/index.cjs build/index-mac
+          cp build/index.cjs build/index-win.exe
   create-archives:
     needs: build-packaged-binary
     name: 'Create .tar.gz and .zip archives'
@@ -29,8 +29,9 @@ jobs:
     steps:
       - name: 'foo'
         run: |
-          sleep 10
-          echo deb-on-nexus
+          cp build/index-linux build/index-linux.tar.gz
+          cp build/index-mac build/index-mac.tar.gz
+          cp build/index-win.exe build/index-win.zip
   generate-checksums:
     needs: create-archives
     name: 'Generate checksums'
@@ -38,5 +39,6 @@ jobs:
     steps:
       - name: 'foo'
         run: |
-          sleep 5
-          echo nupkg-on-nexus
+          sha256sum build/index-linux.tar.gz | cut -d' ' -f1 > build/index-linux.tar.gz.sha256
+          sha256sum build/index-mac.tar.gz | cut -d' ' -f1 > build/index-mac.tar.gz.sha256
+          sha256sum build/index-win.zip | cut -d' ' -f1 > build/index-win.zip.sha256
