@@ -11,7 +11,7 @@ jobs:
     steps:
       - name: 'foo'
         run: |
-          wait 10
+          sleep 10
           echo cellar
   rpm-on-nexus:
     name: 'Publish .rpm on Nexus'
@@ -19,7 +19,7 @@ jobs:
     steps:
       - name: 'foo'
         run: |
-          wait 10
+          sleep 10
           echo rpm-on-nexus
   deb-on-nexus:
     name: 'Publish .deb on Nexus'
@@ -27,7 +27,7 @@ jobs:
     steps:
       - name: 'foo'
         run: |
-          wait 10
+          sleep 10
           echo deb-on-nexus
   nupkg-on-nexus:
     name: 'Publish .nupkg on Nexus'
@@ -35,7 +35,7 @@ jobs:
     steps:
       - name: 'foo'
         run: |
-          wait 5
+          sleep 5
           echo nupkg-on-nexus
   homebrew:
     name: 'Publish on homebrew'
@@ -43,7 +43,7 @@ jobs:
     steps:
       - name: 'foo'
         run: |
-          wait 2
+          sleep 2
           echo homebrew
   exherbo:
     name: 'Publish on exherbo'
@@ -51,7 +51,7 @@ jobs:
     steps:
       - name: 'foo'
         run: |
-          wait 10
+          sleep 10
           echo exherbo
   docker-hub:
     name: 'Publish on docker-hub'
@@ -59,7 +59,7 @@ jobs:
     steps:
       - name: 'foo'
         run: |
-          wait 15
+          sleep 15
           echo docker-hub
   archlinux:
     name: 'Publish on aur'
@@ -67,7 +67,7 @@ jobs:
     steps:
       - name: 'foo'
         run: |
-          wait 12
+          sleep 12
           echo archlinux
   npm:
     name: 'Publish on npm'
@@ -75,5 +75,5 @@ jobs:
     steps:
       - name: 'foo'
         run: |
-          wait 10
+          sleep 10
           echo npm
