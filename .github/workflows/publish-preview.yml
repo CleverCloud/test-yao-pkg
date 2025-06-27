@@ -1,0 +1,15 @@
+name: Publish preview
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  cellar:
+    name: 'Publish .tar.gz and .zip on cellar'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'foo'
+        run: |
+          sleep 10
+          echo cellar
