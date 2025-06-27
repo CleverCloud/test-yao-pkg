@@ -61,10 +61,10 @@ jobs:
           path: build/
       - name: 'foo'
         run: |
-          ls -la build
-          tar czf build/index-linux build/index-linux.tar.gz
-          tar czf build/index-mac build/index-mac.tar.gz
-          zip -r build/index-win.exe build/index-win.zip
+          tar czf index-linux.tar.gz index-linux
+          tar czf index-mac.tar.gz index-mac
+          zip -r index-win.zip index-win.exe
+        working-directory: build
       - name: 'Upload archives artifacts'
         uses: actions/upload-artifact@v4
         with:
