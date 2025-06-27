@@ -1,0 +1,61 @@
+name: Publish release
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  cellar:
+    name: 'Publish .tar.gz on cellar'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'foo'
+        run: echo cellar
+  rpm-on-nexus:
+    name: 'Publish .rpm on Nexus'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'foo'
+        run: echo rpm-on-nexus
+  deb-on-nexus:
+    name: 'Publish .deb on Nexus'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'foo'
+        run: echo deb-on-nexus
+  nupkg-on-nexus:
+    name: 'Publish .nupkg on Nexus'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'foo'
+        run: echo nupkg-on-nexus
+  homebrew:
+    name: 'Publish on homebrew'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'foo'
+        run: echo homebrew
+  exherbo:
+    name: 'Publish on exherbo'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'foo'
+        run: echo exherbo
+  docker-hub:
+    name: 'Publish on docker-hub'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'foo'
+        run: echo docker-hub
+  archlinux:
+    name: 'Publish on aur'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'foo'
+        run: echo archlinux
+  npm:
+    name: 'Publish on npm'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'foo'
+        run: echo npm
