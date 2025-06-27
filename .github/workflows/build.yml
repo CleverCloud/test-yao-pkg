@@ -13,40 +13,91 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: 'foo'
+      - name: 'Bundle to single .cjs'
         run: |
           mkdir -p build
           cp index.js build/index.cjs
+      - name: 'Upload .cjs artifact'
+        uses: actions/upload-artifact@v4
+        with:
+          name: bundle-cjs
+          path: build/index.cjs
+          retention-days: 1
+
   build-packaged-binary:
     needs: bundle-rollup
     name: 'Build packaged binary'
     runs-on: ubuntu-latest
     steps:
-      - name: 'foo'
+      - name: 'Download .cjs artifact'
+        uses: actions/download-artifact@v4
+        with:
+          name: bundle-cjs
+          path: build/
+      - name: 'Build packaged binary'
         run: |
           mkdir -p build
           cp build/index.cjs build/index-linux
           cp build/index.cjs build/index-mac
           cp build/index.cjs build/index-win.exe
+      - name: 'Upload binaries artifacts'
+        uses: actions/upload-artifact@v4
+        with:
+          name: binaries
+          path: |
+            build/index-linux
+            build/index-mac
+            build/index-win.exe
+          retention-days: 1
+
   create-archives:
     needs: build-packaged-binary
     name: 'Create .tar.gz and .zip archives'
     runs-on: ubuntu-latest
     steps:
+      - name: 'Download binaries artifacts'
+        uses: actions/download-artifact@v4
+        with:
+          name: binaries
+          path: build/
       - name: 'foo'
         run: |
           mkdir -p build
           cp build/index-linux build/index-linux.tar.gz
           cp build/index-mac build/index-mac.tar.gz
           cp build/index-win.exe build/index-win.zip
+      - name: 'Upload archives artifacts'
+        uses: actions/upload-artifact@v4
+        with:
+          name: archives
+          path: |
+            build/index-linux.tar.gz
+            build/index-mac.tar.gz
+            build/index-win.zip
+          retention-days: 1
+
   generate-checksums:
     needs: create-archives
     name: 'Generate checksums'
     runs-on: ubuntu-latest
     steps:
+      - name: 'Download archives artifacts'
+        uses: actions/download-artifact@v4
+        with:
+          name: archives
+          path: build/
       - name: 'foo'
         run: |
           mkdir -p build
           sha256sum build/index-linux.tar.gz | cut -d' ' -f1 > build/index-linux.tar.gz.sha256
           sha256sum build/index-mac.tar.gz | cut -d' ' -f1 > build/index-mac.tar.gz.sha256
           sha256sum build/index-win.zip | cut -d' ' -f1 > build/index-win.zip.sha256
+      - name: 'Upload checksums artifacts'
+        uses: actions/upload-artifact@v4
+        with:
+          name: checksums
+          path: |
+            build/index-linux.tar.gz.sha256
+            build/index-mac.tar.gz.sha256
+            build/index-win.zip.sha256
+          retention-days: 1
