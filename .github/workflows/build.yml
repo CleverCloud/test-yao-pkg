@@ -24,9 +24,9 @@ jobs:
           path: build/index.cjs
           retention-days: 1
 
-  build-packaged-binary:
+  build-linux-binary:
     needs: bundle-rollup
-    name: 'Build packaged binary'
+    name: 'Build linux binary'
     runs-on: ubuntu-latest
     steps:
       - name: 'Download .cjs artifact'
@@ -34,30 +34,65 @@ jobs:
         with:
           name: bundle-cjs
           path: build/
-      - name: 'Build packaged binary'
-        run: |
-          cp build/index.cjs build/index-linux
-          cp build/index.cjs build/index-mac
-          cp build/index.cjs build/index-win.exe
+      - name: 'Build linux binary'
+        run: cp build/index.cjs build/index-linux
+      - name: 'Upload binary artifact'
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-binary
+          path: build/index-linux
+          retention-days: 1
+
+  build-mac-binary:
+    needs: bundle-rollup
+    name: 'Build mac binary'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Download .cjs artifact'
+        uses: actions/download-artifact@v4
+        with:
+          name: bundle-cjs
+          path: build/
+      - name: 'Build mac binary'
+        run: cp build/index.cjs build/index-mac
       - name: 'Upload binaries artifacts'
         uses: actions/upload-artifact@v4
         with:
-          name: binaries
-          path: |
-            build/index-linux
-            build/index-mac
-            build/index-win.exe
+          name: mac-binaries
+          path: build/index-mac
+          retention-days: 1
+
+  build-windows-binary:
+    needs: bundle-rollup
+    name: 'Build windows binary'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Download .cjs artifact'
+        uses: actions/download-artifact@v4
+        with:
+          name: bundle-cjs
+          path: build/
+      - name: 'Build windows binary'
+        run: cp build/index.cjs build/index-win.exe
+      - name: 'Upload binaries artifacts'
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-binary
+          path: build/index-win.exe
           retention-days: 1
 
   create-archives:
-    needs: build-packaged-binary
+    needs:
+      - build-linux-binary
+      - build-mac-binary
+      - build-windows-binary
     name: 'Create .tar.gz and .zip archives'
     runs-on: ubuntu-latest
     steps:
       - name: 'Download binaries artifacts'
         uses: actions/download-artifact@v4
         with:
-          name: binaries
+          pattern: *-binary
           path: build/
       - name: 'foo'
         run: |
