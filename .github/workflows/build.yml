@@ -95,16 +95,19 @@ jobs:
         run: ls -la build/*
       - name: 'Create .tar.gz and checksum file for linux'
         run: |
-          tar czf build/index-linux.tar.gz -C build index-linux
-          sha256sum build/index-linux.tar.gz > build/index-linux.tar.gz.sha256
+          tar czf index-linux.tar.gz index-linux
+          sha256sum index-linux.tar.gz > index-linux.tar.gz.sha256
+        working-directory: build
       - name: 'Create .tar.gz and checksum file for mac'
         run: |
-          tar czf build/index-mac.tar.gz -C build index-mac
-          sha256sum build/index-mac.tar.gz > build/index-mac.tar.gz.sha256
+          tar czf index-mac.tar.gz index-mac
+          sha256sum index-mac.tar.gz > index-mac.tar.gz.sha256
+        working-directory: build
       - name: 'Create .zip and checksum file for windows'
         run: |
-          zip -j build/index-win.zip build/index-win.exe
-          sha256sum build/index-win.zip > build/index-win.zip.sha256
+          zip index-win.zip index-win.exe
+          sha256sum index-win.zip > index-win.zip.sha256
+        working-directory: build
       - name: 'Upload archives'
         uses: actions/upload-artifact@v4
         with:
