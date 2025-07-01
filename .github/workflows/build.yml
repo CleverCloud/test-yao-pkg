@@ -52,7 +52,7 @@ jobs:
         with:
           name: bundle-single-cjs
       - name: 'Build mac binary'
-        run: cp clever.cjs build-mac/clever
+        run: cp clever.cjs clever
       - name: 'Upload build-mac artifact'
         uses: actions/upload-artifact@v4
         with:
@@ -70,7 +70,7 @@ jobs:
         with:
           name: bundle-single-cjs
       - name: 'Build windows binary'
-        run: cp index.cjs clever.exe
+        run: cp clever.cjs clever.exe
       - name: 'Upload build-windows artifact'
         uses: actions/upload-artifact@v4
         with:
