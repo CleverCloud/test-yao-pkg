@@ -20,11 +20,11 @@ jobs:
       - name: 'Upload .cjs artifact'
         uses: actions/upload-artifact@v4
         with:
-          name: bundle-cjs
+          name: bundle-single-cjs
           path: build/index.cjs
           retention-days: 1
 
-  build-linux-binary:
+  build-linux:
     needs: bundle-single-cjs
     name: 'Build linux binary'
     runs-on: ubuntu-latest
@@ -32,7 +32,7 @@ jobs:
       - name: 'Download .cjs artifact'
         uses: actions/download-artifact@v4
         with:
-          name: bundle-cjs
+          name: bundle-single-cjs
           path: build/
       - name: 'Build linux binary'
         run: cp build/index.cjs build/index-linux
@@ -44,13 +44,13 @@ jobs:
       - name: 'Upload artifacts'
         uses: actions/upload-artifact@v4
         with:
-          name: linux-artifacts
+          name: build-linux
           path: |
             build/index-linux.tar.gz
             build/index-linux.tar.gz.sha256
           retention-days: 1
 
-  build-mac-binary:
+  build-mac:
     needs: bundle-single-cjs
     name: 'Build mac binary'
     runs-on: macos-14
@@ -58,7 +58,7 @@ jobs:
       - name: 'Download .cjs artifact'
         uses: actions/download-artifact@v4
         with:
-          name: bundle-cjs
+          name: bundle-single-cjs
           path: build/
       - name: 'Build mac binary'
         run: cp build/index.cjs build/index-mac
@@ -66,17 +66,17 @@ jobs:
         run: tar czf index-mac.tar.gz index-mac
         working-directory: build
       - name: 'Generate SHA256 checksum file'
-        run: sha256sum build/index-mac.tar.gz > build/index-mac.tar.gz.sha256
+        run: shasum -a 256 build/index-mac.tar.gz > build/index-mac.tar.gz.sha256
       - name: 'Upload artifacts'
         uses: actions/upload-artifact@v4
         with:
-          name: mac-artifacts
+          name: build-mac
           path: |
             build/index-mac.tar.gz
             build/index-mac.tar.gz.sha256
           retention-days: 1
 
-  build-windows-binary:
+  build-windows:
     needs: bundle-single-cjs
     name: 'Build windows binary'
     runs-on: windows-latest
@@ -84,45 +84,36 @@ jobs:
       - name: 'Download .cjs artifact'
         uses: actions/download-artifact@v4
         with:
-          name: bundle-cjs
+          name: bundle-single-cjs
           path: build/
       - name: 'Build windows binary'
         run: cp build/index.cjs build/index-win.exe
       - name: 'Create .zip'
-        run: zip -r index-win.zip index-win.exe
-        working-directory: build
+        run: Compress-Archive -Path build/index-win.exe -DestinationPath build/index-win.zip
+        shell: pwsh
       - name: 'Generate SHA256 checksum file'
-        run: sha256sum build/index-win.zip > build/index-win.zip.sha256
+        run: |
+          $hash = (Get-FileHash -Path build/index-win.zip -Algorithm SHA256).Hash.ToLower()
+          "$hash *index-win.zip" | Out-File -FilePath build/index-win.zip.sha256 -Encoding ascii
+        shell: pwsh
       - name: 'Upload artifacts'
         uses: actions/upload-artifact@v4
         with:
-          name: win-artifacts
+          name: build-windows
           path: |
             build/index-win.zip
             build/index-win.zip.sha256
           retention-days: 1
 
   publish-preview:
-    needs: [build-linux-binary, build-mac-binary, build-windows-binary]
+    needs: [build-linux, build-mac, build-windows]
     name: 'Publish Preview'
     runs-on: ubuntu-latest
     steps:
-      - name: 'Create build directory'
-        run: mkdir -p build
-      - name: 'Download Linux artifacts'
+      - name: 'Download all artifacts'
         uses: actions/download-artifact@v4
         with:
-          name: linux-artifacts
-          path: build/
-      - name: 'Download Mac artifacts'
-        uses: actions/download-artifact@v4
-        with:
-          name: mac-artifacts
-          path: build/
-      - name: 'Download Windows artifacts'
-        uses: actions/download-artifact@v4
-        with:
-          name: win-artifacts
+          pattern: build-*
           path: build/
       - name: 'List all artifacts'
         run: ls -la build/
