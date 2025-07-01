@@ -12,13 +12,52 @@ jobs:
   build:
     uses: ./.github/workflows/build.yml
 
+  build-deb:
+    needs: [ build ]
+    name: 'Build .deb'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Download archives'
+        uses: actions/download-artifact@v4
+        with:
+          pattern: archive-checksum-linux
+      - name: 'List all artifacts'
+        run: ls -la *
+
+  build-rpm:
+    needs: [ build ]
+    name: 'Build .rpm'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Download archives'
+        uses: actions/download-artifact@v4
+        with:
+          pattern: archive-checksum-linux
+      - name: 'List all artifacts'
+        run: ls -la *
+
+  build-nupkg:
+    needs: [ build ]
+    name: 'Build .nupkg'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Download archives'
+        uses: actions/download-artifact@v4
+        with:
+          pattern: archive-checksum-windows
+      - name: 'List all artifacts'
+        run: ls -la *
+
   npm:
-    needs: [build]
+    needs: [ build ]
     name: 'Publish to npm'
     runs-on: ubuntu-latest
     steps:
-      - name: 'foo'
-        run: echo foo
+      - name: 'Publish to npm'
+        run: |
+          echo npm config set registry \'https://registry.npmjs.com/\''
+          echo npm config set '//registry.npmjs.com/:_authToken' '${{ secrets.NPM_TOKEN }}'
+          echo npm publish --tag latest
   #      - name: 'Checkout sources'
   #        uses: actions/checkout@v4
   #      - name: 'Setup Node.js'
@@ -37,7 +76,7 @@ jobs:
   #        # Add actual implementation for npm publishing
 
   cellar:
-    needs: [build]
+    needs: [ build-deb, build-rpm, build-nupkg ]
     name: 'Publish to Cellar'
     runs-on: ubuntu-latest
     steps:
@@ -49,7 +88,7 @@ jobs:
         run: ls -la *
 
   nexus-rpm:
-    needs: [build]
+    needs: [ build-rpm ]
     name: 'Publish .rpm to Nexus'
     runs-on: ubuntu-latest
     steps:
@@ -61,7 +100,7 @@ jobs:
         run: ls -la *
 
   nexus-deb:
-    needs: [build]
+    needs: [ build-deb ]
     name: 'Publish .deb to Nexus'
     runs-on: ubuntu-latest
     steps:
@@ -73,9 +112,9 @@ jobs:
         run: ls -la *
 
   nexus-nupkg:
-    needs: [build]
+    needs: [ build-nupkg ]
     name: 'Publish .nupkg to Nexus'
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     steps:
       - name: 'Download archives'
         uses: actions/download-artifact@v4
@@ -85,7 +124,7 @@ jobs:
         run: ls -la *
 
   exherbo:
-    needs: [build]
+    needs: [ build ]
     name: 'Publish to Exherbo'
     runs-on: ubuntu-latest
     steps:
@@ -97,11 +136,11 @@ jobs:
         run: ls -la *
       - name: 'Read checksum'
         run: |
-          CHECKSUM=$(cut -d' ' -f1 archive-checksum-linux/clever-tools_linux.tar.gz.sha256)
+          CHECKSUM=$(cut -d' ' -f1 clever-tools_linux.tar.gz.sha256)
           echo CHECKSUM: $CHECKSUM
 
   aur:
-    needs: [build]
+    needs: [ build ]
     name: 'Publish to AUR'
     runs-on: ubuntu-latest
     steps:
@@ -113,7 +152,7 @@ jobs:
         run: ls -la *
 
   homebrew:
-    needs: [build]
+    needs: [ build ]
     name: 'Publish to Homebrew'
     runs-on: macos-latest
     steps:
@@ -125,7 +164,7 @@ jobs:
         run: ls -la *
 
   dockerhub:
-    needs: [build]
+    needs: [ build ]
     name: 'Publish to Docker Hub'
     runs-on: ubuntu-latest
     steps:
