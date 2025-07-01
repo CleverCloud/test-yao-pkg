@@ -36,11 +36,18 @@ jobs:
           path: build/
       - name: 'Build linux binary'
         run: cp build/index.cjs build/index-linux
-      - name: 'Upload binary artifact'
+      - name: 'Create .tar.gz'
+        run: tar czf index-linux.tar.gz index-linux
+        working-directory: build
+      - name: 'Generate SHA256 checksum file'
+        run: sha256sum build/index-linux.tar.gz > build/index-linux.tar.gz.sha256
+      - name: 'Upload artifacts'
         uses: actions/upload-artifact@v4
         with:
-          name: binary-linux
-          path: build/index-linux
+          name: linux-artifacts
+          path: |
+            build/index-linux.tar.gz
+            build/index-linux.tar.gz.sha256
           retention-days: 1
 
   build-mac-binary:
@@ -55,9 +62,67 @@ jobs:
           path: build/
       - name: 'Build mac binary'
         run: cp build/index.cjs build/index-mac
-      - name: 'Upload binary artifact'
+      - name: 'Create .tar.gz'
+        run: tar czf index-mac.tar.gz index-mac
+        working-directory: build
+      - name: 'Generate SHA256 checksum file'
+        run: sha256sum build/index-mac.tar.gz > build/index-mac.tar.gz.sha256
+      - name: 'Upload artifacts'
         uses: actions/upload-artifact@v4
         with:
-          name: binary-mac
-          path: build/index-mac
+          name: mac-artifacts
+          path: |
+            build/index-mac.tar.gz
+            build/index-mac.tar.gz.sha256
           retention-days: 1
+
+  build-windows-binary:
+    needs: bundle-single-cjs
+    name: 'Build windows binary'
+    runs-on: windows-latest
+    steps:
+      - name: 'Download .cjs artifact'
+        uses: actions/download-artifact@v4
+        with:
+          name: bundle-cjs
+          path: build/
+      - name: 'Build windows binary'
+        run: cp build/index.cjs build/index-win.exe
+      - name: 'Create .zip'
+        run: zip -r index-win.zip index-win.exe
+        working-directory: build
+      - name: 'Generate SHA256 checksum file'
+        run: sha256sum build/index-win.zip > build/index-win.zip.sha256
+      - name: 'Upload artifacts'
+        uses: actions/upload-artifact@v4
+        with:
+          name: win-artifacts
+          path: |
+            build/index-win.zip
+            build/index-win.zip.sha256
+          retention-days: 1
+
+  publish-preview:
+    needs: [build-linux-binary, build-mac-binary, build-windows-binary]
+    name: 'Publish Preview'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Create build directory'
+        run: mkdir -p build
+      - name: 'Download Linux artifacts'
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-artifacts
+          path: build/
+      - name: 'Download Mac artifacts'
+        uses: actions/download-artifact@v4
+        with:
+          name: mac-artifacts
+          path: build/
+      - name: 'Download Windows artifacts'
+        uses: actions/download-artifact@v4
+        with:
+          name: win-artifacts
+          path: build/
+      - name: 'List all artifacts'
+        run: ls -la build/
