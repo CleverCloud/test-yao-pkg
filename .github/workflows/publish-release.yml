@@ -65,17 +65,24 @@ jobs:
     name: 'Publish to Homebrew'
     runs-on: macos-latest
     steps:
-      - name: 'Echo checksum'
-        run: echo "Mac SHA: ${{ needs.build.outputs.checksum_mac }}"
+      - name: 'Download archives'
+        uses: actions/download-artifact@v4
+        with:
+          name: archive-checksum-mac
+      - name: 'List all artifacts'
+        run: ls -la *
 
   exherbo:
     needs: [build]
     name: 'Publish to Exherbo'
     runs-on: ubuntu-latest
     steps:
-      - name: 'Echo checksum'
-        run:
-          echo "Linux SHA: ${{ needs.build.outputs.checksum_linux }}"
+      - name: 'Download archives'
+        uses: actions/download-artifact@v4
+        with:
+          name: archive-checksum-linux
+      - name: 'List all artifacts'
+        run: ls -la *
 
   docker-hub:
     needs: [build]
@@ -90,9 +97,12 @@ jobs:
     name: 'Publish to Arch Linux'
     runs-on: ubuntu-latest
     steps:
-      - name: 'Echo checksum'
-        run:
-          echo "Linux SHA: ${{ needs.build.outputs.checksum_linux }}"
+      - name: 'Download archives'
+        uses: actions/download-artifact@v4
+        with:
+          name: archive-checksum-linux
+      - name: 'List all artifacts'
+        run: ls -la *
 
   npm:
     needs: [build]

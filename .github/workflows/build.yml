@@ -81,10 +81,6 @@ jobs:
     needs: [build-linux, build-mac, build-windows]
     name: 'Create archives and checksums'
     runs-on: ubuntu-latest
-    outputs:
-      checksum_linux: ${{ steps.linux.outputs.checksum }}
-      checksum_mac: ${{ steps.mac.outputs.checksum }}
-      checksum_windows: ${{ steps.windows.outputs.checksum }}
     steps:
       - name: 'Download build artifacts'
         uses: actions/download-artifact@v4
@@ -96,21 +92,18 @@ jobs:
         run: |
           tar czf clever-tools_linux.tar.gz clever
           sha256sum clever-tools_linux.tar.gz > clever-tools_linux.tar.gz.sha256
-          echo "checksum=$(cat clever-tools_linux.tar.gz.sha256 | cut -d' ' -f1)" >> $GITHUB_OUTPUT
       - name: 'Create .tar.gz and checksum file for mac'
         id: mac
         working-directory: build-mac
         run: |
           tar czf clever-tools_mac.tar.gz clever
           sha256sum clever-tools_mac.tar.gz > clever-tools_mac.tar.gz.sha256
-          echo "checksum=$(cat clever-tools_mac.tar.gz.sha256 | cut -d' ' -f1)" >> $GITHUB_OUTPUT
       - name: 'Create .zip and checksum file for windows'
         id: windows
         working-directory: build-windows
         run: |
           zip clever-tools_win.zip clever.exe
           sha256sum clever-tools_win.zip > clever-tools_win.zip.sha256
-          echo "checksum=$(cat clever-tools_win.zip.sha256 | cut -d' ' -f1)" >> $GITHUB_OUTPUT
       - name: 'Upload linux archives'
         uses: actions/upload-artifact@v4
         with:
