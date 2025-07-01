@@ -1,21 +1,127 @@
 name: Build
 
 on:
-  push:
-    branches: [ main ]
+  workflow_call:
 
 jobs:
-  build-binaries:
-    uses: ./.github/workflows/build-binaries.yml
-
-  publish-preview:
-    needs: [build-binaries]
-    name: 'Publish Preview'
+  bundle-single-cjs:
+    name: 'Bundle to single clever.cjs'
     runs-on: ubuntu-latest
     steps:
-      - name: 'Download archives'
+      - name: 'Checkout sources'
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: 'Bundle to single clever.cjs'
+        run: |
+          mkdir -p build
+          cp index.js build/clever.cjs
+      - name: 'Upload bundle-single-cjs artifact'
+        uses: actions/upload-artifact@v4
+        with:
+          name: bundle-single-cjs
+          path: build/clever.cjs
+          retention-days: 1
+
+  build-linux:
+    needs: bundle-single-cjs
+    name: 'Build linux binary'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Download bundle-single-cjs artifact'
         uses: actions/download-artifact@v4
         with:
-          name: archives-checksums
-      - name: 'List all artifacts'
-        run: ls -la *
+          name: bundle-single-cjs
+      - name: 'Build linux binary'
+        run: cp clever.cjs clever
+      - name: 'Upload build-linux artifact'
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-linux
+          path: clever
+          retention-days: 1
+
+  build-mac:
+    needs: bundle-single-cjs
+    name: 'Build mac binary'
+    runs-on: macos-14
+    steps:
+      - name: 'Download bundle-single-cjs artifact'
+        uses: actions/download-artifact@v4
+        with:
+          name: bundle-single-cjs
+      - name: 'Build mac binary'
+        run: cp clever.cjs clever
+      - name: 'Upload build-mac artifact'
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-mac
+          path: clever
+          retention-days: 1
+
+  build-windows:
+    needs: bundle-single-cjs
+    name: 'Build windows binary'
+    runs-on: windows-latest
+    steps:
+      - name: 'Download bundle-single-cjs artifact'
+        uses: actions/download-artifact@v4
+        with:
+          name: bundle-single-cjs
+      - name: 'Build windows binary'
+        run: cp clever.cjs clever.exe
+      - name: 'Upload build-windows artifact'
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-windows
+          path: clever.exe
+          retention-days: 1
+
+  archives-checksums:
+    needs: [build-linux, build-mac, build-windows]
+    name: 'Create archives and checksums'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Download build artifacts'
+        uses: actions/download-artifact@v4
+        with:
+          pattern: build-*
+      - name: 'Create .tar.gz and checksum file for linux'
+        working-directory: build-linux
+        run: |
+          tar czf clever-tools_linux.tar.gz clever
+          sha256sum clever-tools_linux.tar.gz > clever-tools_linux.tar.gz.sha256
+      - name: 'Create .tar.gz and checksum file for mac'
+        working-directory: build-mac
+        run: |
+          tar czf clever-tools_mac.tar.gz clever
+          sha256sum clever-tools_mac.tar.gz > clever-tools_mac.tar.gz.sha256
+      - name: 'Create .zip and checksum file for windows'
+        working-directory: build-windows
+        run: |
+          zip clever-tools_win.zip clever.exe
+          sha256sum clever-tools_win.zip > clever-tools_win.zip.sha256
+      - name: 'Upload linux archives'
+        uses: actions/upload-artifact@v4
+        with:
+          name: archive-checksum-linux
+          path: |
+            build-linux/clever-tools_linux.tar.gz
+            build-linux/clever-tools_linux.tar.gz.sha256
+          retention-days: 1
+      - name: 'Upload mac archives'
+        uses: actions/upload-artifact@v4
+        with:
+          name: archive-checksum-mac
+          path: |
+            build-mac/clever-tools_mac.tar.gz
+            build-mac/clever-tools_mac.tar.gz.sha256
+          retention-days: 1
+      - name: 'Upload windows archives'
+        uses: actions/upload-artifact@v4
+        with:
+          name: archive-checksum-windows
+          path: |
+            build-windows/clever-tools_win.zip
+            build-windows/clever-tools_win.zip.sha256
+          retention-days: 1

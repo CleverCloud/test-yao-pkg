@@ -1,0 +1,21 @@
+name: Publish preview
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    uses: build.yml
+
+  publish-preview:
+    needs: [build]
+    name: 'Publish Preview'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Download archives'
+        uses: actions/download-artifact@v4
+        with:
+          pattern: archive-checksum-*
+      - name: 'List all artifacts'
+        run: ls -la *
