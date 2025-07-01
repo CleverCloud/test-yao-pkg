@@ -6,14 +6,14 @@ on:
 
 jobs:
   bundle-single-cjs:
-    name: 'Bundle to single .cjs'
+    name: 'Bundle to single clever.cjs'
     runs-on: ubuntu-latest
     steps:
       - name: 'Checkout sources'
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: 'Bundle to single .cjs'
+      - name: 'Bundle to single clever.cjs'
         run: |
           mkdir -p build
           cp index.js build/index.cjs
@@ -21,7 +21,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: bundle-single-cjs
-          path: build/index.cjs
+          path: build/clever.cjs
           retention-days: 1
 
   build-linux:
@@ -33,14 +33,13 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: bundle-single-cjs
-          path: build/
       - name: 'Build linux binary'
-        run: cp build/index.cjs build/index-linux
+        run: cp clever.cjs clever
       - name: 'Upload build-linux artifact'
         uses: actions/upload-artifact@v4
         with:
           name: build-linux
-          path: build/index-linux
+          path: clever
           retention-days: 1
 
   build-mac:
@@ -52,14 +51,13 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: bundle-single-cjs
-          path: build/
       - name: 'Build mac binary'
-        run: cp build/index.cjs build/index-mac
+        run: cp clever.cjs build-mac/clever
       - name: 'Upload build-mac artifact'
         uses: actions/upload-artifact@v4
         with:
           name: build-mac
-          path: build/index-mac
+          path: clever
           retention-days: 1
 
   build-windows:
@@ -71,14 +69,13 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: bundle-single-cjs
-          path: build/
       - name: 'Build windows binary'
-        run: cp build/index.cjs build/index-win.exe
+        run: cp index.cjs clever.exe
       - name: 'Upload build-windows artifact'
         uses: actions/upload-artifact@v4
         with:
           name: build-windows
-          path: build/index-win.exe
+          path: clever.exe
           retention-days: 1
 
   archives-checksums:
@@ -90,46 +87,45 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           pattern: build-*
-          path: build/
       - name: 'List all artifacts'
-        run: ls -la build/*
-      - name: 'Create .tar.gz and checksum file for linux'
-        run: |
-          tar czf index-linux.tar.gz index-linux
-          sha256sum index-linux.tar.gz > index-linux.tar.gz.sha256
-        working-directory: build
-      - name: 'Create .tar.gz and checksum file for mac'
-        run: |
-          tar czf index-mac.tar.gz index-mac
-          sha256sum index-mac.tar.gz > index-mac.tar.gz.sha256
-        working-directory: build
-      - name: 'Create .zip and checksum file for windows'
-        run: |
-          zip index-win.zip index-win.exe
-          sha256sum index-win.zip > index-win.zip.sha256
-        working-directory: build
-      - name: 'Upload archives'
-        uses: actions/upload-artifact@v4
-        with:
-          name: archives-checksums
-          path: |
-            build/index-linux.tar.gz
-            build/index-linux.tar.gz.sha256
-            build/index-mac.tar.gz
-            build/index-mac.tar.gz.sha256
-            build/index-win.zip
-            build/index-win.zip.sha256
-          retention-days: 1
+        run: ls -la *
+#      - name: 'Create .tar.gz and checksum file for linux'
+#        run: |
+#          tar czf index-linux.tar.gz index-linux
+#          sha256sum index-linux.tar.gz > index-linux.tar.gz.sha256
+#        working-directory: build
+#      - name: 'Create .tar.gz and checksum file for mac'
+#        run: |
+#          tar czf index-mac.tar.gz index-mac
+#          sha256sum index-mac.tar.gz > index-mac.tar.gz.sha256
+#        working-directory: build
+#      - name: 'Create .zip and checksum file for windows'
+#        run: |
+#          zip index-win.zip index-win.exe
+#          sha256sum index-win.zip > index-win.zip.sha256
+#        working-directory: build
+#      - name: 'Upload archives'
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: archives-checksums
+#          path: |
+#            build/index-linux.tar.gz
+#            build/index-linux.tar.gz.sha256
+#            build/index-mac.tar.gz
+#            build/index-mac.tar.gz.sha256
+#            build/index-win.zip
+#            build/index-win.zip.sha256
+#          retention-days: 1
 
-  publish-preview:
-    needs: [archives-checksums]
-    name: 'Publish Preview'
-    runs-on: ubuntu-latest
-    steps:
-      - name: 'Download archives'
-        uses: actions/download-artifact@v4
-        with:
-          name: archives-checksums
-          path: build/
-      - name: 'List all artifacts'
-        run: ls -la build/*
+#  publish-preview:
+#    needs: [archives-checksums]
+#    name: 'Publish Preview'
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: 'Download archives'
+#        uses: actions/download-artifact@v4
+#        with:
+#          name: archives-checksums
+#          path: build/
+#      - name: 'List all artifacts'
+#        run: ls -la build/*
