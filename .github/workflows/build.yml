@@ -46,9 +46,7 @@ jobs:
   build-mac-binary:
     needs: bundle-single-cjs
     name: 'Build mac binary'
-    runs-on:
-      os: macos-latest
-      platform: macos-arm
+    runs-on: macos-14
     steps:
       - name: 'Download .cjs artifact'
         uses: actions/download-artifact@v4
@@ -60,6 +58,6 @@ jobs:
       - name: 'Upload binary artifact'
         uses: actions/upload-artifact@v4
         with:
-          name: binary-lac
+          name: binary-mac
           path: build/index-mac
           retention-days: 1
