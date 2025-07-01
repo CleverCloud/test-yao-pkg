@@ -66,7 +66,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: 'Echo checksum'
-        run: echo "Mac SHA: ${{ needs.archives-checksums.outputs.checksum_mac }}"
+        run: echo "Mac SHA: ${{ needs.build.outputs.checksum_mac }}"
 
   exherbo:
     needs: [build]
@@ -75,7 +75,7 @@ jobs:
     steps:
       - name: 'Echo checksum'
         run:
-          echo "Linux SHA: ${{ needs.archives-checksums.outputs.checksum_linux }}"
+          echo "Linux SHA: ${{ needs.build.outputs.checksum_linux }}"
 
   docker-hub:
     needs: [build]
@@ -92,7 +92,7 @@ jobs:
     steps:
       - name: 'Echo checksum'
         run:
-          echo "Linux SHA: ${{ needs.archives-checksums.outputs.checksum_linux }}"
+          echo "Linux SHA: ${{ needs.build.outputs.checksum_linux }}"
 
   npm:
     needs: [build]
