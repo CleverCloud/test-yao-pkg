@@ -4,8 +4,8 @@ on:
   workflow_call:
 
 jobs:
-  bundle-single-cjs:
-    name: 'Bundle to single clever.cjs'
+  bundle-cjs:
+    name: 'Bundle single clever.cjs'
     runs-on: ubuntu-latest
     steps:
       - name: 'Checkout sources'
@@ -16,22 +16,22 @@ jobs:
         run: |
           mkdir -p build
           cp index.js build/clever.cjs
-      - name: 'Upload bundle-single-cjs artifact'
+      - name: 'Upload bundle-cjs artifact'
         uses: actions/upload-artifact@v4
         with:
-          name: bundle-single-cjs
+          name: bundle-cjs
           path: build/clever.cjs
           retention-days: 1
 
   build-linux:
-    needs: bundle-single-cjs
+    needs: bundle-cjs
     name: 'Build linux binary'
     runs-on: ubuntu-latest
     steps:
-      - name: 'Download bundle-single-cjs artifact'
+      - name: 'Download bundle-cjs artifact'
         uses: actions/download-artifact@v4
         with:
-          name: bundle-single-cjs
+          name: bundle-cjs
       - name: 'Build linux binary'
         run: cp clever.cjs clever
       - name: 'Upload build-linux artifact'
@@ -42,14 +42,14 @@ jobs:
           retention-days: 1
 
   build-mac:
-    needs: bundle-single-cjs
+    needs: bundle-cjs
     name: 'Build mac binary'
     runs-on: macos-14
     steps:
-      - name: 'Download bundle-single-cjs artifact'
+      - name: 'Download bundle-cjs artifact'
         uses: actions/download-artifact@v4
         with:
-          name: bundle-single-cjs
+          name: bundle-cjs
       - name: 'Build mac binary'
         run: cp clever.cjs clever
       - name: 'Upload build-mac artifact'
@@ -60,14 +60,14 @@ jobs:
           retention-days: 1
 
   build-windows:
-    needs: bundle-single-cjs
+    needs: bundle-cjs
     name: 'Build windows binary'
     runs-on: windows-latest
     steps:
-      - name: 'Download bundle-single-cjs artifact'
+      - name: 'Download bundle-cjs artifact'
         uses: actions/download-artifact@v4
         with:
-          name: bundle-single-cjs
+          name: bundle-cjs
       - name: 'Build windows binary'
         run: cp clever.cjs clever.exe
       - name: 'Upload build-windows artifact'

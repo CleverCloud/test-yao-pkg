@@ -1,0 +1,133 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to publish'
+        required: true
+        type: string
+
+jobs:
+  build:
+    uses: ./.github/workflows/build.yml
+
+  npm:
+    needs: [build]
+    name: 'Publish to npm'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'foo'
+        run: echo foo
+  #      - name: 'Checkout sources'
+  #        uses: actions/checkout@v4
+  #      - name: 'Setup Node.js'
+  #        uses: actions/setup-node@v4
+  #        with:
+  #          node-version: '20'
+  #          registry-url: 'https://registry.npmjs.org'
+  #      - name: 'Download archives'
+  #        uses: actions/download-artifact@v4
+  #        with:
+  #          name: archives-linux
+  #      - name: 'Publish to npm'
+  #        run: echo "Publishing to npm - Implementation needed"
+  #        env:
+  #          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+  #        # Add actual implementation for npm publishing
+
+  cellar:
+    needs: [build]
+    name: 'Publish to Cellar'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Download archives'
+        uses: actions/download-artifact@v4
+        with:
+          pattern: archive-checksum-*
+      - name: 'List all artifacts'
+        run: ls -la *
+
+  nexus-rpm:
+    needs: [build]
+    name: 'Publish .rpm to Nexus'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Download archives'
+        uses: actions/download-artifact@v4
+        with:
+          name: archive-checksum-linux
+      - name: 'List all artifacts'
+        run: ls -la *
+
+  nexus-deb:
+    needs: [build]
+    name: 'Publish .deb to Nexus'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Download archives'
+        uses: actions/download-artifact@v4
+        with:
+          name: archive-checksum-linux
+      - name: 'List all artifacts'
+        run: ls -la *
+
+  nexus-nupkg:
+    needs: [build]
+    name: 'Publish .nupkg to Nexus'
+    runs-on: windows-latest
+    steps:
+      - name: 'Download archives'
+        uses: actions/download-artifact@v4
+        with:
+          name: archive-checksum-windows
+      - name: 'List all artifacts'
+        run: ls -la *
+
+  exherbo:
+    needs: [build]
+    name: 'Publish to Exherbo'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Download archives'
+        uses: actions/download-artifact@v4
+        with:
+          name: archive-checksum-linux
+      - name: 'List all artifacts'
+        run: ls -la *
+      - name: 'Read checksum'
+        run: |
+          CHECKSUM=$(cut -d' ' -f1 archive-checksum-linux/clever-tools_linux.tar.gz.sha256)
+          echo CHECKSUM: $CHECKSUM
+
+  aur:
+    needs: [build]
+    name: 'Publish to AUR'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Download archives'
+        uses: actions/download-artifact@v4
+        with:
+          name: archive-checksum-linux
+      - name: 'List all artifacts'
+        run: ls -la *
+
+  homebrew:
+    needs: [build]
+    name: 'Publish to Homebrew'
+    runs-on: macos-latest
+    steps:
+      - name: 'Download archives'
+        uses: actions/download-artifact@v4
+        with:
+          name: archive-checksum-mac
+      - name: 'List all artifacts'
+        run: ls -la *
+
+  dockerhub:
+    needs: [build]
+    name: 'Publish to Docker Hub'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'foo'
+        run: echo foo
