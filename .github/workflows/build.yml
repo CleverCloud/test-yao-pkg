@@ -91,6 +91,8 @@ jobs:
         with:
           pattern: build-*
           path: build/
+      - name: 'List all artifacts'
+        run: ls -la build/*
       - name: 'Create .tar.gz and checksum file for linux'
         run: |
           tar czf build/index-linux.tar.gz -C build index-linux
