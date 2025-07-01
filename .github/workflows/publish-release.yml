@@ -51,7 +51,7 @@ jobs:
   nupkg-nexus:
     needs: [build]
     name: 'Publish NuPkg to Nexus'
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
       - name: 'Download archives'
         uses: actions/download-artifact@v4
@@ -63,7 +63,7 @@ jobs:
   homebrew:
     needs: [build]
     name: 'Publish to Homebrew'
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
       - name: 'Download archives'
         uses: actions/download-artifact@v4
@@ -131,7 +131,7 @@ jobs:
 #  publish-summary:
 #    needs: [cellar, rpm-nexus, deb-nexus, nupkg-nexus, homebrew, exherbo, docker-hub, archlinux, npm]
 #    name: 'Publish Summary'
-runs-on: ubuntu-latest
+#    runs-on: ubuntu-latest
 #    steps:
 #      - name: 'Generate summary'
 #        run: |
