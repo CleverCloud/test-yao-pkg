@@ -16,7 +16,7 @@ jobs:
       - name: 'Bundle to single clever.cjs'
         run: |
           mkdir -p build
-          cp index.js build/index.cjs
+          cp index.js build/clever.cjs
       - name: 'Upload bundle-single-cjs artifact'
         uses: actions/upload-artifact@v4
         with:
