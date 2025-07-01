@@ -87,45 +87,42 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           pattern: build-*
+      - name: 'Create .tar.gz and checksum file for linux'
+        run: |
+          tar czf clever-tools_linux.tar.gz clever
+          sha256sum clever-tools_linux.tar.gz > clever-tools_linux.tar.gz.sha256
+        working-directory: build-linux
+      - name: 'Create .tar.gz and checksum file for mac'
+        run: |
+          tar czf clever-tools_mac.tar.gz clever
+          sha256sum clever-tools_mac.tar.gz > clever-tools_mac.tar.gz.sha256
+        working-directory: build
+      - name: 'Create .zip and checksum file for windows'
+        run: |
+          zip clever-tools_win.zip clever.exe
+          sha256sum clever-tools_win.zip > clever-tools_win.zip.sha256
+        working-directory: build
+      - name: 'Upload archives'
+        uses: actions/upload-artifact@v4
+        with:
+          name: archives-checksums
+          path: |
+            build-linux/clever-tools_linux.tar.gz
+            build-linux/clever-tools_linux.tar.gz.sha256
+            build-mac/clever-tools_mac.tar.gz
+            build-mac/clever-tools_mac.tar.gz.sha256
+            build-windows/clever-tools_win.zip
+            build-windows/clever-tools_win.zip.sha256
+          retention-days: 1
+
+  publish-preview:
+    needs: [archives-checksums]
+    name: 'Publish Preview'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Download archives'
+        uses: actions/download-artifact@v4
+        with:
+          name: archives-checksums
       - name: 'List all artifacts'
         run: ls -la *
-#      - name: 'Create .tar.gz and checksum file for linux'
-#        run: |
-#          tar czf index-linux.tar.gz index-linux
-#          sha256sum index-linux.tar.gz > index-linux.tar.gz.sha256
-#        working-directory: build
-#      - name: 'Create .tar.gz and checksum file for mac'
-#        run: |
-#          tar czf index-mac.tar.gz index-mac
-#          sha256sum index-mac.tar.gz > index-mac.tar.gz.sha256
-#        working-directory: build
-#      - name: 'Create .zip and checksum file for windows'
-#        run: |
-#          zip index-win.zip index-win.exe
-#          sha256sum index-win.zip > index-win.zip.sha256
-#        working-directory: build
-#      - name: 'Upload archives'
-#        uses: actions/upload-artifact@v4
-#        with:
-#          name: archives-checksums
-#          path: |
-#            build/index-linux.tar.gz
-#            build/index-linux.tar.gz.sha256
-#            build/index-mac.tar.gz
-#            build/index-mac.tar.gz.sha256
-#            build/index-win.zip
-#            build/index-win.zip.sha256
-#          retention-days: 1
-
-#  publish-preview:
-#    needs: [archives-checksums]
-#    name: 'Publish Preview'
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: 'Download archives'
-#        uses: actions/download-artifact@v4
-#        with:
-#          name: archives-checksums
-#          path: build/
-#      - name: 'List all artifacts'
-#        run: ls -la build/*
