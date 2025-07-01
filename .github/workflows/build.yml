@@ -5,7 +5,7 @@ on:
     branches: [ main ]
 
 jobs:
-  bundle-rollup:
+  bundle-single-cjs:
     name: 'Bundle to single .cjs'
     runs-on: ubuntu-latest
     steps:
@@ -25,7 +25,7 @@ jobs:
           retention-days: 1
 
   build-linux-binary:
-    needs: bundle-rollup
+    needs: bundle-single-cjs
     name: 'Build linux binary'
     runs-on: ubuntu-latest
     steps:
@@ -39,6 +39,27 @@ jobs:
       - name: 'Upload binary artifact'
         uses: actions/upload-artifact@v4
         with:
-          name: linux-binary
+          name: binary-linux
           path: build/index-linux
+          retention-days: 1
+
+  build-mac-binary:
+    needs: bundle-single-cjs
+    name: 'Build mac binary'
+    runs-on:
+      os: macos-latest
+      platform: macos-arm
+    steps:
+      - name: 'Download .cjs artifact'
+        uses: actions/download-artifact@v4
+        with:
+          name: bundle-cjs
+          path: build/
+      - name: 'Build mac binary'
+        run: cp build/index.cjs build/index-mac
+      - name: 'Upload binary artifact'
+        uses: actions/upload-artifact@v4
+        with:
+          name: binary-lac
+          path: build/index-mac
           retention-days: 1
