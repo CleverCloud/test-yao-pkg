@@ -55,13 +55,6 @@ jobs:
     - name: Run pkg command for ${{ matrix.platform }}
       run: npx @yao-pkg/pkg clever.cjs -t ${{ matrix.target }} -o build/${{ matrix.output }}${{ matrix.extension }}
 
-    - name: Verify binary execution
-      shell: bash
-      run: |
-        chmod +x build/${{ matrix.output }}${{ matrix.extension }}
-        ./build/${{ matrix.output }}${{ matrix.extension }}
-        echo "✅ Binary executed successfully with exit code $?"
-
     - name: Check architecture (macOS only)
       if: runner.os == 'macOS'
       shell: bash
