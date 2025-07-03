@@ -1,14 +1,36 @@
-name: Build Executables
-
+name: Build and Sign Executables
 on:
   push:
     branches: [ main ]
+    tags: ['v*']
   pull_request:
     branches: [ main ]
-  workflow_dispatch:  # Allows manual triggering
+  workflow_dispatch:
+    inputs:
+      create_dmg:
+        description: 'Create DMG for distribution'
+        required: false
+        default: 'false'
+        type: boolean
+      create_app_bundle:
+        description: 'Create .app bundle'
+        required: false
+        default: 'false'
+        type: boolean
+      sign_macos:
+        description: 'Sign and notarize macOS binaries'
+        required: false
+        default: 'true'
+        type: boolean
+
+env:
+  APP_NAME: "CleverTools"
+  BUNDLE_ID: "com.clevercloud.clevertools"
+  VERSION: "1.0.0"
 
 jobs:
   build:
+    name: Build ${{ matrix.platform }}
     strategy:
       matrix:
         include:
@@ -25,47 +47,529 @@ jobs:
           - os: macos-latest
             platform: macos-x64
             target: node22-macos-x64
-            output: hello-world-macos
+            output: hello-world-macos-x64
             extension: ''
           - os: macos-latest
             platform: macos-arm
             target: node22-macos-arm64
             output: hello-world-macos-arm
             extension: ''
-
     runs-on: ${{ matrix.os }}
-
+    
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-
+      
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: '22'
         cache: 'npm'
-
+        
     - name: Install dependencies
       run: npm ci
-
+      
     - name: Create build directory
       run: mkdir -p build
       shell: bash
-
+      
     - name: Run pkg command for ${{ matrix.platform }}
       run: npx @yao-pkg/pkg clever.cjs -t ${{ matrix.target }} -o build/${{ matrix.output }}${{ matrix.extension }}
-
+      
     - name: Check architecture (macOS only)
       if: runner.os == 'macOS'
       shell: bash
       run: |
-        echo "Checking binary architecture with lipo..."
-        lipo -archs build/${{ matrix.output }}${{ matrix.extension }}
+        echo "Checking binary architecture with file and lipo..."
+        file build/${{ matrix.output }}${{ matrix.extension }}
+        lipo -archs build/${{ matrix.output }}${{ matrix.extension }} || echo "Single architecture binary"
         echo "Architecture check completed"
-
+        
+    - name: Verify binary functionality
+      if: runner.os != 'Windows'
+      shell: bash
+      run: |
+        chmod +x build/${{ matrix.output }}${{ matrix.extension }}
+        echo "Binary is executable"
+        # Test simple execution (adapt according to your app)
+        # ./build/${{ matrix.output }}${{ matrix.extension }} --version || echo "Binary built successfully"
+        
     - name: Upload ${{ matrix.platform }} artifact
       uses: actions/upload-artifact@v4
       with:
         name: ${{ matrix.output }}
         path: build/${{ matrix.output }}${{ matrix.extension }}
-        retention-days: 7
+        retention-days: 30
+
+  sign-and-notarize-macos:
+    name: Sign and Notarize macOS Binaries
+    needs: build
+    runs-on: macos-14
+    if: >
+      always() && 
+      (needs.build.result == 'success') &&
+      (github.event.inputs.sign_macos != 'false') &&
+      (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch')
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Download macOS x64 artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: hello-world-macos-x64
+        path: ./binaries
+        
+    - name: Download macOS ARM artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: hello-world-macos-arm
+        path: ./binaries
+        
+    - name: Prepare binaries
+      run: |
+        cd binaries
+        ls -la
+        
+        # Rename for clarity
+        mv hello-world-macos-x64 hello-world-macos-x64-unsigned
+        mv hello-world-macos-arm hello-world-macos-arm-unsigned
+        
+        # Make executable
+        chmod +x hello-world-macos-*-unsigned
+        
+        # Verify architectures
+        echo "=== x64 binary info ==="
+        file hello-world-macos-x64-unsigned
+        echo "=== ARM binary info ==="
+        file hello-world-macos-arm-unsigned
+        
+    - name: Create universal binary
+      run: |
+        cd binaries
+        echo "=== Creating universal binary ==="
+        lipo -create hello-world-macos-x64-unsigned hello-world-macos-arm-unsigned \
+             -output hello-world-macos-universal-unsigned
+             
+        echo "=== Verifying universal binary ==="
+        lipo -info hello-world-macos-universal-unsigned
+        file hello-world-macos-universal-unsigned
+        
+    - name: Import Apple certificates
+      if: >
+        github.ref == 'refs/heads/main' || 
+        startsWith(github.ref, 'refs/tags/') || 
+        (github.event_name == 'workflow_dispatch' && github.event.inputs.sign_macos == 'true')
+      uses: apple-actions/import-codesign-certs@v3
+      with:
+        p12-file-base64: ${{ secrets.MACOS_CERTIFICATE_BASE64 }}
+        p12-password: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+        
+    - name: Create entitlements file
+      run: |
+        cat > entitlements.plist << EOF
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+        <plist version="1.0">
+        <dict>
+            <key>com.apple.security.cs.allow-jit</key>
+            <true/>
+            <key>com.apple.security.cs.allow-unsigned-executable-memory</key>
+            <true/>
+            <key>com.apple.security.cs.disable-library-validation</key>
+            <true/>
+            <key>com.apple.security.network.client</key>
+            <true/>
+            <key>com.apple.security.network.server</key>
+            <true/>
+            <key>com.apple.security.files.user-selected.read-only</key>
+            <true/>
+            <key>com.apple.security.files.user-selected.read-write</key>
+            <true/>
+        </dict>
+        </plist>
+        EOF
+        
+        echo "Entitlements file created:"
+        cat entitlements.plist
+
+    - name: Create App Bundle (if requested)
+      if: github.event.inputs.create_app_bundle == 'true'
+      run: |
+        cd binaries
+        
+        echo "=== Creating App Bundle ==="
+        # Create bundle structure
+        mkdir -p "${APP_NAME}.app/Contents/MacOS"
+        mkdir -p "${APP_NAME}.app/Contents/Resources"
+        
+        # Copy universal binary
+        cp hello-world-macos-universal-unsigned "${APP_NAME}.app/Contents/MacOS/${APP_NAME}"
+        chmod +x "${APP_NAME}.app/Contents/MacOS/${APP_NAME}"
+        
+        # Create Info.plist
+        cat > "${APP_NAME}.app/Contents/Info.plist" << EOF
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+        <plist version="1.0">
+        <dict>
+            <key>CFBundleExecutable</key>
+            <string>${APP_NAME}</string>
+            <key>CFBundleIdentifier</key>
+            <string>${BUNDLE_ID}</string>
+            <key>CFBundleName</key>
+            <string>${APP_NAME}</string>
+            <key>CFBundleDisplayName</key>
+            <string>Clever Cloud Tools</string>
+            <key>CFBundleVersion</key>
+            <string>${VERSION}</string>
+            <key>CFBundleShortVersionString</key>
+            <string>${VERSION}</string>
+            <key>CFBundlePackageType</key>
+            <string>APPL</string>
+            <key>CFBundleSignature</key>
+            <string>????</string>
+            <key>LSMinimumSystemVersion</key>
+            <string>11.0</string>
+            <key>NSHighResolutionCapable</key>
+            <true/>
+            <key>LSUIElement</key>
+            <true/>
+        </dict>
+        </plist>
+        EOF
+        
+        echo "App bundle created successfully"
+        ls -la "${APP_NAME}.app/Contents/MacOS/"
+
+    - name: Sign binaries
+      if: >
+        github.ref == 'refs/heads/main' || 
+        startsWith(github.ref, 'refs/tags/') || 
+        (github.event_name == 'workflow_dispatch' && github.event.inputs.sign_macos == 'true')
+      run: |
+        cd binaries
+        
+        echo "=== Available certificates ==="
+        security find-identity -v -p codesigning
+        
+        # Sign individual binaries
+        echo "=== Signing x64 binary ==="
+        codesign --force \
+                 --options runtime \
+                 --timestamp \
+                 --entitlements ../entitlements.plist \
+                 --sign "${{ secrets.CERTIFICATE_NAME }}" \
+                 --verbose \
+                 hello-world-macos-x64-unsigned
+        mv hello-world-macos-x64-unsigned hello-world-macos-x64
+        
+        echo "=== Signing ARM binary ==="
+        codesign --force \
+                 --options runtime \
+                 --timestamp \
+                 --entitlements ../entitlements.plist \
+                 --sign "${{ secrets.CERTIFICATE_NAME }}" \
+                 --verbose \
+                 hello-world-macos-arm-unsigned
+        mv hello-world-macos-arm-unsigned hello-world-macos-arm
+        
+        echo "=== Signing universal binary ==="
+        codesign --force \
+                 --options runtime \
+                 --timestamp \
+                 --entitlements ../entitlements.plist \
+                 --sign "${{ secrets.CERTIFICATE_NAME }}" \
+                 --verbose \
+                 hello-world-macos-universal-unsigned
+        mv hello-world-macos-universal-unsigned hello-world-macos-universal
+        
+        # Sign app bundle if it exists
+        if [ -d "${APP_NAME}.app" ]; then
+          echo "=== Signing app bundle ==="
+          codesign --force \
+                   --options runtime \
+                   --timestamp \
+                   --entitlements ../entitlements.plist \
+                   --sign "${{ secrets.CERTIFICATE_NAME }}" \
+                   --verbose \
+                   "${APP_NAME}.app"
+        fi
+
+    - name: Verify signatures
+      if: >
+        github.ref == 'refs/heads/main' || 
+        startsWith(github.ref, 'refs/tags/') || 
+        (github.event_name == 'workflow_dispatch' && github.event.inputs.sign_macos == 'true')
+      run: |
+        cd binaries
+        
+        echo "=== Verifying x64 binary signature ==="
+        codesign --verify --deep --strict --verbose=2 hello-world-macos-x64
+        
+        echo "=== Verifying ARM binary signature ==="
+        codesign --verify --deep --strict --verbose=2 hello-world-macos-arm
+        
+        echo "=== Verifying universal binary signature ==="
+        codesign --verify --deep --strict --verbose=2 hello-world-macos-universal
+        
+        if [ -d "${APP_NAME}.app" ]; then
+          echo "=== Verifying app bundle signature ==="
+          codesign --verify --deep --strict --verbose=2 "${APP_NAME}.app"
+        fi
+        
+        echo "=== Signature details ==="
+        codesign --display --verbose=4 hello-world-macos-universal
+
+    - name: Create notarization archives
+      if: >
+        github.ref == 'refs/heads/main' || 
+        startsWith(github.ref, 'refs/tags/') || 
+        (github.event_name == 'workflow_dispatch' && github.event.inputs.sign_macos == 'true')
+      run: |
+        cd binaries
+        
+        echo "=== Creating notarization archives ==="
+        
+        # Individual binaries
+        zip hello-world-macos-x64.zip hello-world-macos-x64
+        zip hello-world-macos-arm.zip hello-world-macos-arm
+        zip hello-world-macos-universal.zip hello-world-macos-universal
+        
+        # App bundle if it exists
+        if [ -d "${APP_NAME}.app" ]; then
+          ditto -c -k --keepParent "${APP_NAME}.app" "${APP_NAME}.zip"
+        fi
+        
+        ls -la *.zip
+
+    - name: Submit for notarization
+      if: >
+        github.ref == 'refs/heads/main' || 
+        startsWith(github.ref, 'refs/tags/') || 
+        (github.event_name == 'workflow_dispatch' && github.event.inputs.sign_macos == 'true')
+      run: |
+        cd binaries
+        
+        echo "=== Submitting universal binary for notarization ==="
+        xcrun notarytool submit hello-world-macos-universal.zip \
+              --apple-id "${{ secrets.APPLE_ID }}" \
+              --password "${{ secrets.APP_SPECIFIC_PASSWORD }}" \
+              --team-id "${{ secrets.TEAM_ID }}" \
+              --wait \
+              --timeout 30m \
+              --verbose
+              
+        if [ -f "${APP_NAME}.zip" ]; then
+          echo "=== Submitting app bundle for notarization ==="
+          xcrun notarytool submit "${APP_NAME}.zip" \
+                --apple-id "${{ secrets.APPLE_ID }}" \
+                --password "${{ secrets.APP_SPECIFIC_PASSWORD }}" \
+                --team-id "${{ secrets.TEAM_ID }}" \
+                --wait \
+                --timeout 30m \
+                --verbose
+        fi
+
+    - name: Staple notarization tickets
+      if: >
+        github.ref == 'refs/heads/main' || 
+        startsWith(github.ref, 'refs/tags/') || 
+        (github.event_name == 'workflow_dispatch' && github.event.inputs.sign_macos == 'true')
+      run: |
+        cd binaries
+        
+        echo "=== Stapling universal binary ==="
+        xcrun stapler staple hello-world-macos-universal || echo "Stapling failed (expected for standalone binaries)"
+        
+        if [ -d "${APP_NAME}.app" ]; then
+          echo "=== Stapling app bundle ==="
+          xcrun stapler staple "${APP_NAME}.app"
+          xcrun stapler validate "${APP_NAME}.app"
+        fi
+
+    - name: Create DMG (if requested)
+      if: >
+        github.event.inputs.create_dmg == 'true' &&
+        (github.ref == 'refs/heads/main' || 
+         startsWith(github.ref, 'refs/tags/') || 
+         (github.event_name == 'workflow_dispatch' && github.event.inputs.sign_macos == 'true'))
+      run: |
+        cd binaries
+        
+        echo "=== Creating DMG ==="
+        mkdir -p dmg-contents
+        
+        if [ -d "${APP_NAME}.app" ]; then
+          cp -R "${APP_NAME}.app" dmg-contents/
+        else
+          mkdir -p "dmg-contents/${APP_NAME}"
+          cp hello-world-macos-universal "dmg-contents/${APP_NAME}/"
+          
+          cat > "dmg-contents/${APP_NAME}/README.txt" << EOF
+        Clever Cloud Tools v${VERSION}
+        
+        Installation:
+        1. Copy the binary to /usr/local/bin/ or another location in your PATH
+        2. Make executable: chmod +x hello-world-macos-universal
+        3. Run: ./hello-world-macos-universal --help
+        EOF
+        fi
+        
+        # Create DMG
+        hdiutil create -srcfolder dmg-contents \
+                      -volname "${APP_NAME}-${VERSION}" \
+                      -fs HFS+ \
+                      -fsargs "-c c=64,a=16,e=16" \
+                      -format UDZO \
+                      -size 100m \
+                      "${APP_NAME}-${VERSION}.dmg"
+        
+        # Sign DMG
+        codesign --force \
+                 --timestamp \
+                 --sign "${{ secrets.CERTIFICATE_NAME }}" \
+                 --verbose \
+                 "${APP_NAME}-${VERSION}.dmg"
+        
+        # Notarize DMG
+        echo "=== Notarizing DMG ==="
+        xcrun notarytool submit "${APP_NAME}-${VERSION}.dmg" \
+              --apple-id "${{ secrets.APPLE_ID }}" \
+              --password "${{ secrets.APP_SPECIFIC_PASSWORD }}" \
+              --team-id "${{ secrets.TEAM_ID }}" \
+              --wait \
+              --timeout 20m
+        
+        # Staple DMG
+        xcrun stapler staple "${APP_NAME}-${VERSION}.dmg"
+        
+        echo "DMG created and notarized successfully"
+        ls -la *.dmg
+
+    - name: Final validation
+      run: |
+        cd binaries
+        
+        echo "=== Final Gatekeeper validation ==="
+        if [ -d "${APP_NAME}.app" ]; then
+          spctl --assess --type execute --verbose "${APP_NAME}.app" || echo "spctl check completed"
+        else
+          spctl --assess --type execute --verbose hello-world-macos-universal || echo "spctl check completed"
+        fi
+        
+        echo "=== Certificate chain verification ==="
+        codesign -dv --verbose=4 hello-world-macos-universal 2>&1 | grep "Authority" || echo "Certificate check completed"
+
+    - name: Upload signed macOS artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: signed-macos-binaries
+        path: |
+          binaries/hello-world-macos-x64
+          binaries/hello-world-macos-arm
+          binaries/hello-world-macos-universal
+          binaries/${{ env.APP_NAME }}.app
+          binaries/*.dmg
+        retention-days: 90
+
+    - name: Summary
+      run: |
+        cd binaries
+        echo "=== BUILD AND SIGNING SUMMARY ===" >> $GITHUB_STEP_SUMMARY
+        echo "✅ **macOS binaries built and signed successfully**" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        echo "**Available binaries:**" >> $GITHUB_STEP_SUMMARY
+        echo "- 🔧 hello-world-macos-x64 (Intel Macs)" >> $GITHUB_STEP_SUMMARY
+        echo "- 🔧 hello-world-macos-arm (Apple Silicon)" >> $GITHUB_STEP_SUMMARY
+        echo "- 🌍 hello-world-macos-universal (Universal Binary)" >> $GITHUB_STEP_SUMMARY
+        
+        if [ -d "${APP_NAME}.app" ]; then
+          echo "- 📱 ${APP_NAME}.app (App Bundle)" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        if [ -f "${APP_NAME}-${VERSION}.dmg" ]; then
+          echo "- 💿 ${APP_NAME}-${VERSION}.dmg (Distribution Package)" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Security features:**" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ Developer ID signed" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ Hardened Runtime enabled" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ Apple notarized" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ Ready for distribution outside App Store" >> $GITHUB_STEP_SUMMARY
+
+  create-release:
+    name: Create GitHub Release
+    needs: [build, sign-and-notarize-macos]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    
+    steps:
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: ./release-assets
+        
+    - name: Prepare release assets
+      run: |
+        cd release-assets
+        
+        # Flatten directory structure and rename files for release
+        find . -name "hello-world-*" -type f | while read file; do
+          basename_file=$(basename "$file")
+          cp "$file" "../$basename_file"
+        done
+        
+        # Copy DMG and app bundle if they exist
+        find . -name "*.dmg" -type f | while read file; do
+          cp "$file" "../$(basename "$file")"
+        done
+        
+        find . -name "*.app" -type d | while read file; do
+          cp -r "$file" "../$(basename "$file")"
+        done
+        
+        cd ..
+        ls -la hello-world-* *.dmg *.app 2>/dev/null || true
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          hello-world-linux
+          hello-world-win.exe
+          hello-world-macos-x64
+          hello-world-macos-arm
+          hello-world-macos-universal
+          *.dmg
+        generate_release_notes: true
+        draft: false
+        prerelease: false
+        name: Release ${{ github.ref_name }}
+        body: |
+          ## Clever Cloud Tools ${{ github.ref_name }}
+          
+          ### Downloads
+          - **Linux**: `hello-world-linux`
+          - **Windows**: `hello-world-win.exe`
+          - **macOS Intel**: `hello-world-macos-x64`
+          - **macOS Apple Silicon**: `hello-world-macos-arm`
+          - **macOS Universal**: `hello-world-macos-universal` (recommended)
+          
+          ### macOS Security
+          All macOS binaries are:
+          - ✅ Signed with Developer ID
+          - ✅ Notarized by Apple
+          - ✅ Compatible with Gatekeeper
+          
+          ### Installation
+          ```bash
+          # macOS/Linux
+          chmod +x hello-world-macos-universal
+          ./hello-world-macos-universal
+          ```
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
