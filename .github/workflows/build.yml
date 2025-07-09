@@ -17,7 +17,7 @@ jobs:
       - name: 'Install Node.js dependencies'
         run: npm ci
       - name: 'Bundle to single clever.cjs'
-        run: npx rollup -c rollup.config.js
+        run: npm run bundle-cjs
       - name: 'Upload bundle-cjs artifact'
         uses: actions/upload-artifact@v4
         with:
@@ -33,15 +33,12 @@ jobs:
           - os: ubuntu-latest
             os-name: linux
             binary-name: clever
-            pkg-target: node22-linux-x64
           - os: macos-14
             os-name: mac
             binary-name: clever
-            pkg-target: node22-mac-arm64
           - os: windows-latest
             os-name: windows
             binary-name: clever.exe
-            pkg-target: node22-win-x64
     name: 'Build ${{ matrix.os-name }} binary'
     runs-on: ${{ matrix.os }}
     steps:
@@ -50,7 +47,7 @@ jobs:
         with: { name: bundle-cjs }
       - name: 'Build ${{ matrix.os-name }} binary'
         shell: bash
-        run: npx pkg -t ${{ matrix.pkg-target }} build/clever.cjs -o build/${{ matrix.binary-name }}
+        run: npm run build:${{ matrix.os-name }}
       - name: 'Upload build-${{ matrix.os-name }} artifact'
         uses: actions/upload-artifact@v4
         with:
