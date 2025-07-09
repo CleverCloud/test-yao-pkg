@@ -3,17 +3,20 @@ name: Build
 on:
   workflow_call:
 
-
+# Define reusable step templates at the top level
+x-steps:
+  - &step-checkout-sources
+    name: Checkout sources
+    uses: actions/checkout@v4
+    with:
+      fetch-depth: 0
 
 jobs:
   bundle-cjs:
     name: Bundle single clever.cjs
     runs-on: ubuntu-latest
     steps:
-      - name: tree
-        run: |
-          tree
-      - uses: ./.github/actions/checkout-sources.yml
+      - *step-checkout-sources
       - name: Bundle to single clever.cjs
         run: |
           echo rollup -c rollup.config.js
