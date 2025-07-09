@@ -53,8 +53,6 @@ jobs:
         with:
           name: bundle-cjs
           path: build
-      - name: tree
-        run: tree
       - name: 'Build ${{ matrix.os-name }} binary'
         shell: bash
         run: npm run build:${{ matrix.os-name }}
