@@ -9,8 +9,7 @@ jobs:
     name: Bundle single clever.cjs
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout sources
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
       - name: Bundle to single clever.cjs
         run: |
           echo rollup -c rollup.config.js
