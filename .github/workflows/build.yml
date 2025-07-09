@@ -63,15 +63,18 @@ jobs:
           path: build/${{ matrix.binary-name }}
           retention-days: 1
 
-#  archives-checksums:
-#    needs: [build]
-#    name: 'Create archives and checksums'
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: 'Download build artifacts'
-#        uses: actions/download-artifact@v4
-#        with:
-#          pattern: build-*
+  archives-checksums:
+    needs: [build]
+    name: 'Create archives and checksums'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Download build artifacts'
+        uses: actions/download-artifact@v4
+        with:
+          pattern: build-*
+          path: build
+      - name: 'tree'
+        run: tree
 #      - name: 'Create .tar.gz and checksum file for linux'
 #        id: linux
 #        working-directory: build-linux
