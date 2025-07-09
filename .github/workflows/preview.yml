@@ -9,14 +9,14 @@ jobs:
   build:
     uses: ./.github/workflows/build.yml
 
-#  publish:
-#    needs: [build]
-#    name: 'Publish Preview'
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: 'Download archives'
-#        uses: actions/download-artifact@v4
-#        with:
-#          pattern: archive-checksum-*
-#      - name: 'List all artifacts'
-#        run: ls -la *
+  publish:
+    needs: [build]
+    name: 'Publish preview'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Download archives'
+        uses: actions/download-artifact@v4
+        with:
+          pattern: archive-checksum-*
+      - name: 'List all artifacts'
+        run: ls -la *
