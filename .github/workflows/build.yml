@@ -41,11 +41,6 @@ jobs:
     name: 'Build ${{ matrix.os-name }} binary'
     runs-on: ${{ matrix.os }}
     steps:
-      - name: 'Download bundle-cjs artifact'
-        uses: actions/download-artifact@v4
-        with:
-          name: bundle-cjs
-          path: build
       - name: 'Checkout sources'
         uses: actions/checkout@v4
       - name: 'Setup Node.js'
@@ -53,6 +48,13 @@ jobs:
         with: { node-version-file: 'package.json' }
       - name: 'Install Node.js dependencies'
         run: npm ci
+      - name: 'Download bundle-cjs artifact'
+        uses: actions/download-artifact@v4
+        with:
+          name: bundle-cjs
+          path: build
+      - name: tree
+        run: tree
       - name: 'Build ${{ matrix.os-name }} binary'
         shell: bash
         run: npm run build:${{ matrix.os-name }}
