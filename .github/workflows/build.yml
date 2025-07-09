@@ -6,6 +6,7 @@ on:
 jobs:
   ignore:
     if: false
+    runs-on: ubuntu-latest
     steps:
       - &step-checkout-sources
         name: Checkout sources
