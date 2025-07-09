@@ -10,6 +10,9 @@ jobs:
     name: Bundle single clever.cjs
     runs-on: ubuntu-latest
     steps:
+      - name: tree
+        run: |
+          tree
       - uses: ./.github/actions/checkout-sources.yml
       - name: Bundle to single clever.cjs
         run: |
