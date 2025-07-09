@@ -4,21 +4,14 @@ on:
   workflow_call:
 
 jobs:
-  ignore:
-    if: false
-    runs-on: ubuntu-latest
-    steps:
-      - &step-checkout-sources
-        name: Checkout sources
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
   bundle-cjs:
     name: Bundle single clever.cjs
     runs-on: ubuntu-latest
     steps:
-      - *step-checkout-sources
+      - name: Checkout sources
+        uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
       - name: Bundle to single clever.cjs
         run: |
           echo rollup -c rollup.config.js
