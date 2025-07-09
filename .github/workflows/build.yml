@@ -5,18 +5,19 @@ on:
 
 jobs:
   bundle-cjs:
-    name: 'Bundle single clever.cjs'
+    name: Bundle single clever.cjs
     runs-on: ubuntu-latest
     steps:
-      - name: 'Checkout sources'
+      - name: Checkout sources
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: 'Bundle to single clever.cjs'
+      - name: Bundle to single clever.cjs
         run: |
+          echo rollup -c rollup.config.js
           mkdir -p build
           cp index.js build/clever.cjs
-      - name: 'Upload bundle-cjs artifact'
+      - name: Upload bundle-cjs artifact
         uses: actions/upload-artifact@v4
         with:
           name: bundle-cjs
@@ -25,16 +26,21 @@ jobs:
 
   build-linux:
     needs: bundle-cjs
-    name: 'Build linux binary'
+    name: Build linux binary
     runs-on: ubuntu-latest
     steps:
-      - name: 'Download bundle-cjs artifact'
-        uses: actions/download-artifact@v4
+      - name: Checkout sources
+        uses: actions/checkout@v4
         with:
-          name: bundle-cjs
-      - name: 'Build linux binary'
-        run: cp clever.cjs clever
-      - name: 'Upload build-linux artifact'
+          fetch-depth: 0
+      - name: Download bundle-cjs artifact
+        uses: actions/download-artifact@v4
+        with: { name: bundle-cjs }
+      - name: Build linux binary
+        run: |
+          echo pkg bla bla bla
+          cp clever.cjs clever
+      - name: Upload build-linux artifact
         uses: actions/upload-artifact@v4
         with:
           name: build-linux
@@ -43,16 +49,21 @@ jobs:
 
   build-mac:
     needs: bundle-cjs
-    name: 'Build mac binary'
+    name: Build mac binary
     runs-on: macos-14
     steps:
-      - name: 'Download bundle-cjs artifact'
-        uses: actions/download-artifact@v4
+      - name: Checkout sources
+        uses: actions/checkout@v4
         with:
-          name: bundle-cjs
-      - name: 'Build mac binary'
-        run: cp clever.cjs clever
-      - name: 'Upload build-mac artifact'
+          fetch-depth: 0
+      - name: Download bundle-cjs artifact
+        uses: actions/download-artifact@v4
+        with: { name: bundle-cjs }
+      - name: Build mac binary
+        run: |
+          echo pkg bla bla bla
+          cp clever.cjs clever
+      - name: Upload build-mac artifact
         uses: actions/upload-artifact@v4
         with:
           name: build-mac
@@ -61,16 +72,21 @@ jobs:
 
   build-windows:
     needs: bundle-cjs
-    name: 'Build windows binary'
+    name: Build windows binary
     runs-on: windows-latest
     steps:
-      - name: 'Download bundle-cjs artifact'
-        uses: actions/download-artifact@v4
+      - name: Checkout sources
+        uses: actions/checkout@v4
         with:
-          name: bundle-cjs
-      - name: 'Build windows binary'
-        run: cp clever.cjs clever.exe
-      - name: 'Upload build-windows artifact'
+          fetch-depth: 0
+      - name: Download bundle-cjs artifact
+        uses: actions/download-artifact@v4
+        with: { name: bundle-cjs }
+      - name: Build windows binary
+        run: |
+          echo pkg bla bla bla
+          cp clever.cjs clever.exe
+      - name: Upload build-windows artifact
         uses: actions/upload-artifact@v4
         with:
           name: build-windows
@@ -79,32 +95,32 @@ jobs:
 
   archives-checksums:
     needs: [build-linux, build-mac, build-windows]
-    name: 'Create archives and checksums'
+    name: Create archives and checksums
     runs-on: ubuntu-latest
     steps:
-      - name: 'Download build artifacts'
+      - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
           pattern: build-*
-      - name: 'Create .tar.gz and checksum file for linux'
+      - name: Create .tar.gz and checksum file for linux
         id: linux
         working-directory: build-linux
         run: |
           tar czf clever-tools_linux.tar.gz clever
           sha256sum clever-tools_linux.tar.gz > clever-tools_linux.tar.gz.sha256
-      - name: 'Create .tar.gz and checksum file for mac'
+      - name: Create .tar.gz and checksum file for mac
         id: mac
         working-directory: build-mac
         run: |
           tar czf clever-tools_mac.tar.gz clever
           sha256sum clever-tools_mac.tar.gz > clever-tools_mac.tar.gz.sha256
-      - name: 'Create .zip and checksum file for windows'
+      - name: Create .zip and checksum file for windows
         id: windows
         working-directory: build-windows
         run: |
           zip clever-tools_win.zip clever.exe
           sha256sum clever-tools_win.zip > clever-tools_win.zip.sha256
-      - name: 'Upload linux archives'
+      - name: Upload linux archives
         uses: actions/upload-artifact@v4
         with:
           name: archive-checksum-linux
@@ -112,7 +128,7 @@ jobs:
             build-linux/clever-tools_linux.tar.gz
             build-linux/clever-tools_linux.tar.gz.sha256
           retention-days: 1
-      - name: 'Upload mac archives'
+      - name: Upload mac archives
         uses: actions/upload-artifact@v4
         with:
           name: archive-checksum-mac
@@ -120,7 +136,7 @@ jobs:
             build-mac/clever-tools_mac.tar.gz
             build-mac/clever-tools_mac.tar.gz.sha256
           retention-days: 1
-      - name: 'Upload windows archives'
+      - name: Upload windows archives
         uses: actions/upload-artifact@v4
         with:
           name: archive-checksum-windows
