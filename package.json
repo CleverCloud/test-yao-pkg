@@ -6,7 +6,8 @@
     "bundle-cjs": "rollup -c rollup.config.js",
     "build:linux": "pkg -t node22-linux-x64 build/clever.cjs -o build/clever",
     "build:mac": "pkg -t node22-mac-arm64 build/clever.cjs -o build/clever",
-    "build:windows": "pkg -t node22-win-x64 build/clever.cjs -o build/clever.exe"
+    "build:windows": "pkg -t node22-win-x64 build/clever.cjs -o build/clever.exe",
+    "preview:publish": "node src"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^28.0.6",
@@ -18,5 +19,8 @@
   },
   "volta": {
     "node": "22.17.0"
+  },
+  "dependencies": {
+    "text-table": "^0.2.0"
   }
 }
