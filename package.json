@@ -15,5 +15,8 @@
     "@yao-pkg/pkg": "^6.5.1",
     "magic-string": "^0.30.17",
     "rollup": "^4.44.2"
+  },
+  "volta": {
+    "node": "22.17.0"
   }
 }
