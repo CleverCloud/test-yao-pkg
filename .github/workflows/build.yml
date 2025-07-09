@@ -3,6 +3,10 @@ name: Build
 on:
   workflow_call:
 
+concurrency:
+  group: ${{ github.action }}
+  cancel-in-progress: true
+
 jobs:
 
   bundle-cjs:
