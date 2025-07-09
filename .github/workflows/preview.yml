@@ -5,6 +5,10 @@ on:
   push:
     branches: [ main ]
 
+concurrency:
+  group: ${{ github.action }}
+  cancel-in-progress: true
+
 jobs:
   build:
     uses: ./.github/workflows/build.yml
