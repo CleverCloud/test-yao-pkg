@@ -4,9 +4,9 @@
   "type": "module",
   "scripts": {
     "bundle-cjs": "rollup -c rollup.config.js",
-    "build:linux": "pkg -t node22-linux-x64 build/clever.cjs -o clever",
-    "build:mac": "pkg -t node22-mac-arm64 build/clever.cjs -o clever",
-    "build:windows": "pkg -t node22-win-x64 build/clever.cjs -o clever.exe"
+    "build:linux": "pkg -t node22-linux-x64 build/clever.cjs -o build/clever",
+    "build:mac": "pkg -t node22-mac-arm64 build/clever.cjs -o build/clever",
+    "build:windows": "pkg -t node22-win-x64 build/clever.cjs -o build/clever.exe"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^28.0.6",
