@@ -1,4 +1,13 @@
 {
   "name": "clever-test-yao-pkg",
-  "version": "1.0.0"
+  "version": "1.0.0",
+  "type": "module",
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^28.0.6",
+    "@rollup/plugin-json": "^6.1.0",
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "@yao-pkg/pkg": "^6.5.1",
+    "magic-string": "^0.30.17",
+    "rollup": "^4.44.2"
+  }
 }

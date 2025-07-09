@@ -9,12 +9,12 @@ jobs:
     name: Bundle single clever.cjs
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout sources
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
       - name: Bundle to single clever.cjs
-        run: |
-          echo rollup -c rollup.config.js
-          mkdir -p build
-          cp index.js build/clever.cjs
+        run: rollup -c rollup.config.js
       - name: Upload bundle-cjs artifact
         uses: actions/upload-artifact@v4
         with:
@@ -22,28 +22,26 @@ jobs:
           path: build/clever.cjs
           retention-days: 1
 
-#  build-linux:
-#    needs: bundle-cjs
-#    name: Build linux binary
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: Checkout sources
-#        uses: actions/checkout@v4
-#        with:
-#          fetch-depth: 0
-#      - name: Download bundle-cjs artifact
-#        uses: actions/download-artifact@v4
-#        with: { name: bundle-cjs }
-#      - name: Build linux binary
-#        run: |
-#          echo pkg bla bla bla
-#          cp clever.cjs clever
-#      - name: Upload build-linux artifact
-#        uses: actions/upload-artifact@v4
-#        with:
-#          name: build-linux
-#          path: clever
-#          retention-days: 1
+  build-linux:
+    needs: bundle-cjs
+    name: Build linux binary
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+      - name: Download bundle-cjs artifact
+        uses: actions/download-artifact@v4
+        with: { name: bundle-cjs }
+      - name: Build linux binary
+        run: |
+          echo pkg bla bla bla
+          cp clever.cjs clever
+      - name: Upload build-linux artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-linux
+          path: clever
+          retention-days: 1
 #
 #  build-mac:
 #    needs: bundle-cjs
