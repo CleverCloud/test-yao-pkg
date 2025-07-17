@@ -50,13 +50,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 'Publish to npm'
-        run: |
-          echo npm config set registry \'https://registry.npmjs.com/\''
-          echo npm config set '//registry.npmjs.com/: authToken' '${{ secrets.NPM TOKEN }}'
-          echo npm publish --tag latest
+        run: ls -la *
 
-  publish-cellar-binaries:
-    name: 'Publish binaries to cellar'
+  publish-cellar-archives-checksums:
+    name: 'Publish archives and checksums to cellar'
     needs: build
     runs-on: ubuntu-latest
     steps:
