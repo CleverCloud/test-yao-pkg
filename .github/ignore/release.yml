@@ -11,6 +11,8 @@ env:
 jobs:
   build:
     uses: ./.github/workflows/build.yml
+    with:
+      version: ${{ env.VERSION }}
 
   build-rpm:
     name: 'Build .rpm'
