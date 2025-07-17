@@ -1,7 +1,7 @@
 name: Release
 
 on:
-  workflow_dispatch:
+  workflow dispatch:
     inputs:
       version:
         description: 'Version to publish'
@@ -12,9 +12,9 @@ jobs:
   build:
     uses: ./.github/workflows/build.yml
 
-  build-deb:
-    needs: [ build ]
-    name: 'Build .deb'
+  build-rpm:
+    name: 'Build .rpm'
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - name: 'Download archives'
@@ -24,9 +24,9 @@ jobs:
       - name: 'List all artifacts'
         run: ls -la *
 
-  build-rpm:
-    needs: [ build ]
-    name: 'Build .rpm'
+  build-deb:
+    name: 'Build .deb'
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - name: 'Download archives'
@@ -37,8 +37,8 @@ jobs:
         run: ls -la *
 
   build-nupkg:
-    needs: [ build ]
     name: 'Build .nupkg'
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - name: 'Download archives'
@@ -48,125 +48,92 @@ jobs:
       - name: 'List all artifacts'
         run: ls -la *
 
-  npm:
-    needs: [ build ]
+  publish-npm:
     name: 'Publish to npm'
     runs-on: ubuntu-latest
     steps:
       - name: 'Publish to npm'
         run: |
           echo npm config set registry \'https://registry.npmjs.com/\''
-          echo npm config set '//registry.npmjs.com/:_authToken' '${{ secrets.NPM_TOKEN }}'
+          echo npm config set '//registry.npmjs.com/: authToken' '${{ secrets.NPM TOKEN }}'
           echo npm publish --tag latest
-  #      - name: 'Checkout sources'
-  #        uses: actions/checkout@v4
-  #      - name: 'Setup Node.js'
-  #        uses: actions/setup-node@v4
-  #        with:
-  #          node-version: '20'
-  #          registry-url: 'https://registry.npmjs.org'
-  #      - name: 'Download archives'
-  #        uses: actions/download-artifact@v4
-  #        with:
-  #          name: archives-linux
-  #      - name: 'Publish to npm'
-  #        run: echo "Publishing to npm - Implementation needed"
-  #        env:
-  #          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-  #        # Add actual implementation for npm publishing
 
-  cellar:
-    needs: [ build-deb, build-rpm, build-nupkg ]
-    name: 'Publish to Cellar'
+  publish-cellar-binaries:
+    name: 'Publish binaries to cellar'
+    needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: 'Download archives'
-        uses: actions/download-artifact@v4
-        with:
-          pattern: archive-checksum-*
-      - name: 'List all artifacts'
+      - name: 'test'
         run: ls -la *
-
-  nexus-rpm:
-    needs: [ build-rpm ]
-    name: 'Publish .rpm to Nexus'
+  publish-cellar-rpm:
+    name: 'Publish .rpm to cellar'
+    needs: build-rpm
     runs-on: ubuntu-latest
     steps:
-      - name: 'Download archives'
-        uses: actions/download-artifact@v4
-        with:
-          name: archive-checksum-linux
-      - name: 'List all artifacts'
+      - name: 'test'
         run: ls -la *
-
-  nexus-deb:
-    needs: [ build-deb ]
-    name: 'Publish .deb to Nexus'
+  publish-cellar-deb:
+    name: 'Publish .deb to cellar'
+    needs: build-deb
     runs-on: ubuntu-latest
     steps:
-      - name: 'Download archives'
-        uses: actions/download-artifact@v4
-        with:
-          name: archive-checksum-linux
-      - name: 'List all artifacts'
+      - name: 'test'
         run: ls -la *
-
-  nexus-nupkg:
-    needs: [ build-nupkg ]
-    name: 'Publish .nupkg to Nexus'
+  publish-cellar-nupkg:
+    name: 'Publish .nupkg to cellar'
+    needs: build-nupkg
     runs-on: ubuntu-latest
     steps:
-      - name: 'Download archives'
-        uses: actions/download-artifact@v4
-        with:
-          name: archive-checksum-windows
-      - name: 'List all artifacts'
+      - name: 'test'
         run: ls -la *
 
-  exherbo:
-    needs: [ build ]
-    name: 'Publish to Exherbo'
-    runs-on: ubuntu-latest
-    steps:
-      - name: 'Download archives'
-        uses: actions/download-artifact@v4
-        with:
-          name: archive-checksum-linux
-      - name: 'List all artifacts'
-        run: ls -la *
-      - name: 'Read checksum'
-        run: |
-          CHECKSUM=$(cut -d' ' -f1 clever-tools_linux.tar.gz.sha256)
-          echo CHECKSUM: $CHECKSUM
-
-  aur:
-    needs: [ build ]
+  publish-aur:
     name: 'Publish to AUR'
+    needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: 'Download archives'
-        uses: actions/download-artifact@v4
-        with:
-          name: archive-checksum-linux
-      - name: 'List all artifacts'
+      - name: 'test'
         run: ls -la *
-
-  homebrew:
-    needs: [ build ]
-    name: 'Publish to Homebrew'
-    runs-on: macos-latest
-    steps:
-      - name: 'Download archives'
-        uses: actions/download-artifact@v4
-        with:
-          name: archive-checksum-mac
-      - name: 'List all artifacts'
-        run: ls -la *
-
-  dockerhub:
-    needs: [ build ]
-    name: 'Publish to Docker Hub'
+  publish-brew:
+    name: 'Publish to GitHub for Homebrew'
+    needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: 'foo'
-        run: echo foo
+      - name: 'test'
+        run: ls -la *
+  publish-dockerhub:
+    name: 'Publish Docker Hub'
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'test'
+        run: ls -la *
+  publish-exherbo:
+    name: 'Publish to GitHub for exherbo'
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'test'
+        run: ls -la *
+
+  publish-nexus-rpm:
+    name: 'Publish .rpm to Nexus'
+    needs: build-rpm
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'test'
+        run: ls -la *
+  publish-nexus-deb:
+    name: 'Publish .deb to Nexus'
+    needs: build-deb
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'test'
+        run: ls -la *
+  publish-nexus-nupkg:
+    name: 'Publish .nupkg to Nexus'
+    needs: build-nupkg
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'test'
+        run: ls -la *

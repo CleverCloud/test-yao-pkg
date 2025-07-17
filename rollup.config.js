@@ -4,10 +4,12 @@ import commonjs from '@rollup/plugin-commonjs';
 import json from '@rollup/plugin-json';
 import MagicString from 'magic-string';
 
+const VERSION = process.env.VERSION ?? 'default';
+
 export default defineConfig({
   input: 'bin/clever.js',
   output: {
-    file: 'build/clever.cjs',
+    file: `build/${VERSION}/clever.cjs`,
     format: 'cjs',
     sourcemap: 'inline',
   },

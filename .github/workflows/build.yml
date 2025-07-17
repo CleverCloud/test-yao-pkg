@@ -24,7 +24,7 @@ jobs:
           path: build/clever.cjs
           retention-days: 1
 
-  build:
+  build-binaries:
     needs: bundle-cjs
     strategy:
       matrix:
@@ -65,7 +65,7 @@ jobs:
           retention-days: 1
 
   archive-checksum:
-    needs: [build]
+    needs: build-binaries
     name: 'Create archives and checksums'
     runs-on: ubuntu-latest
     steps:

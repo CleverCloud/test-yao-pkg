@@ -7,7 +7,7 @@ export const archList = ['linux', 'macos', 'win'];
 export const archEmoji = {
   linux: '🐧',
   macos: '🍏',
-  win: '🪟', 
+  win: '🪟',
 };
 export const nodeVersion = pkg['pkg-node-version'];
 export const git = {
@@ -21,7 +21,7 @@ export const appInfos = {
   description: pkg.description,
   license: pkg.license,
   maintainer: `${git.name} <${git.email}>`,
-  keywords: pkg.keywords.join(' '),
+  keywords: pkg.keywords?.join(' ') ?? [],
 };
 
 export function getNexusAuth () {
