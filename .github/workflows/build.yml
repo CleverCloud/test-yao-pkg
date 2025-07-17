@@ -73,55 +73,47 @@ jobs:
           path: build
           retention-days: 1
 
-  archive-checksum:
+  archives-checksums:
     needs: build-binaries
     name: 'Create archives and checksums'
     runs-on: ubuntu-latest
     steps:
       - name: 'Download build artifacts'
         uses: actions/download-artifact@v4
-        with: 
+        with:
           pattern: build-*
           path: build
           merge-multiple: true
-      - name: 'test'
-        run: tree
-#      - name: 'Create .tar.gz and checksum file for linux'
-#        working-directory: build-linux
-#        run: |
-#          tar czf clever-tools_linux.tar.gz clever
-#          sha256sum clever-tools_linux.tar.gz > clever-tools_linux.tar.gz.sha256
-#      - name: 'Create .tar.gz and checksum file for mac'
-#        working-directory: build-mac
-#        run: |
-#          tar czf clever-tools_mac.tar.gz clever
-#          sha256sum clever-tools_mac.tar.gz > clever-tools_mac.tar.gz.sha256
-#      - name: 'Create .zip and checksum file for windows'
-#        working-directory: build-windows
-#        run: |
-#          zip clever-tools_win.zip clever.exe
-#          sha256sum clever-tools_win.zip > clever-tools_win.zip.sha256
-#      - name: 'Upload linux archives'
-#        uses: actions/upload-artifact@v4
-#        with:
-#          name: archive-checksum-linux
-#          path: |
-#            build-linux/clever-tools_linux.tar.gz
-#            build-linux/clever-tools_linux.tar.gz.sha256
-#          retention-days: 1
-#      - name: 'Upload mac archives'
-#        uses: actions/upload-artifact@v4
-#        with:
-#          name: archive-checksum-mac
-#          path: |
-#            build-mac/clever-tools_mac.tar.gz
-#            build-mac/clever-tools_mac.tar.gz.sha256
-#          retention-days: 1
-#      - name: 'Upload windows archives'
-#        uses: actions/upload-artifact@v4
-#        with:
-#          name: archive-checksum-windows
-#          path: |
-#            build-windows/clever-tools_win.zip
-#            build-windows/clever-tools_win.zip.sha256
-#          retention-days: 1
+      - name: 'Create .tar.gz and checksum file for linux'
+        working-directory: build/${{ inputs.version }}/linux
+        run: |
+          tar czf clever-tools_linux.tar.gz clever
+          sha256sum clever-tools_linux.tar.gz > clever-tools_linux.tar.gz.sha256
+      - name: 'Create .tar.gz and checksum file for mac'
+        working-directory: build/${{ inputs.version }}/mac
+        run: |
+          tar czf clever-tools_mac.tar.gz clever
+          sha256sum clever-tools_mac.tar.gz > clever-tools_mac.tar.gz.sha256
+      - name: 'Create .zip and checksum file for windows'
+        working-directory: build/${{ inputs.version }}/win
+        run: |
+          zip clever-tools_win.zip clever.exe
+          sha256sum clever-tools_win.zip > clever-tools_win.zip.sha256
+      - name: 'Upload linux archive and checksum'
+        uses: actions/upload-artifact@v4
+        with:
+          name: archive-checksum-linux
+          path: build/${{ inputs.version }}/linux
+          retention-days: 1
+      - name: 'Upload mac archive and checksum'
+        uses: actions/upload-artifact@v4
+        with:
+          name: archive-checksum-mac
+          path: build/${{ inputs.version }}/mac
+          retention-days: 1
+      - name: 'Upload windows archive and checksum'
+        uses: actions/upload-artifact@v4
+        with:
+          name: archive-checksum-win
+          path: build/${{ inputs.version }}/win
+          retention-days: 1

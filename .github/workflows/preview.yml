@@ -21,4 +21,4 @@ jobs:
         with:
           pattern: archive-checksum-*
       - name: 'List all artifacts'
-        run: ls -la *
+        run: tree .
