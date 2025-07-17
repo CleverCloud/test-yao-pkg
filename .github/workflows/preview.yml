@@ -5,15 +5,11 @@ on:
   push:
     branches: [ main ]
 
-env:
-  #VERSION: ${{ github.event.pull_request.head.ref }}
-  VERSION: ${{ github.ref_name }}
-
 jobs:
   build:
     uses: ./.github/workflows/build.yml
     with:
-      version: ${{ env.VERSION }}
+      version: 1.2.3
 
   publish:
     needs: build
