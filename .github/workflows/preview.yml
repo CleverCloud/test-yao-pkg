@@ -16,9 +16,20 @@ jobs:
     name: 'Publish preview'
     runs-on: ubuntu-latest
     steps:
-      - name: 'Download archives'
+      - name: 'Download linux archive and checksum'
         uses: actions/download-artifact@v4
         with:
-          pattern: archive-checksum-*
+          name: archive-checksum-linux
+          path: build/${{ inputs.version }}/linux
+      - name: 'Download mac archive and checksum'
+        uses: actions/download-artifact@v4
+        with:
+          name: archive-checksum-mac
+          path: build/${{ inputs.version }}/mac
+      - name: 'Download windows archive and checksum'
+        uses: actions/download-artifact@v4
+        with:
+          name: archive-checksum-win
+          path: build/${{ inputs.version }}/win
       - name: 'List all artifacts'
         run: tree .
