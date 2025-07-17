@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(act:*)"
+      "Bash(act:*)",
+      "WebFetch(domain:docs.github.com)"
     ],
     "deny": []
   }
