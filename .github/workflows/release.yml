@@ -1,12 +1,9 @@
 name: Release
 
 on:
-  workflow dispatch:
-    inputs:
-      version:
-        description: 'Version to publish'
-        required: true
-        type: string
+  workflow_dispatch:
+  push:
+    branches: [ main ]
 
 jobs:
   build:
