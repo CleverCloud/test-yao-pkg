@@ -16,7 +16,7 @@ jobs:
     name: 'Publish preview'
     runs-on: ubuntu-latest
     env:
-      VERSION: github.ref_name
+      VERSION: ${{ github.ref_name }}
     steps:
       - name: 'Download linux archive and checksum'
         uses: actions/download-artifact@v4
