@@ -80,7 +80,10 @@ jobs:
     steps:
       - name: 'Download build artifacts'
         uses: actions/download-artifact@v4
-        with: { pattern: build-* }
+        with: 
+          pattern: build-*
+          path: build
+          merge-multiple: true
       - name: 'test'
         run: tree
 #      - name: 'Create .tar.gz and checksum file for linux'
