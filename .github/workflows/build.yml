@@ -26,7 +26,7 @@ jobs:
       - name: 'Upload bundle-cjs artifact'
         uses: actions/upload-artifact@v4
         with:
-          name: 'bundle-cjs'
+          name: bundle-cjs
           path: build
           retention-days: 1
 
@@ -38,12 +38,15 @@ jobs:
           - os: ubuntu-latest
             os-name: linux
             binary-name: clever
+            platform: x64
           - os: macos-14
             os-name: mac
             binary-name: clever
+            platform: arm64
           - os: windows-latest
-            os-name: windows
+            os-name: win
             binary-name: clever.exe
+            platform: x64
     name: 'Build ${{ matrix.os-name }} binary'
     runs-on: ${{ matrix.os }}
     steps:
@@ -60,27 +63,26 @@ jobs:
         with:
           name: bundle-cjs
           path: build
-      - name: 'test'
+      - name: 'Build ${{ matrix.os-name }} binary'
         shell: bash
-        run: ls *
-#      - name: 'Build ${{ matrix.os-name }} binary'
-#        shell: bash
-#        run: npm run build:${{ matrix.os-name }}
-#      - name: 'Upload build-${{ matrix.os-name }} artifact'
-#        uses: actions/upload-artifact@v4
-#        with:
-#          name: build-${{ matrix.os-name }}
-#          path: build/${{ matrix.binary-name }}
-#          retention-days: 1
-#
-#  archive-checksum:
-#    needs: build-binaries
-#    name: 'Create archives and checksums'
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: 'Download build artifacts'
-#        uses: actions/download-artifact@v4
-#        with: { pattern: build-* }
+        run: npx pkg -t node22-${{ matrix.os-name }}-${{ matrix.platform }} build/${{ inputs.version }}/clever.cjs -o build/${{ inputs.version }}/${{ matrix.os-name }}/${{ matrix.binary-name }}
+      - name: 'Upload build-${{ matrix.os-name }} artifact'
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-${{ matrix.os-name }}
+          path: build
+          retention-days: 1
+
+  archive-checksum:
+    needs: build-binaries
+    name: 'Create archives and checksums'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Download build artifacts'
+        uses: actions/download-artifact@v4
+        with: { pattern: build-* }
+      - name: 'test'
+        run: tree
 #      - name: 'Create .tar.gz and checksum file for linux'
 #        working-directory: build-linux
 #        run: |
