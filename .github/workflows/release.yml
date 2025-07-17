@@ -5,6 +5,9 @@ on:
   push:
     branches: [ main ]
 
+env:
+  VERSION: ${{ github.ref_name }}
+
 jobs:
   build:
     uses: ./.github/workflows/build.yml
