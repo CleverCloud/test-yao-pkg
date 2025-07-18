@@ -5,7 +5,7 @@ import { platform } from 'node:os';
 import textTable from 'text-table';
 import stringLength from 'string-length';
 import { OS_BY_PLATFORM, OS_EMOJIS } from './lib/config.js';
-import { clearDirectory, createTerminalLink, exec } from './lib/utils.js';
+import { clearDirectory, createTerminalLink } from './lib/utils.js';
 import { getCurrentBranch } from './lib/git.js';
 import { PreviewClient } from './lib/preview-client.js';
 import { bundleToSingleCjs } from './lib/bundle-cjs.js';
@@ -58,7 +58,9 @@ async function listPreviews (previewClient) {
   }
 
   const table = previews.map((p) => {
-    const [date, time] = p.updatedAt.substring(0, 19).split('T');
+    const date = p.updatedAt.substring(0, 10);
+    const dateObject = new Date(p.updatedAt);
+    const time = dateObject.toLocaleTimeString();
     const links = p.urls.map((u) => {
       return `${OS_EMOJIS[u.os]} ${createTerminalLink(u.url, u.os)}`;
     });
