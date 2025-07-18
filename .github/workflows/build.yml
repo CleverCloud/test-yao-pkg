@@ -62,7 +62,7 @@ jobs:
         shell: bash
         run: ./scripts/build-binary.js ${{ inputs.version }}
       - name: 'Create archive'
-        shell: bash
+        shell: ${{ matrix.platform == 'win' && 'pwsh' || 'bash' }}
         run: ./scripts/create-archive.js ${{ inputs.version }}
       - name: 'Upload build-${{ matrix.platform }} artifact'
         uses: actions/upload-artifact@v4
