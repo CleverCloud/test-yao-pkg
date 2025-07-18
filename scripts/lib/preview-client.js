@@ -103,14 +103,14 @@ export class PreviewClient {
           font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
           max-width: 60em;
           background-color: #f6f8fa;
-          padding: 16px;
+          padding: 1em;
         }
 
         h1 {
           color: #1f2328;
-          font-size: 24px;
-          font-weight: 600;
-          margin-bottom: 16px;
+          font-size: 1.5em;
+          font-weight: bold;
+          margin-bottom: 1em;
         }
 
         a {
@@ -129,8 +129,12 @@ export class PreviewClient {
           border-spacing: 0;
           background-color: #ffffff;
           border: 1px solid #d1d9e0;
-          border-radius: 6px;
+          border-radius: 0.375em;
           overflow: hidden;
+        }
+
+        tr:hover {
+          background-color: #f6f8fa;
         }
 
         thead tr,
@@ -138,22 +142,30 @@ export class PreviewClient {
           background-color: #f6f8fa;
         }
 
+        th,
+        td {
+          font-size: 0.8em;
+          border-bottom: 1px solid #d1d9e0;
+          padding-inline: 1em;
+        }
+
+        th:first-child,
+        td:first-child {
+          text-align: right;
+        }
+
         th {
           text-align: left;
-          font-weight: 600;
-          font-size: 12px;
+          font-weight: bold;
           color: #656d76;
           text-transform: uppercase;
           letter-spacing: 0.05em;
-          padding: 8px 16px;
-          border-bottom: 1px solid #d1d9e0;
           background-color: #f6f8fa;
+          padding-block: 0.75em;
         }
 
         td {
-          padding: 8px 16px;
-          border-bottom: 1px solid #d1d9e0;
-          font-size: 14px;
+          padding-block: 0.5em;
           color: #1f2328;
         }
 
@@ -161,16 +173,17 @@ export class PreviewClient {
           border-bottom: none;
         }
 
-        tr:hover {
-          background-color: #f6f8fa;
+        cc-datetime-relative {
+          color: #656d76;
+          font-size: 0.875em;
         }
 
         code {
           font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
-          font-size: 12px;
+          font-size: 0.9em;
           background-color: #f6f8fa;
-          padding: 2px 6px;
-          border-radius: 6px;
+          padding: 0.125em 0.375em;
+          border-radius: 0.375em;
           color: #1f2328;
           border: 1px solid #d1d9e0;
         }
@@ -180,30 +193,19 @@ export class PreviewClient {
         }
 
         /* Dirty alignment hack */
-        .hack {
+        code.commit,
+        code.branch {
           position: relative;
-          top: -3px;
+          top: -0.1875em;
         }
 
         .binaries {
           display: flex;
-          gap: 10px;
+          flex-wrap: wrap;
+          gap: 0.625em;
+          /* Dirty alignment hack */
           position: relative;
-          left: -3px;
-        }
-
-        .binaries code {
-          color: #656d76;
-          background-color: #f6f8fa;
-          display: inline;
-          padding: 2px 6px;
-          border-radius: 6px;
-          border: 1px solid #d1d9e0;
-        }
-
-        cc-datetime-relative {
-          color: #656d76;
-          font-size: 14px;
+          left: -0.1875em;
         }
         </style>
         <script src="https://components.clever-cloud.com/load.js?components=cc-datetime-relative" type="module"></script>
@@ -250,8 +252,8 @@ export class PreviewClient {
     return dedent`
       <tr>
         <td><cc-datetime-relative datetime="${preview.updatedAt}">${preview.updatedAt}</cc-datetime-relative></td>
-        <td><code class="commit hack" title="${preview.commitId}"><a href="https://github.com/CleverCloud/clever-tools/commit/${preview.commitId}">${preview.commitId.substring(0, 8)}</a></code></td>
-        <td><code class="hack"><a href="https://github.com/CleverCloud/clever-tools/tree/${preview.name}">${preview.name}</a></code></td>
+        <td><code class="commit" title="${preview.commitId}"><a href="https://github.com/CleverCloud/clever-tools/commit/${preview.commitId}">${preview.commitId.substring(0, 8)}</a></code></td>
+        <td><code class="branch"><a href="https://github.com/CleverCloud/clever-tools/tree/${preview.name}">${preview.name}</a></code></td>
         <td><span>${preview.author}</span></td>
         <td>
           <div class="binaries">
@@ -314,7 +316,7 @@ export class PreviewClient {
       const archiveFilepath = `${getBuildPath(previewName, os)}/${archiveName}`;
       const remoteFilepath = `${getPreviewPath(previewName, os)}/${archiveName}`;
       console.log(highlight`=> Upload ${archiveFilepath} to ${remoteFilepath}`);
-      // await this.#cellarClient.upload(archiveFilepath, remoteFilepath);
+      await this.#cellarClient.upload(archiveFilepath, remoteFilepath);
       archiveDetails[os] = {
         os,
         url: this.#cellarClient.url(remoteFilepath),
