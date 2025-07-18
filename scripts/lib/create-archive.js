@@ -17,7 +17,8 @@ export async function createArchive (options = {}) {
   const cwd = `build/${version}/${os}`;
 
   if (os === 'win') {
-    await exec(`zip -r clever-tools-${version}_win.zip clever.exe`, cwd);
+    // await exec(`zip -r clever-tools-${version}_win.zip clever.exe`, cwd);
+    await exec(`Compress-Archive -Path clever.exe -DestinationPath clever-tools-${version}_win.zip`, cwd);
     return;
   }
 
