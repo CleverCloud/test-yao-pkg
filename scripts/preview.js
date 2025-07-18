@@ -11,6 +11,7 @@ import { PreviewClient } from './lib/preview-client.js';
 import { bundleToSingleCjs } from './lib/bundle-cjs.js';
 import { buildBinary } from './lib/build-binary.js';
 import { createArchive } from './lib/create-archive.js';
+import dedent from 'dedent';
 
 async function run () {
 
@@ -38,8 +39,8 @@ async function run () {
       return listPreviews(previewClient);
     case 'build':
       return buildPreview(previewClient, previewName, os);
-    case 'links':
-      return getPreviewLinks(previewClient, previewName);
+    case 'pr-comment':
+      return getPreviewPrComment(previewClient, previewName);
     case 'publish':
       return publishPreview(previewClient, previewName, os);
     case 'delete':
@@ -77,7 +78,7 @@ async function listPreviews (previewClient) {
   console.log(textTable(table, { stringLength }));
 }
 
-async function getPreviewLinks (previewClient, previewName) {
+async function getPreviewPrComment (previewClient, previewName) {
   const preview = await previewClient.getPreview(previewName);
 
   if (preview == null) {
@@ -85,7 +86,7 @@ async function getPreviewLinks (previewClient, previewName) {
     process.exit(1);
   }
 
-  const markdown = preview.urls
+  const links = preview.urls
     .map((u) => {
       const name = `${OS_EMOJIS[u.os]}`;
       const link = `[${u.os}](${u.url})`;
@@ -94,7 +95,13 @@ async function getPreviewLinks (previewClient, previewName) {
     })
     .join('\n');
 
-  console.log(markdown);
+  console.log(dedent`
+    🔎 A preview has been automatically published:
+  
+    ${links}
+  
+    _This preview will be deleted once this PR is closed._
+  `);
 }
 
 async function buildPreview (previewClient, previewName, os) {
@@ -121,7 +128,7 @@ run().catch((e) => {
   console.error(e.message);
   if (e.message === 'Missing command') {
     console.error('Usage: preview.js <command> [preview-name]');
-    console.error('Available commands: get, list, links, build, publish or delete');
+    console.error('Available commands: list, pr-comment, build, publish or delete');
   }
   process.exit(1);
 });

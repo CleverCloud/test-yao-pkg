@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "aws-sdk": "^2.1692.0",
+    "dedent": "^1.6.0",
     "lodash": "^4.17.21",
     "mime-types": "^3.0.1",
     "text-table": "^0.2.0"

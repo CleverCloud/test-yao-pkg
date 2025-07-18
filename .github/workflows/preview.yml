@@ -50,7 +50,7 @@ jobs:
         id: preview-links
         run: |
           echo "links<<EOF" >> $GITHUB_OUTPUT
-          ./scripts/preview.js pr-comment >> $GITHUB_OUTPUT
+          ./scripts/preview.js pr-comment ${{ github.event.pull_request.head.ref }} >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
       - name: 'Create preview links'
         uses: peter-evans/create-or-update-comment@v4
