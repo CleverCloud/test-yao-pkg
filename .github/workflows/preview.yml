@@ -27,5 +27,5 @@ jobs:
           pattern: build-*
           path: build
           merge-multiple: true
-      - name: 'List all artifacts'
-        run: tree .
+      - name: 'Publish preview'
+        run: ./scripts/preview.js publish ${{ github.ref_name || 'latest' }}
