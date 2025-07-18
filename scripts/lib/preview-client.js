@@ -207,6 +207,17 @@ export class PreviewClient {
           position: relative;
           left: -0.1875em;
         }
+
+        .empty-message {
+          background-color: #ffffff;
+          border: 1px solid #333;
+          border-radius: 0.375em;
+          padding: 2em;
+          text-align: center;
+          color: #656d76;
+          font-style: italic;
+          font-size: 0.875em;
+        }
         </style>
         <script src="https://components.clever-cloud.com/load.js?components=cc-datetime-relative" type="module"></script>
       </head>
@@ -226,7 +237,7 @@ export class PreviewClient {
   #renderManifest (manifest) {
 
     if (manifest.previews.length === 0) {
-      return `<p><em>No previews right now</em></p>`;
+      return `<div class="empty-message">No previews right now</div>`;
     }
 
     return dedent`
