@@ -53,8 +53,6 @@ jobs:
           ./scripts/preview.js pr-comment ${{ github.event.pull_request.head.ref }} >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
       - name: 'Create preview links'
-        uses: peter-evans/create-or-update-comment@v4
+        uses: marocchino/sticky-pull-request-comment@v2
         with:
-          issue-number: ${{ github.event.pull_request.number }}
-          body: ${{ steps.preview-links.outputs.links }}
-          edit-mode: replace
+          message: ${{ steps.preview-links.outputs.links }}
