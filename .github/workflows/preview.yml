@@ -26,6 +26,9 @@ jobs:
     needs: build
     name: 'Publish preview'
     runs-on: ubuntu-latest
+    if: |
+      (github.event.action == 'synchronize' || github.event.action == 'opened')
+      && github.event.repository.fork == false
     permissions:
       contents: read
       pull-requests: write
@@ -46,42 +49,35 @@ jobs:
           merge-multiple: true
       - name: 'Publish preview'
         run: ./scripts/preview.js publish ${{ github.event.pull_request.head.ref }}
-      - name: 'Get preview links'
+      - name: 'Prepare PR comment'
         id: preview-links
         run: |
           echo "links<<EOF" >> $GITHUB_OUTPUT
           ./scripts/preview.js pr-comment ${{ github.event.pull_request.head.ref }} >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
-      - name: 'Create preview links'
+      - name: 'Add comment with preview links to PR'
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           message: ${{ steps.preview-links.outputs.links }}
 
-#  delete:
-#    if: |
-#      github.event.action == 'closed'
-#      && github.event.repository.fork == false
-#      && !startsWith(github.event.pull_request.head.ref, 'release-please--')
-#    name: 'Delete Preview'
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: 'Checkout sources'
-#        uses: actions/checkout@v4
-#      - name: 'Setup Node.js'
-#        uses: actions/setup-node@v4
-#        with: { node-version-file: 'package.json' }
-#      - name: 'Install Node.js dependencies'
-#        shell: bash
-#        run: npm ci
-#      - name: '[Run] Delete preview'
-#        run: node scripts/job-preview.js delete ${BRANCH}
-#      - name: '[Finalize] Add comment'
-#        uses: actions/github-script@v6
-#        with:
-#          script: |
-#            await github.rest.issues.createComment({
-#             owner: context.repo.owner,
-#             repo: context.repo.repo,
-#             issue_number: context.issue.number,
-#              body: `🔎 The preview has been automatically deleted.`
-#            });
+  delete:
+    name: 'Delete Preview'
+    runs-on: ubuntu-latest
+    if: |
+      github.event.action == 'closed'
+      && github.event.repository.fork == false
+    steps:
+      - name: 'Checkout sources'
+        uses: actions/checkout@v4
+      - name: 'Setup Node.js'
+        uses: actions/setup-node@v4
+        with: { node-version-file: 'package.json' }
+      - name: 'Install Node.js dependencies'
+        shell: bash
+        run: npm ci
+      - name: 'Delete preview'
+        run: node scripts/job-preview.js delete ${{ github.event.pull_request.head.ref }}
+      - name: 'Remove comment from PR'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          message: 🔎 The preview has been automatically deleted.
