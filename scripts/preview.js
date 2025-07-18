@@ -10,6 +10,7 @@ import { getCurrentBranch } from './lib/git.js';
 import { PreviewClient } from './lib/preview-client.js';
 import { bundleToSingleCjs } from './lib/bundle-cjs.js';
 import { buildBinary } from './lib/build-binary.js';
+import { createArchive } from './lib/create-archive.js';
 
 async function run () {
 
@@ -99,9 +100,11 @@ async function buildPreview (previewClient, previewName, os) {
   console.log(`=> Clear ${workingDirectory}`);
   await clearDirectory(workingDirectory);
 
-  await bundleToSingleCjs({ version: previewName });
-  await buildBinary({ version: previewName });
-  await exec(`tar czf clever-tools-${previewName}_${os}.tar.gz clever`, `build/${previewName}/${os}`);
+  const version = previewName;
+
+  await bundleToSingleCjs({ version, os });
+  await buildBinary({ version, os });
+  await createArchive({ version, os });
 }
 
 async function publishPreview (previewClient, previewName, os) {
