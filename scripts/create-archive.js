@@ -11,4 +11,4 @@ if (rawVersion == null) {
 const version = getVersion(rawVersion);
 const os = getOs();
 
-await createArchive({ version, os });
+await createArchive(version, os);

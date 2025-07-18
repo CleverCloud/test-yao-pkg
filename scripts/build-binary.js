@@ -11,4 +11,4 @@ if (rawVersion == null) {
 const version = getVersion(rawVersion);
 const os = getOs();
 
-await buildBinary({ version, os });
+await buildBinary(version, os);
