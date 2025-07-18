@@ -6,6 +6,10 @@ on:
       - opened
       - synchronize
 
+concurrency:
+  group: preview-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 env:
   CC_CLEVER_TOOLS_PREVIEWS_CELLAR_KEY_ID: ${{ secrets.CC_CLEVER_TOOLS_PREVIEWS_CELLAR_KEY_ID }}
   CC_CLEVER_TOOLS_PREVIEWS_CELLAR_SECRET_KEY: ${{ secrets.CC_CLEVER_TOOLS_PREVIEWS_CELLAR_SECRET_KEY }}
