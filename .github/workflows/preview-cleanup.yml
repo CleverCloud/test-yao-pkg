@@ -15,7 +15,7 @@ permissions:
 
 jobs:
   cleanup:
-    name: 'Delete Preview'
+    name: 'Cleanup preview'
     runs-on: ubuntu-latest
     steps:
       - name: 'Checkout sources'
