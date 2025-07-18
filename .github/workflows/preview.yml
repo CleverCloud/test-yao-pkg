@@ -76,7 +76,7 @@ jobs:
         shell: bash
         run: npm ci
       - name: 'Delete preview'
-        run: node scripts/job-preview.js delete ${{ github.event.pull_request.head.ref }}
+        run: ./scripts/preview.js delete ${{ github.event.pull_request.head.ref }}
       - name: 'Remove comment from PR'
         uses: marocchino/sticky-pull-request-comment@v2
         with:
