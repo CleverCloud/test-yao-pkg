@@ -46,12 +46,15 @@ jobs:
           merge-multiple: true
       - name: 'Publish preview'
         run: ./scripts/preview.js publish ${{ github.event.pull_request.head.ref }}
+      - name: 'Get preview links'
+        id: preview-links
+        run: |
+          echo "links<<EOF" >> $GITHUB_OUTPUT
+          ./scripts/preview.js pr-comment >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
       - name: 'Create preview links'
         uses: peter-evans/create-or-update-comment@v4
         with:
           issue-number: ${{ github.event.pull_request.number }}
-          body: |
-            ## Preview Links 🚀
-            - [Main Preview](https://preview1.example.com)
-            - [Mobile Preview](https://preview2.example.com)
+          body: ${{ steps.preview-links.outputs.links }}
           edit-mode: replace
