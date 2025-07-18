@@ -24,8 +24,8 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           pattern: archive-checksum-linux
-      - name: 'List all artifacts'
-        run: ls -la *
+      - name: 'foobar'
+        run: echo foobar
 
   build-deb:
     name: 'Build .deb'
@@ -36,8 +36,8 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           pattern: archive-checksum-linux
-      - name: 'List all artifacts'
-        run: ls -la *
+      - name: 'foobar'
+        run: echo foobar
 
   build-nupkg:
     name: 'Build .nupkg'
@@ -48,8 +48,8 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           pattern: archive-checksum-windows
-      - name: 'List all artifacts'
-        run: ls -la *
+      - name: 'foobar'
+        run: echo foobar
 
   publish-npm:
     name: 'Publish to npm'
