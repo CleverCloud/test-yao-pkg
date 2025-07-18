@@ -9,14 +9,11 @@ on:
 #     tags:
 #       - '*'
 
-env:
-  VERSION: ${{ github.ref_name }}
-
 jobs:
   build:
     uses: ./.github/workflows/build.yml
     with:
-      version: ${{ env.VERSION }}
+      version: ${{ github.ref_name }}
 
   build-rpm:
     name: 'Build .rpm'
