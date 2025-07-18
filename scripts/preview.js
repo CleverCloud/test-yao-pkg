@@ -91,13 +91,15 @@ async function getPreviewPrComment (previewClient, previewName) {
       const name = `${OS_EMOJIS[u.os]}`;
       const link = `[${u.os}](${u.url})`;
       const checksum = `\`${u.checksum.value}\``;
-      return `* ${name} ${link} ${checksum}`;
+      return `| ${name} ${link} | ${checksum} |`;
     })
     .join('\n');
 
   console.log(dedent`
     🔎 A preview has been automatically published:
   
+    | OS | SHA256 checkum |
+    |-|-|
     ${links}
   
     _This preview will be deleted once this PR is closed._
