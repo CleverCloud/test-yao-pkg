@@ -2,7 +2,13 @@
   "permissions": {
     "allow": [
       "Bash(act:*)",
-      "WebFetch(domain:docs.github.com)"
+      "WebFetch(domain:docs.github.com)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(./scripts/preview.js links)",
+      "Bash(source:*)",
+      "Bash(./scripts/preview.js:*)"
     ],
     "deny": []
   }
