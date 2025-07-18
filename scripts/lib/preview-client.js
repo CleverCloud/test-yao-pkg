@@ -138,8 +138,11 @@ export class PreviewClient {
     const archiveDetails = {};
 
     for (const os of osList) {
-      const archiveFilepath = `build/${previewName}/${os}/clever-tools-${previewName}_${os}.tar.gz`;
-      const remoteFilepath = `previews/${previewName}/${os}/clever-tools-${previewName}_${os}.tar.gz`;
+      const filename = os === 'win'
+        ? `clever-tools-${previewName}_${os}.zip`
+        : `clever-tools-${previewName}_${os}.tar.gz`;
+      const archiveFilepath = `build/${previewName}/${os}/${filename}`;
+      const remoteFilepath = `previews/${previewName}/${os}/${filename}`;
       console.log(`=> Upload ${styleText('yellow', archiveFilepath)} to ${styleText('yellow', remoteFilepath)}`);
       await this.#cellarClient.upload(archiveFilepath, remoteFilepath);
       archiveDetails[os] = {
