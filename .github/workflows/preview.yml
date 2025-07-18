@@ -1,12 +1,18 @@
 name: Preview
 
+#on:
+#  workflow_dispatch:
+#  push:
+#    branches: [ main ]
+
 on:
-  workflow_dispatch:
-  push:
-    branches: [ main ]
+  pull_request:
+    types:
+      - synchronize
+      - opened
+      - closed
 
 env:
-  #BRANCH: ${{ github.event.pull_request.head.ref }}
   CC_CLEVER_TOOLS_PREVIEWS_CELLAR_KEY_ID: ${{ secrets.CC_CLEVER_TOOLS_PREVIEWS_CELLAR_KEY_ID }}
   CC_CLEVER_TOOLS_PREVIEWS_CELLAR_SECRET_KEY: ${{ secrets.CC_CLEVER_TOOLS_PREVIEWS_CELLAR_SECRET_KEY }}
 
@@ -14,7 +20,7 @@ jobs:
   build:
     uses: ./.github/workflows/build.yml
     with:
-      version: ${{ github.ref_name || 'latest' }}
+      version: ${{ github.event.pull_request.head.ref }}
 
   publish:
     needs: build
@@ -36,4 +42,9 @@ jobs:
           path: build
           merge-multiple: true
       - name: 'Publish preview'
-        run: ./scripts/preview.js publish ${{ github.ref_name || 'latest' }}
+        run: ./scripts/preview.js publish ${{ github.event.pull_request.head.ref }}
+      - name: Create preview links
+        run: |
+          echo "## Preview Links 🚀" >> $GITHUB_STEP_SUMMARY
+          echo "- [Main Preview](https://preview1.example.com)" >> $GITHUB_STEP_SUMMARY
+          echo "- [Mobile Preview](https://preview2.example.com)" >> $GITHUB_STEP_SUMMARY
