@@ -10,6 +10,7 @@ import { bundleToSingleCjs } from './lib/bundle-cjs.js';
 import { buildBinary } from './lib/build-binary.js';
 import { createArchive } from './lib/create-archive.js';
 import dedent from 'dedent';
+import { BUILD_DIR } from './lib/paths.js';
 
 /**
  * Main entry point for the preview management CLI tool.
@@ -150,7 +151,7 @@ async function getPreviewPrComment (previewClient, previewName) {
  * @param {string} os - The target operating system for the build
  */
 async function buildPreview (previewClient, previewName, os) {
-  const workingDirectory = `build/${previewName}`;
+  const workingDirectory = `${BUILD_DIR}/${previewName}`;
 
   console.log(highlight`=> Clear ${workingDirectory}`);
   await clearDirectory(workingDirectory);
@@ -164,10 +165,9 @@ async function buildPreview (previewClient, previewName, os) {
  * Publishes a built preview to the preview storage.
  * @param {PreviewClient} previewClient - The client instance for preview operations
  * @param {string} previewName - The name/version of the preview to publish
- * @param {string} os - The target operating system for the preview
  */
-async function publishPreview (previewClient, previewName, os) {
-  await previewClient.publishPreview(previewName, os);
+async function publishPreview (previewClient, previewName) {
+  await previewClient.publishPreview(previewName);
 }
 
 /**
