@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import { exec } from './utils.js';
 
 /** @type {string} */
