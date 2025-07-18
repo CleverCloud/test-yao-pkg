@@ -55,85 +55,85 @@ jobs:
     name: 'Publish to npm'
     runs-on: ubuntu-latest
     steps:
-      - name: 'Publish to npm'
-        run: ls -la *
+      - name: 'foobar'
+        run: echo foobar
 
-  publish-cellar-archives-checksums:
-    name: 'Publish archives and checksums to cellar'
+  publish-cellar-archives:
+    name: 'Publish archives to cellar'
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: 'test'
-        run: ls -la *
+      - name: 'foobar'
+        run: echo foobar
   publish-cellar-rpm:
     name: 'Publish .rpm to cellar'
     needs: build-rpm
     runs-on: ubuntu-latest
     steps:
-      - name: 'test'
-        run: ls -la *
+      - name: 'foobar'
+        run: echo foobar
   publish-cellar-deb:
     name: 'Publish .deb to cellar'
     needs: build-deb
     runs-on: ubuntu-latest
     steps:
-      - name: 'test'
-        run: ls -la *
+      - name: 'foobar'
+        run: echo foobar
   publish-cellar-nupkg:
     name: 'Publish .nupkg to cellar'
     needs: build-nupkg
     runs-on: ubuntu-latest
     steps:
-      - name: 'test'
-        run: ls -la *
+      - name: 'foobar'
+        run: echo foobar
 
   publish-aur:
     name: 'Publish to AUR'
-    needs: build
+    needs: publish-cellar-archives
     runs-on: ubuntu-latest
     steps:
-      - name: 'test'
-        run: ls -la *
+      - name: 'foobar'
+        run: echo foobar
   publish-brew:
     name: 'Publish to GitHub for Homebrew'
-    needs: build
+    needs: publish-cellar-archives
     runs-on: ubuntu-latest
     steps:
-      - name: 'test'
-        run: ls -la *
+      - name: 'foobar'
+        run: echo foobar
   publish-dockerhub:
     name: 'Publish Docker Hub'
-    needs: build
+    needs: publish-cellar-archives
     runs-on: ubuntu-latest
     steps:
-      - name: 'test'
-        run: ls -la *
+      - name: 'foobar'
+        run: echo foobar
   publish-exherbo:
     name: 'Publish to GitHub for exherbo'
-    needs: build
+    needs: publish-cellar-archives
     runs-on: ubuntu-latest
     steps:
-      - name: 'test'
-        run: ls -la *
+      - name: 'foobar'
+        run: echo foobar
 
   publish-nexus-rpm:
     name: 'Publish .rpm to Nexus'
     needs: build-rpm
     runs-on: ubuntu-latest
     steps:
-      - name: 'test'
-        run: ls -la *
+      - name: 'foobar'
+        run: echo foobar
   publish-nexus-deb:
     name: 'Publish .deb to Nexus'
     needs: build-deb
     runs-on: ubuntu-latest
     steps:
-      - name: 'test'
-        run: ls -la *
+      - name: 'foobar'
+        run: echo foobar
   publish-nexus-nupkg:
     name: 'Publish .nupkg to Nexus'
     needs: build-nupkg
     runs-on: ubuntu-latest
     steps:
-      - name: 'test'
-        run: ls -la *
+      - name: 'foobar'
+        run: echo foobar
