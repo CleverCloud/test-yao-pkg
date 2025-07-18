@@ -121,7 +121,7 @@ export class PreviewClient {
 
         .binaries code {
           font-size: 0.8em;
-          color: grey;
+          color: #444;
         }
         </style>
         <script src="https://components.clever-cloud.com/load.js?components=cc-datetime-relative" type="module"></script>
@@ -145,7 +145,7 @@ export class PreviewClient {
                 <td>
                   <div class="binaries">
                     ${p.urls.map((u) => {
-            const url = `<a href="${u.url}">${getEmoji(u.os)} ${u.os}</a>`;
+            const url = `${getEmoji(u.os)}&nbsp;<a href="${u.url}">${u.os}</a>`;
             const checksum = `<code>${u.checksum.value}</code></span>`;
             return `${url}${checksum}`;
           }).join('')}
