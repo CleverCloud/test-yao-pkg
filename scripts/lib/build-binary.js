@@ -1,4 +1,7 @@
-import { exec } from './utils.js';
+#!/usr/bin/env node
+
+import pkg from '@yao-pkg/pkg';
+import { styleText } from 'node:util';
 
 /** @type {string} */
 const NODE_RANGE = 'node22';
@@ -37,5 +40,9 @@ export async function buildBinary (options = {}) {
     arch = ARCHS[os],
   } = options;
 
-  await exec(`pkg -t ${nodeVersion}-${platform}-${arch} build/${version}/clever.cjs -o build/${version}/${os}/clever`);
+  const input = `build/${version}/clever.cjs`;
+  const output = `build/${version}/${os}/clever`;
+  console.log(`=> Build script ${styleText('yellow', input)} into binary ${styleText('yellow', output)} with @yao-pkg/pkg`);
+  console.log(`   for ${styleText('yellow', platform)} (${styleText('yellow', arch)}) with Node.js ${styleText('yellow', nodeVersion)}`);
+  await pkg.exec([input, '--target', `${nodeVersion}-${platform}-${arch}`, '--output', output]);
 }

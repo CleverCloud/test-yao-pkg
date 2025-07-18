@@ -5,11 +5,13 @@ import { platform } from 'node:os';
 import textTable from 'text-table';
 import stringLength from 'string-length';
 import { OS_BY_PLATFORM, OS_EMOJIS } from './lib/config.js';
-import { clearDirectory, createTerminalLink, exec } from './lib/utils.js';
+import { clearDirectory, createTerminalLink } from './lib/utils.js';
 import { getCurrentBranch } from './lib/git.js';
 import { PreviewClient } from './lib/preview-client.js';
 import { bundleToSingleCjs } from './lib/bundle-cjs.js';
 import { buildBinary } from './lib/build-binary.js';
+import { createArchive } from './lib/create-archive.js';
+import dedent from 'dedent';
 
 async function run () {
 
@@ -37,8 +39,8 @@ async function run () {
       return listPreviews(previewClient);
     case 'build':
       return buildPreview(previewClient, previewName, os);
-    case 'links':
-      return getPreviewLinks(previewClient, previewName);
+    case 'pr-comment':
+      return getPreviewPrComment(previewClient, previewName);
     case 'publish':
       return publishPreview(previewClient, previewName, os);
     case 'delete':
@@ -57,7 +59,9 @@ async function listPreviews (previewClient) {
   }
 
   const table = previews.map((p) => {
-    const [date, time] = p.updatedAt.substring(0, 19).split('T');
+    const date = p.updatedAt.substring(0, 10);
+    const dateObject = new Date(p.updatedAt);
+    const time = dateObject.toLocaleTimeString();
     const links = p.urls.map((u) => {
       return `${OS_EMOJIS[u.os]} ${createTerminalLink(u.url, u.os)}`;
     });
@@ -74,7 +78,7 @@ async function listPreviews (previewClient) {
   console.log(textTable(table, { stringLength }));
 }
 
-async function getPreviewLinks (previewClient, previewName) {
+async function getPreviewPrComment (previewClient, previewName) {
   const preview = await previewClient.getPreview(previewName);
 
   if (preview == null) {
@@ -82,16 +86,24 @@ async function getPreviewLinks (previewClient, previewName) {
     process.exit(1);
   }
 
-  const markdown = preview.urls
+  const links = preview.urls
     .map((u) => {
       const name = `${OS_EMOJIS[u.os]}`;
       const link = `[${u.os}](${u.url})`;
       const checksum = `\`${u.checksum.value}\``;
-      return `* ${name} ${link} ${checksum}`;
+      return `| ${name} ${link} | ${checksum} |`;
     })
     .join('\n');
 
-  console.log(markdown);
+  console.log(dedent`
+    🔎 A preview has been automatically published:
+  
+    | OS | SHA256 checkum |
+    |-|-|
+    ${links}
+  
+    _This preview will be deleted once this PR is closed._
+  `);
 }
 
 async function buildPreview (previewClient, previewName, os) {
@@ -99,9 +111,11 @@ async function buildPreview (previewClient, previewName, os) {
   console.log(`=> Clear ${workingDirectory}`);
   await clearDirectory(workingDirectory);
 
-  await bundleToSingleCjs({ version: previewName });
-  await buildBinary({ version: previewName });
-  await exec(`tar czf clever-tools-${previewName}_${os}.tar.gz clever`, `build/${previewName}/${os}`);
+  const version = previewName;
+
+  await bundleToSingleCjs({ version, os });
+  await buildBinary({ version, os });
+  await createArchive({ version, os });
 }
 
 async function publishPreview (previewClient, previewName, os) {
@@ -116,7 +130,7 @@ run().catch((e) => {
   console.error(e.message);
   if (e.message === 'Missing command') {
     console.error('Usage: preview.js <command> [preview-name]');
-    console.error('Available commands: get, list, links, build, publish or delete');
+    console.error('Available commands: list, pr-comment, build, publish or delete');
   }
   process.exit(1);
 });
