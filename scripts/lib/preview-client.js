@@ -101,7 +101,7 @@ export class PreviewClient {
         body {
           margin: 0 auto;
           font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
-          max-width: 80em;
+          max-width: 60em;
           background-color: #f6f8fa;
           padding: 16px;
         }
@@ -111,6 +111,16 @@ export class PreviewClient {
           font-size: 24px;
           font-weight: 600;
           margin-bottom: 16px;
+        }
+
+        a {
+          color: #0969da;
+          text-decoration: none;
+          font-weight: 500;
+        }
+
+        a:hover {
+          text-decoration: underline;
         }
 
         table {
@@ -141,7 +151,7 @@ export class PreviewClient {
         }
 
         td {
-          /*padding: 8px 16px;*/
+          padding: 8px 16px;
           border-bottom: 1px solid #d1d9e0;
           font-size: 14px;
           color: #1f2328;
@@ -165,27 +175,21 @@ export class PreviewClient {
           border: 1px solid #d1d9e0;
         }
 
+        code.commit {
+          color: #0969da;
+        }
+
+        /* Dirty alignment hack */
+        .hack {
+          position: relative;
+          top: -3px;
+        }
+
         .binaries {
           display: flex;
-          flex-direction: column;
-          gap: 8px;
-        }
-
-        .binaries > span {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          font-size: 14px;
-        }
-
-        .binaries a {
-          color: #0969da;
-          text-decoration: none;
-          font-weight: 500;
-        }
-
-        .binaries a:hover {
-          text-decoration: underline;
+          gap: 10px;
+          position: relative;
+          left: -3px;
         }
 
         .binaries code {
@@ -200,16 +204,6 @@ export class PreviewClient {
         cc-datetime-relative {
           color: #656d76;
           font-size: 14px;
-        }
-
-        td span[title] {
-          font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
-          font-size: 12px;
-          color: #0969da;
-          background-color: #f6f8fa;
-          padding: 2px 6px;
-          border-radius: 6px;
-          border: 1px solid #d1d9e0;
         }
         </style>
         <script src="https://components.clever-cloud.com/load.js?components=cc-datetime-relative" type="module"></script>
@@ -256,12 +250,12 @@ export class PreviewClient {
     return dedent`
       <tr>
         <td><cc-datetime-relative datetime="${preview.updatedAt}">${preview.updatedAt}</cc-datetime-relative></td>
-        <td><span title="${preview.commitId}">${preview.commitId.substring(0, 8)}</span></td>
-        <td><code>${preview.name}</td>
-        <td>${preview.author}</td>
+        <td><code class="commit hack" title="${preview.commitId}"><a href="https://github.com/CleverCloud/clever-tools/commit/${preview.commitId}">${preview.commitId.substring(0, 8)}</a></code></td>
+        <td><code class="hack"><a href="https://github.com/CleverCloud/clever-tools/tree/${preview.name}">${preview.name}</a></code></td>
+        <td><span>${preview.author}</span></td>
         <td>
           <div class="binaries">
-          ${preview.urls.map((u) => this.#renderPreviewUrl(u)).join('')}
+            ${preview.urls.map((u) => this.#renderPreviewUrl(u)).join('')}
           </div>
         </td>
       </tr>
@@ -274,9 +268,11 @@ export class PreviewClient {
    * @return {string}
    */
   #renderPreviewUrl (previewUrl) {
-    const url = `${getEmoji(previewUrl.os)}&nbsp;<a href="${previewUrl.url}">${previewUrl.os}</a>`;
-    const checksum = `<code>${previewUrl.checksum.value}</code></span>`;
-    return `<span>${url}${checksum}</span>`;
+    return dedent`
+      <span title="${previewUrl.checksum.value}">
+        ${getEmoji(previewUrl.os)}&nbsp;<a href="${previewUrl.url}">${previewUrl.os}</a>
+      </span>
+    `;
   }
 
   /**
