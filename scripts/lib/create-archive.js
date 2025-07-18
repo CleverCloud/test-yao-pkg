@@ -1,27 +1,21 @@
 import { exec } from './utils.js';
+import { getArchiveName, getBuildPath, getExecutableName } from './paths.js';
 
 /**
- * Creates an archive for the specified os
- * @param {Object} [options={}] - Configuration options
- * @param {string} [options.version] - The version to build
- * @param {'linux'|'macos'|'win'} [options.os] - Operating system
+ * Creates an archive with the binary
+ * @param {string} version - The version to build
+ * @param {'linux'|'macos'|'win'} os - The operating system
  * @returns {Promise<void>}
  */
-export async function createArchive (options = {}) {
+export async function createArchive (version, os) {
 
-  const {
-    version,
-    os = 'linux',
-  } = options;
+  const cwd = getBuildPath(version, os);
 
-  const cwd = `build/${version}/${os}`;
+  const archiveName = getArchiveName(version, os);
+  const executableName = getExecutableName(os);
+  const command = (os === 'win')
+    ? `powershell -Command "Compress-Archive -DestinationPath ${archiveName} -Path ${executableName}"`
+    : `tar czf ${archiveName} ${executableName}`;
 
-  if (os === 'win') {
-    // await exec(`zip -r clever-tools-${version}_win.zip clever.exe`, cwd);
-    await exec(`powershell -Command "Compress-Archive -DestinationPath clever-tools-${version}_win.zip -Path clever.exe"`, cwd);
-    // await exec(`Compress-Archive -DestinationPath clever-tools-${version}_win.zip -Path clever.exe`, cwd);
-    return;
-  }
-
-  await exec(`tar czf clever-tools-${version}_${os}.tar.gz clever`, cwd);
+  await exec(command, cwd);
 }
