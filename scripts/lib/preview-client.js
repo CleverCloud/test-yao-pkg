@@ -1,9 +1,11 @@
-import { styleText } from 'node:util';
-import { OS_EMOJIS } from './config.js';
 import { CellarClient } from './cellar-client.js';
 import fs from 'node:fs';
-import { getSha256 } from './sha256-lib.js';
 import { getCurrentAuthor, getCurrentCommit } from './git.js';
+import { getArchiveName, getBuildPath, getPreviewPath, PREVIEW_DIR } from './paths.js';
+import { getEmoji, getSha256, highlight } from './utils.js';
+
+const MANIFEST_PATH = `${PREVIEW_DIR}/manifest.json`;
+const LIST_INDEX_PATH = `${PREVIEW_DIR}/index.html`;
 
 export class PreviewClient {
 
@@ -19,7 +21,7 @@ export class PreviewClient {
 
   async getManifest () {
     try {
-      return await this.#cellarClient.getObject(`previews/manifest.json`);
+      return await this.#cellarClient.getObject(MANIFEST_PATH);
     }
     catch (e) {
       if (e.code === 'NoSuchKey') {
@@ -34,7 +36,7 @@ export class PreviewClient {
 
   async updateManifest (manifest) {
     const manifestJson = JSON.stringify(manifest, null, '  ');
-    return this.#cellarClient.putObject(manifestJson, `previews/manifest.json`);
+    return this.#cellarClient.putObject(manifestJson, MANIFEST_PATH);
   }
 
   async #updateListIndex (manifest) {
@@ -100,7 +102,7 @@ export class PreviewClient {
             <td>
               <div class="binaries">
                 ${p.urls.map((u) => {
-        const url = `<a href="${u.url}">${OS_EMOJIS[u.os]} ${u.os}</a>`;
+        const url = `<a href="${u.url}">${getEmoji(u.os)} ${u.os}</a>`;
         const checksum = `<code>${u.checksum.value}</code></span>`;
         return `${url}${checksum}`;
       }).join('')}
@@ -116,7 +118,7 @@ export class PreviewClient {
     </body>
     </html>
   `;
-    return this.#cellarClient.putObject(indexHtml, `previews/index.html`);
+    return this.#cellarClient.putObject(indexHtml, LIST_INDEX_PATH);
   }
 
   async listPreviews () {
@@ -138,12 +140,10 @@ export class PreviewClient {
     const archiveDetails = {};
 
     for (const os of osList) {
-      const filename = os === 'win'
-        ? `clever-tools-${previewName}_${os}.zip`
-        : `clever-tools-${previewName}_${os}.tar.gz`;
-      const archiveFilepath = `build/${previewName}/${os}/${filename}`;
-      const remoteFilepath = `previews/${previewName}/${os}/${filename}`;
-      console.log(`=> Upload ${styleText('yellow', archiveFilepath)} to ${styleText('yellow', remoteFilepath)}`);
+      const archiveName = getArchiveName(previewName, os);
+      const archiveFilepath = `${getBuildPath(previewName, os)}/${archiveName}`;
+      const remoteFilepath = `${getPreviewPath(previewName, os)}/${archiveName}`;
+      console.log(highlight`=> Upload ${archiveFilepath} to ${remoteFilepath}`);
       await this.#cellarClient.upload(archiveFilepath, remoteFilepath);
       archiveDetails[os] = {
         os,
@@ -161,8 +161,8 @@ export class PreviewClient {
       name: previewName,
       urls: osList.map((os) => archiveDetails[os]),
       updatedAt: new Date().toISOString(),
-      commitId: getCurrentCommit(),
-      author: getCurrentAuthor(),
+      commitId: await getCurrentCommit(),
+      author: await getCurrentAuthor(),
     };
 
     const previewIndex = manifest.previews.findIndex((p) => p.name === previewName);
@@ -173,9 +173,9 @@ export class PreviewClient {
       manifest.previews.push(newPreview);
     }
 
-    console.log(`=> Update JSON manifest to ${styleText('yellow', 'previews/manifest.json')}`);
+    console.log(highlight`=> Update JSON manifest to ${MANIFEST_PATH}`);
     await this.updateManifest(manifest);
-    console.log(`=> Update HTML list index to ${styleText('yellow', 'previews/index.html')}`);
+    console.log(highlight`=> Update HTML list index to ${LIST_INDEX_PATH}`);
     await this.#updateListIndex(manifest);
   }
 
@@ -187,15 +187,15 @@ export class PreviewClient {
       throw new Error(`Preview "${previewName}" does not exist!`);
     }
 
-    const foo = `previews/${previewName}`;
-    console.log(`=> Delete ${styleText('yellow', foo + '/**')}`);
-    await this.#cellarClient.delete(foo);
+    const previewPath = getPreviewPath(previewName);
+    console.log(highlight`=> Delete ${previewPath + '/**'}`);
+    await this.#cellarClient.delete(previewPath);
 
     manifest.previews = manifest.previews.filter((p) => p.name !== previewName);
 
-    console.log(`=> Update JSON manifest to ${styleText('yellow', 'previews/manifest.json')}`);
+    console.log(highlight`=> Update JSON manifest to ${MANIFEST_PATH}`);
     await this.updateManifest(manifest);
-    console.log(`=> Update HTML list index to ${styleText('yellow', 'previews/index.html')}`);
+    console.log(highlight`=> Update HTML list index to ${LIST_INDEX_PATH}`);
     await this.#updateListIndex(manifest);
   }
 }

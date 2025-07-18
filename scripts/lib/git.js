@@ -1,14 +1,19 @@
-import { execSync } from './utils.js';
+import { simpleGit } from 'simple-git';
 
-export function getCurrentBranch () {
-  const currentBranch = execSync('git branch --show-current');
-  return currentBranch;
+export async function getCurrentBranch () {
+  const git = simpleGit();
+  const branchSummary = await git.branch();
+  return branchSummary.current;
 }
 
-export function getCurrentCommit () {
-  return execSync('git rev-parse HEAD');
+export async function getCurrentCommit () {
+  const git = simpleGit();
+  const commit = await git.revparse(['HEAD']);
+  return commit;
 }
 
-export function getCurrentAuthor () {
-  return execSync('git log -1 --pretty=format:\'%an\'');
+export async function getCurrentAuthor () {
+  const git = simpleGit();
+  const log = await git.log({ n: 1 });
+  return log.latest ? log.latest.author_name : null;
 }

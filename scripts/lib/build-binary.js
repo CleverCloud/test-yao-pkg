@@ -1,19 +1,15 @@
-#!/usr/bin/env node
-
 import pkg from '@yao-pkg/pkg';
-import { styleText } from 'node:util';
+import { getBinaryPath, getBundleCjsPath } from './paths.js';
+import { highlight } from './utils.js';
 
-/** @type {string} */
-const NODE_RANGE = 'node22';
+const NODE_VERSION = '22';
 
-/** @type {Record<string, string>} */
 const PLATFORMS = {
   linux: 'linux',
   macos: 'macos',
   win: 'win',
 };
 
-/** @type {Record<string, string>} */
 const ARCHS = {
   linux: 'x64',
   macos: 'arm64',
@@ -21,28 +17,21 @@ const ARCHS = {
 };
 
 /**
- * Build binary for specified os, platform and architecture
- * @param {Object} [options={}] - Configuration options
- * @param {string} [options.version] - The version to build
- * @param {string} [options.nodeVersion] - Node.js version range
- * @param {'linux'|'macos'|'win'} [options.os] - Operating system
- * @param {'linux'|'macos'|'win'} [options.platform] - Target platform
- * @param {'x64'|'arm64'} [options.arch] - Target architecture
+ * Build a binary with @yao-pkg/pkg
+ * @param {string} version - The version to build
+ * @param {'linux'|'macos'|'win'} os - The operating system
  * @returns {Promise<void>}
  */
-export async function buildBinary (options = {}) {
+export async function buildBinary (version, os) {
 
-  const {
-    version,
-    nodeVersion = NODE_RANGE,
-    os,
-    platform = PLATFORMS[os],
-    arch = ARCHS[os],
-  } = options;
+  const input = getBundleCjsPath(version);
+  const output = getBinaryPath(version, os);
 
-  const input = `build/${version}/clever.cjs`;
-  const output = `build/${version}/${os}/clever`;
-  console.log(`=> Build script ${styleText('yellow', input)} into binary ${styleText('yellow', output)} with @yao-pkg/pkg`);
-  console.log(`   for ${styleText('yellow', platform)} (${styleText('yellow', arch)}) with Node.js ${styleText('yellow', nodeVersion)}`);
-  await pkg.exec([input, '--target', `${nodeVersion}-${platform}-${arch}`, '--output', output]);
+  const platform = PLATFORMS[os];
+  const arch = ARCHS[os];
+  const target = `node${NODE_VERSION}-${platform}-${arch}`;
+
+  console.log(highlight`=> Build script ${input} into binary ${output} for ${platform}-${arch} with Node.js ${NODE_VERSION}`);
+
+  await pkg.exec([input, '--target', target, '--output', output]);
 }
