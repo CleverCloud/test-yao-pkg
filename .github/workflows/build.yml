@@ -6,6 +6,9 @@ on:
       version:
         required: true
         type: string
+      node-version:
+        type: string
+        default: node22
 
 jobs:
   bundle-cjs:
@@ -20,7 +23,7 @@ jobs:
       - name: 'Install Node.js dependencies'
         run: npm ci
       - name: 'Bundle to single clever.cjs'
-        run: npx rollup -c rollup.config.js -o build/${{ inputs.version }}/clever.cjs
+        run: ./scripts/bundle-cjs.js ${{ inputs.version }}
       - name: 'Upload bundle-cjs artifact'
         uses: actions/upload-artifact@v4
         with:
@@ -29,7 +32,7 @@ jobs:
           retention-days: 1
 
   build-linux:
-    name: 'Build linux binary'
+    name: 'Build for linux'
     needs: bundle-cjs
     runs-on: ubuntu-latest
     steps:
@@ -48,13 +51,9 @@ jobs:
           path: build
       - name: 'Build binary'
         shell: bash
-        run: npx pkg -t node22-linux-x64 build/${{ inputs.version }}/clever.cjs -o build/${{ inputs.version }}/linux/clever
+        run: ./scripts/build-binary.js ${{ inputs.version }}
       - name: 'Create .tar.gz'
-        working-directory: build/${{ inputs.version }}/linux
-        run: tar czf clever-tools_linux.tar.gz clever
-      - name: 'Create checksum file'
-        working-directory: build/${{ inputs.version }}/linux
-        run: sha256sum clever-tools_linux.tar.gz > clever-tools_linux.tar.gz.sha256
+        run: ./scripts/create-archive.js ${{ inputs.version }}
       - name: 'Upload build-linux artifact'
         uses: actions/upload-artifact@v4
         with:
@@ -63,8 +62,8 @@ jobs:
           retention-days: 1
 
   build-mac:
+    name: 'Build for mac'
     needs: bundle-cjs
-    name: 'Build mac binary'
     runs-on: macos-14
     steps:
       - name: 'Checkout sources'
@@ -82,15 +81,10 @@ jobs:
           path: build
       - name: 'Build binary'
         shell: bash
-        run: npx pkg -t node22-mac-arm64 build/${{ inputs.version }}/clever.cjs -o build/${{ inputs.version }}/mac/clever
+        run: ./scripts/build-binary.js ${{ inputs.version }}
       - name: 'Create .tar.gz'
         shell: bash
-        working-directory: build/${{ inputs.version }}/mac
-        run: tar czf clever-tools_linux.tar.gz clever
-      - name: 'Create checksum file'
-        shell: bash
-        working-directory: build/${{ inputs.version }}/mac
-        run: shasum -a 256 clever-tools_linux.tar.gz > clever-tools_linux.tar.gz.sha256
+        run: ./scripts/create-archive.js ${{ inputs.version }}
       - name: 'Upload build-mac artifact'
         uses: actions/upload-artifact@v4
         with:
@@ -99,8 +93,8 @@ jobs:
           retention-days: 1
 
   build-windows:
+    name: 'Build for windows'
     needs: bundle-cjs
-    name: 'Build windows binary'
     runs-on: windows-latest
     steps:
       - name: 'Checkout sources'
@@ -118,15 +112,10 @@ jobs:
           path: build
       - name: 'Build binary'
         shell: bash
-        run: npx pkg -t node22-win-x64 build/${{ inputs.version }}/clever.cjs -o build/${{ inputs.version }}/win/clever.exe
+        run: ./scripts/build-binary.js ${{ inputs.version }}
       - name: 'Create .zip'
-        shell: powershell
-        working-directory: build/${{ inputs.version }}/win
-        run: Compress-Archive -Path clever.exe -DestinationPath clever-tools_win.zip
-      - name: 'Create checksum file'
         shell: bash
-        working-directory: build/${{ inputs.version }}/win
-        run: sha256sum clever-tools_win.zip > clever-tools_win.zip.sha256
+        run: ./scripts/create-archive.js ${{ inputs.version }}
       - name: 'Upload build-windows artifact'
         uses: actions/upload-artifact@v4
         with:

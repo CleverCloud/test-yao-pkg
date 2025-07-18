@@ -1,0 +1,453 @@
+{
+  "version": "1",
+  "previews": [
+    {
+      "name": "davlgd-faas",
+      "urls": [
+        {
+          "os": "linux",
+          "url": "https://clever-tools-preview.clever-cloud.com/previews/davlgd-faas/clever-tools-davlgd-faas_linux.tar.gz",
+          "checksum": {
+            "type": "sha256",
+            "value": "2f668c76cf2536f616a89ff293bc8bc6f16df4a47f62fd2c305acdd4f2309119"
+          }
+        },
+        {
+          "os": "macos",
+          "url": "https://clever-tools-preview.clever-cloud.com/previews/davlgd-faas/clever-tools-davlgd-faas_macos.tar.gz",
+          "checksum": {
+            "type": "sha256",
+            "value": "01e68ee82f64f139b40751ed7df81df4f0e54c3ba445b0ee53205729a154d669"
+          }
+        },
+        {
+          "os": "win",
+          "url": "https://clever-tools-preview.clever-cloud.com/previews/davlgd-faas/clever-tools-davlgd-faas_win.zip",
+          "checksum": {
+            "type": "sha256",
+            "value": "99f5ab5c98a33a04e343c23ea87a1356c824e20db35db9e4f78bda97a6534f70"
+          }
+        }
+      ],
+      "updatedAt": "2025-04-07T20:30:46.978Z",
+      "commitId": "1d00073fefc68a57de7a1df840cff1cc09291a96",
+      "author": "David Legrand"
+    },
+    {
+      "name": "davlgd-clever-ai",
+      "urls": [
+        {
+          "os": "linux",
+          "url": "https://clever-tools-preview.clever-cloud.com/previews/davlgd-clever-ai/clever-tools-davlgd-clever-ai_linux.tar.gz",
+          "checksum": {
+            "type": "sha256",
+            "value": "2e4df91efe120ea431cfabdd19d81efb7b959af2b06951c714cb7f11520a1fbd"
+          }
+        },
+        {
+          "os": "macos",
+          "url": "https://clever-tools-preview.clever-cloud.com/previews/davlgd-clever-ai/clever-tools-davlgd-clever-ai_macos.tar.gz",
+          "checksum": {
+            "type": "sha256",
+            "value": "c08bb029016d28cec6679ad32664eb197afa1c7e131516f507e8cf7490c53013"
+          }
+        },
+        {
+          "os": "win",
+          "url": "https://clever-tools-preview.clever-cloud.com/previews/davlgd-clever-ai/clever-tools-davlgd-clever-ai_win.zip",
+          "checksum": {
+            "type": "sha256",
+            "value": "073afe704d72ad52cb002960ad55f681f520ea1df5938da192c5185ce90d5cf7"
+          }
+        }
+      ],
+      "updatedAt": "2025-02-02T23:14:50.884Z",
+      "commitId": "c39e2f7a065129a823518d9e77f23faef6cac4bc",
+      "author": "David Legrand"
+    },
+    {
+      "name": "davlgd-clever-kms",
+      "urls": [
+        {
+          "os": "linux",
+          "url": "https://clever-tools-preview.clever-cloud.com/previews/davlgd-clever-kms/clever-tools-davlgd-clever-kms_linux.tar.gz",
+          "checksum": {
+            "type": "sha256",
+            "value": "ef36a9d9a93cff225af92a6a524086aa94e8baf44741eefa2ff708b44aa0bb03"
+          }
+        },
+        {
+          "os": "macos",
+          "url": "https://clever-tools-preview.clever-cloud.com/previews/davlgd-clever-kms/clever-tools-davlgd-clever-kms_macos.tar.gz",
+          "checksum": {
+            "type": "sha256",
+            "value": "32f4586196bc5de808a1b3753a3e4299ac8b84632958933e07182fe2b4f24be3"
+          }
+        },
+        {
+          "os": "win",
+          "url": "https://clever-tools-preview.clever-cloud.com/previews/davlgd-clever-kms/clever-tools-davlgd-clever-kms_win.zip",
+          "checksum": {
+            "type": "sha256",
+            "value": "5a8bb527cc54d1782949147f92999f1f61174ea47dce5cbb2e4ff668e7166f0c"
+          }
+        }
+      ],
+      "updatedAt": "2025-03-13T15:20:31.384Z",
+      "commitId": "efb63cf0f4b37a4f41b0c943c36ba5acc99e37d3",
+      "author": "David Legrand"
+    },
+    {
+      "name": "davlgd-auth-api-token",
+      "urls": [
+        {
+          "os": "linux",
+          "url": "https://clever-tools-preview.clever-cloud.com/previews/davlgd-auth-api-token/clever-tools-davlgd-auth-api-token_linux.tar.gz",
+          "checksum": {
+            "type": "sha256",
+            "value": "ef01c520a19f89aa53c41721b40fbe43f5b9afed775b76ef7fcf428403ed1ebd"
+          }
+        },
+        {
+          "os": "macos",
+          "url": "https://clever-tools-preview.clever-cloud.com/previews/davlgd-auth-api-token/clever-tools-davlgd-auth-api-token_macos.tar.gz",
+          "checksum": {
+            "type": "sha256",
+            "value": "691cc91c1de62765482bdff346ae39241f6293d60c2eea39891f05e9c196c26a"
+          }
+        },
+        {
+          "os": "win",
+          "url": "https://clever-tools-preview.clever-cloud.com/previews/davlgd-auth-api-token/clever-tools-davlgd-auth-api-token_win.zip",
+          "checksum": {
+            "type": "sha256",
+            "value": "880432f6d5b6c30ae54f7ba5144b20dd382f2af10b21e24e2081e7d44dac17c1"
+          }
+        }
+      ],
+      "updatedAt": "2025-03-09T15:01:40.323Z",
+      "commitId": "8c833d436f423f4322a0b2bdeb4068e78c357b39",
+      "author": "David Legrand"
+    },
+    {
+      "name": "feat-tf-import",
+      "urls": [
+        {
+          "os": "linux",
+          "url": "https://clever-tools-preview.clever-cloud.com/previews/feat-tf-import/clever-tools-feat-tf-import_linux.tar.gz",
+          "checksum": {
+            "type": "sha256",
+            "value": "7fdc3af9e12b65cfd8d062951485967ee02523bb3d72c67cdb50002a71e06a76"
+          }
+        },
+        {
+          "os": "macos",
+          "url": "https://clever-tools-preview.clever-cloud.com/previews/feat-tf-import/clever-tools-feat-tf-import_macos.tar.gz",
+          "checksum": {
+            "type": "sha256",
+            "value": "159b962f2298602ed9b41157bcf87550f726ed15dc00f674b0dd8ab659c0b5be"
+          }
+        },
+        {
+          "os": "win",
+          "url": "https://clever-tools-preview.clever-cloud.com/previews/feat-tf-import/clever-tools-feat-tf-import_win.zip",
+          "checksum": {
+            "type": "sha256",
+            "value": "fb7f073c3087bbe82e893b89627e799fe2bd663a68cd0230da4c510e39055df5"
+          }
+        }
+      ],
+      "updatedAt": "2025-04-23T17:02:03.138Z",
+      "commitId": "5014bfc976d00622a37cac64513a563ee4f6cbcf",
+      "author": "Collignon-Ducret Rémi"
+    },
+    {
+      "name": "feat-makedefault-supportAppId",
+      "urls": [
+        {
+          "os": "linux",
+          "url": "https://clever-tools-preview.clever-cloud.com/previews/feat-makedefault-supportAppId/clever-tools-feat-makedefault-supportAppId_linux.tar.gz",
+          "checksum": {
+            "type": "sha256",
+            "value": "04095fae595801236def1e08f20eee532f25d4629c2562342878080360e21187"
+          }
+        },
+        {
+          "os": "macos",
+          "url": "https://clever-tools-preview.clever-cloud.com/previews/feat-makedefault-supportAppId/clever-tools-feat-makedefault-supportAppId_macos.tar.gz",
+          "checksum": {
+            "type": "sha256",
+            "value": "f5e7bc7c66bb4a431576431fea80f263f8c6e90ddefe25b85181ab97b15f09f8"
+          }
+        },
+        {
+          "os": "win",
+          "url": "https://clever-tools-preview.clever-cloud.com/previews/feat-makedefault-supportAppId/clever-tools-feat-makedefault-supportAppId_win.zip",
+          "checksum": {
+            "type": "sha256",
+            "value": "489b87b5a732dcea7a843bc1e4c0d04b0e40064abca2b3168e3e9fb229495387"
+          }
+        }
+      ],
+      "updatedAt": "2025-05-28T10:01:12.598Z",
+      "commitId": "4c3d4c68f9d26288e7d637c2845cf3980d1dee42",
+      "author": "Aurélien HÉBERT"
+    },
+    {
+      "name": "build-with-yao-pkg",
+      "urls": [
+        {
+          "os": "linux",
+          "url": "https://clever-tools-preview.clever-cloud.com/previews/build-with-yao-pkg/clever-tools-build-with-yao-pkg_linux.tar.gz",
+          "checksum": {
+            "type": "sha256",
+            "value": "41a941deccf7a4a4f8594cfa6e8a8cec8bf869bb06d011591c21570b860eae4d"
+          }
+        },
+        {
+          "os": "macos",
+          "url": "https://clever-tools-preview.clever-cloud.com/previews/build-with-yao-pkg/clever-tools-build-with-yao-pkg_macos.tar.gz",
+          "checksum": {
+            "type": "sha256",
+            "value": "0547138c3d39e8870c06fb5364b460aa18c6eb39a1ca5a6ca8119eaa37d4e0dc"
+          }
+        },
+        {
+          "os": "win",
+          "url": "https://clever-tools-preview.clever-cloud.com/previews/build-with-yao-pkg/clever-tools-build-with-yao-pkg_win.zip",
+          "checksum": {
+            "type": "sha256",
+            "value": "4781a1dcb049d22685300189cac908863997469a7b3b395e36212cf822a04db7"
+          }
+        }
+      ],
+      "updatedAt": "2025-06-10T10:24:04.809Z",
+      "commitId": "66698f5212ded8608e9fabae8881cda4bcdd4474",
+      "author": "Hubert SABLONNIÈRE"
+    },
+    {
+      "name": "update-dependencies",
+      "urls": [
+        {
+          "os": "linux",
+          "url": "https://clever-tools-preview.clever-cloud.com/previews/update-dependencies/clever-tools-update-dependencies_linux.tar.gz",
+          "checksum": {
+            "type": "sha256",
+            "value": "47293ab45f74d63ff57330a5961e0fdba851fdd364ddab4e29c12a3ccbad688b"
+          }
+        },
+        {
+          "os": "macos",
+          "url": "https://clever-tools-preview.clever-cloud.com/previews/update-dependencies/clever-tools-update-dependencies_macos.tar.gz",
+          "checksum": {
+            "type": "sha256",
+            "value": "9b3d7d325a5379857894f4effe553fdf7b173c512b7090ba9d5ca36715435e3f"
+          }
+        },
+        {
+          "os": "win",
+          "url": "https://clever-tools-preview.clever-cloud.com/previews/update-dependencies/clever-tools-update-dependencies_win.zip",
+          "checksum": {
+            "type": "sha256",
+            "value": "9455e4c4fb3338b122901bf237b8a8624d7d69e41965c4478b3cbf1e8553a66a"
+          }
+        }
+      ],
+      "updatedAt": "2025-06-12T22:34:11.992Z",
+      "commitId": "7e3f3eb72b28930939fdba1571d06f0c2a1fefa4",
+      "author": "Hubert SABLONNIÈRE"
+    },
+    {
+      "name": "davlgd-3rd-party-zones",
+      "urls": [
+        {
+          "os": "linux",
+          "url": "https://clever-tools-preview.clever-cloud.com/previews/davlgd-3rd-party-zones/clever-tools-davlgd-3rd-party-zones_linux.tar.gz",
+          "checksum": {
+            "type": "sha256",
+            "value": "15b414cfcbaed672160c346488c752a91ee6b0c3b0724a3d6008a30f10df321b"
+          }
+        },
+        {
+          "os": "macos",
+          "url": "https://clever-tools-preview.clever-cloud.com/previews/davlgd-3rd-party-zones/clever-tools-davlgd-3rd-party-zones_macos.tar.gz",
+          "checksum": {
+            "type": "sha256",
+            "value": "4f1a5675ad2915a8e0d8bcabbb9a01c3e82f3ba906fd471577daaf04bb63051f"
+          }
+        },
+        {
+          "os": "win",
+          "url": "https://clever-tools-preview.clever-cloud.com/previews/davlgd-3rd-party-zones/clever-tools-davlgd-3rd-party-zones_win.zip",
+          "checksum": {
+            "type": "sha256",
+            "value": "bf1712731a719ad3a468cdc7ea0d3513db61bc62ab250e8368419eb1b850592a"
+          }
+        }
+      ],
+      "updatedAt": "2025-07-11T05:16:08.193Z",
+      "commitId": "62408e8008b2c3e184daaab97dacf0371839dc2c",
+      "author": "David Legrand"
+    },
+    {
+      "name": "davlgd-linked-addons-service",
+      "urls": [
+        {
+          "os": "linux",
+          "url": "https://clever-tools-preview.clever-cloud.com/previews/davlgd-linked-addons-service/clever-tools-davlgd-linked-addons-service_linux.tar.gz",
+          "checksum": {
+            "type": "sha256",
+            "value": "ae257d770cce957b9566768b4d5f543cf01524ea55d38947d5e7f7ac8dcfcb55"
+          }
+        },
+        {
+          "os": "macos",
+          "url": "https://clever-tools-preview.clever-cloud.com/previews/davlgd-linked-addons-service/clever-tools-davlgd-linked-addons-service_macos.tar.gz",
+          "checksum": {
+            "type": "sha256",
+            "value": "32dc90f21dd54055e03e08031875871de351b232c745ee550903e8da5c9e3743"
+          }
+        },
+        {
+          "os": "win",
+          "url": "https://clever-tools-preview.clever-cloud.com/previews/davlgd-linked-addons-service/clever-tools-davlgd-linked-addons-service_win.zip",
+          "checksum": {
+            "type": "sha256",
+            "value": "4abfc826a6c5a8ad6e0a5af36aba4772dc8e27529d829513b26a3ebb2e17481c"
+          }
+        }
+      ],
+      "updatedAt": "2025-07-11T06:22:41.568Z",
+      "commitId": "d5f740eede6e301e602042d1b3392342a059c690",
+      "author": "David Legrand"
+    },
+    {
+      "name": "davlgd-powershell",
+      "urls": [
+        {
+          "os": "linux",
+          "url": "https://clever-tools-preview.clever-cloud.com/previews/davlgd-powershell/clever-tools-davlgd-powershell_linux.tar.gz",
+          "checksum": {
+            "type": "sha256",
+            "value": "99a29ed0bee34f7916f865c933c2352c2978caba873a69a03dde2c2b8af455f6"
+          }
+        },
+        {
+          "os": "macos",
+          "url": "https://clever-tools-preview.clever-cloud.com/previews/davlgd-powershell/clever-tools-davlgd-powershell_macos.tar.gz",
+          "checksum": {
+            "type": "sha256",
+            "value": "b71b0a445410e4bf44105f210309cd4552c3d0f94e1e133d8e1b7bb57682bead"
+          }
+        },
+        {
+          "os": "win",
+          "url": "https://clever-tools-preview.clever-cloud.com/previews/davlgd-powershell/clever-tools-davlgd-powershell_win.zip",
+          "checksum": {
+            "type": "sha256",
+            "value": "ec8fa05a30ec7fd29d945f872065fe3ed3232faa361fda2bf993c8c5106398f1"
+          }
+        }
+      ],
+      "updatedAt": "2025-07-11T05:59:06.702Z",
+      "commitId": "49400783e7eb5d78bfdd1e35071dbe3c5d96b31f",
+      "author": "David Legrand"
+    },
+    {
+      "name": "davlgd-orgid",
+      "urls": [
+        {
+          "os": "linux",
+          "url": "https://clever-tools-preview.clever-cloud.com/previews/davlgd-orgid/clever-tools-davlgd-orgid_linux.tar.gz",
+          "checksum": {
+            "type": "sha256",
+            "value": "ded416fb6498ee489f02eb7904426c88136c9cde2f0632527ffb947a8bf50eb1"
+          }
+        },
+        {
+          "os": "macos",
+          "url": "https://clever-tools-preview.clever-cloud.com/previews/davlgd-orgid/clever-tools-davlgd-orgid_macos.tar.gz",
+          "checksum": {
+            "type": "sha256",
+            "value": "064915975a72904e4f31cf14b08834d78ce1b0a590046bc126a6c64fb1bcd2f4"
+          }
+        },
+        {
+          "os": "win",
+          "url": "https://clever-tools-preview.clever-cloud.com/previews/davlgd-orgid/clever-tools-davlgd-orgid_win.zip",
+          "checksum": {
+            "type": "sha256",
+            "value": "2606dc747b36543781e555c9e31eec85057152b43026317486586e948a25bc4c"
+          }
+        }
+      ],
+      "updatedAt": "2025-07-11T06:00:46.357Z",
+      "commitId": "76343fd607bb19dd00b21545571ee788cd198f95",
+      "author": "David Legrand"
+    },
+    {
+      "name": "davlgd-clever-tools-binary",
+      "urls": [
+        {
+          "os": "linux",
+          "url": "https://clever-tools-preview.clever-cloud.com/previews/davlgd-clever-tools-binary/clever-tools-davlgd-clever-tools-binary_linux.tar.gz",
+          "checksum": {
+            "type": "sha256",
+            "value": "f86a36009831c436f874f2695756dda30a7df6c9e2e3e7f89381b2182149b96f"
+          }
+        },
+        {
+          "os": "macos",
+          "url": "https://clever-tools-preview.clever-cloud.com/previews/davlgd-clever-tools-binary/clever-tools-davlgd-clever-tools-binary_macos.tar.gz",
+          "checksum": {
+            "type": "sha256",
+            "value": "5e94c5f12407f6a243dbda424301f706803387dde50e7ca5cbcec74a7c5bc790"
+          }
+        },
+        {
+          "os": "win",
+          "url": "https://clever-tools-preview.clever-cloud.com/previews/davlgd-clever-tools-binary/clever-tools-davlgd-clever-tools-binary_win.zip",
+          "checksum": {
+            "type": "sha256",
+            "value": "001ac6c52a9f230ababb4e3efb6eb46cc0c6e1d805dad8a98fab29b0dc4dc6e8"
+          }
+        }
+      ],
+      "updatedAt": "2025-07-12T07:33:20.055Z",
+      "commitId": "de13707d4a322dd6889c8ddee955b438a94c7420",
+      "author": "David Legrand"
+    },
+    {
+      "name": "davlgd-duplicate-format-version-check",
+      "urls": [
+        {
+          "os": "linux",
+          "url": "https://clever-tools-preview.clever-cloud.com/previews/davlgd-duplicate-format-version-check/clever-tools-davlgd-duplicate-format-version-check_linux.tar.gz",
+          "checksum": {
+            "type": "sha256",
+            "value": "16cba287e71051be04bc7c82763a73353daf00ccf38701b07509405620964b63"
+          }
+        },
+        {
+          "os": "macos",
+          "url": "https://clever-tools-preview.clever-cloud.com/previews/davlgd-duplicate-format-version-check/clever-tools-davlgd-duplicate-format-version-check_macos.tar.gz",
+          "checksum": {
+            "type": "sha256",
+            "value": "8a99dff27e866fdc8754a3f42521546f487400046868067440f9b246dd80fbbe"
+          }
+        },
+        {
+          "os": "win",
+          "url": "https://clever-tools-preview.clever-cloud.com/previews/davlgd-duplicate-format-version-check/clever-tools-davlgd-duplicate-format-version-check_win.zip",
+          "checksum": {
+            "type": "sha256",
+            "value": "dad23215bce28701b5db5b1f736e1fa38f7652d7f7e4f810a614bb3b3e73606a"
+          }
+        }
+      ],
+      "updatedAt": "2025-07-15T18:20:41.279Z",
+      "commitId": "148cca78d6663aeb07c2fca3fe6ac433b1246b6e",
+      "author": "David Legrand"
+    }
+  ]
+}
