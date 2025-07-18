@@ -78,91 +78,205 @@ export class PreviewClient {
    * @private
    */
   async #updateListIndex (manifest) {
+    const indexHtml = this.#renderListIndex(manifest);
+    return this.#cellarClient.putObject(indexHtml, LIST_INDEX_PATH);
+  }
+
+  /**
+   * Renders the HTML index page for listing previews.
+   * @param {Manifest} manifest
+   * @return {string}
+   */
+  #renderListIndex (manifest) {
     // language=HTML
-    const indexHtml = dedent`
+    return dedent`
       <!doctype html>
       <html lang="en">
       <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="icon" href="data:image/x-icon;base64,AA">
         <title>Clever tools - Previews</title>
         <style>
         body {
           margin: 0 auto;
-          font-family: Arial, sans-serif;
-          width: 100%;
-          max-width: 85em;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+          max-width: 80em;
+          background-color: #f6f8fa;
+          padding: 16px;
         }
 
-        code {
-          font-family: "SourceCodePro", "monaco", monospace;
-          font-size: 1em;
+        h1 {
+          color: #1f2328;
+          font-size: 24px;
+          font-weight: 600;
+          margin-bottom: 16px;
         }
 
         table {
           width: 100%;
+          border-collapse: separate;
+          border-spacing: 0;
+          background-color: #ffffff;
+          border: 1px solid #d1d9e0;
+          border-radius: 6px;
+          overflow: hidden;
+        }
+
+        thead tr,
+        tbody tr:first-child {
+          background-color: #f6f8fa;
         }
 
         th {
           text-align: left;
+          font-weight: 600;
+          font-size: 12px;
+          color: #656d76;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          padding: 8px 16px;
+          border-bottom: 1px solid #d1d9e0;
+          background-color: #f6f8fa;
         }
 
-        th,
         td {
-          padding: 0.25em 0;
+          /*padding: 8px 16px;*/
+          border-bottom: 1px solid #d1d9e0;
+          font-size: 14px;
+          color: #1f2328;
+        }
+
+        tr:last-child td {
+          border-bottom: none;
+        }
+
+        tr:hover {
+          background-color: #f6f8fa;
+        }
+
+        code {
+          font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+          font-size: 12px;
+          background-color: #f6f8fa;
+          padding: 2px 6px;
+          border-radius: 6px;
+          color: #1f2328;
+          border: 1px solid #d1d9e0;
         }
 
         .binaries {
-          display: grid;
-          grid-template-columns: max-content auto;
-          column-gap: 0.2em;
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+
+        .binaries > span {
+          display: flex;
           align-items: center;
+          gap: 8px;
+          font-size: 14px;
+        }
+
+        .binaries a {
+          color: #0969da;
+          text-decoration: none;
+          font-weight: 500;
+        }
+
+        .binaries a:hover {
+          text-decoration: underline;
         }
 
         .binaries code {
-          font-size: 0.8em;
-          color: #444;
+          color: #656d76;
+          background-color: #f6f8fa;
+          display: inline;
+          padding: 2px 6px;
+          border-radius: 6px;
+          border: 1px solid #d1d9e0;
+        }
+
+        cc-datetime-relative {
+          color: #656d76;
+          font-size: 14px;
+        }
+
+        td span[title] {
+          font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+          font-size: 12px;
+          color: #0969da;
+          background-color: #f6f8fa;
+          padding: 2px 6px;
+          border-radius: 6px;
+          border: 1px solid #d1d9e0;
         }
         </style>
         <script src="https://components.clever-cloud.com/load.js?components=cc-datetime-relative" type="module"></script>
       </head>
       <body>
       <h1>Clever tools - Previews</h1>
-      ${manifest.previews.length === 0
-          ? `<p><em>No previews right now</em></p>`
-          : dedent`
-          <table>
-            <tr>
-              <th>Branch</th>
-              <th>Binaries</th>
-              <th>Updated</th>
-              <th>Commit ID</th>
-              <th>Author</th>
-            </tr>
-            ${manifest.previews.map((p) => dedent`
-              <tr>
-                <td><code>${p.name}</td>
-                <td>
-                  <div class="binaries">
-                    ${p.urls.map((u) => {
-            const url = `${getEmoji(u.os)}&nbsp;<a href="${u.url}">${u.os}</a>`;
-            const checksum = `<code>${u.checksum.value}</code></span>`;
-            return `${url}${checksum}`;
-          }).join('')}
-                  </div>
-                </td>
-                <td><cc-datetime-relative datetime="${p.updatedAt}">${p.updatedAt}</cc-datetime-relative></td>
-                <td><span title="${p.commitId}">${p.commitId.substring(0, 8)}</span></td>
-                <td>${p.author}</td>
-              </tr>
-            `).join('\n')}
-          </table>
-      `}
+      ${this.#renderManifest(manifest)}
       </body>
       </html>
     `;
+  }
 
-    return this.#cellarClient.putObject(indexHtml, LIST_INDEX_PATH);
+  /**
+   * Renders the HTML table for the manifest previews.
+   * @param {Manifest} manifest
+   * @return {string}
+   */
+  #renderManifest (manifest) {
+
+    if (manifest.previews.length === 0) {
+      return `<p><em>No previews right now</em></p>`;
+    }
+
+    return dedent`
+      <table>
+        <tr>
+          <th>Updated</th>
+          <th>Commit ID</th>
+          <th>Branch</th>
+          <th>Author</th>
+          <th>Binaries</th>
+        </tr>
+        ${manifest.previews.map((p) => this.#renderPreview(p)).join('\n')}
+      </table>
+    `;
+  }
+
+  /**
+   * Renders a single preview row in the HTML index.
+   * @param {Preview} preview
+   * @return {string}
+   */
+  #renderPreview (preview) {
+    return dedent`
+      <tr>
+        <td><cc-datetime-relative datetime="${preview.updatedAt}">${preview.updatedAt}</cc-datetime-relative></td>
+        <td><span title="${preview.commitId}">${preview.commitId.substring(0, 8)}</span></td>
+        <td><code>${preview.name}</td>
+        <td>${preview.author}</td>
+        <td>
+          <div class="binaries">
+          ${preview.urls.map((u) => this.#renderPreviewUrl(u)).join('')}
+          </div>
+        </td>
+      </tr>
+    `;
+  }
+
+  /**
+   * Renders a single preview URL in the HTML index.
+   * @param {PreviewUrl} previewUrl
+   * @return {string}
+   */
+  #renderPreviewUrl (previewUrl) {
+    const url = `${getEmoji(previewUrl.os)}&nbsp;<a href="${previewUrl.url}">${previewUrl.os}</a>`;
+    const checksum = `<code>${previewUrl.checksum.value}</code></span>`;
+    return `<span>${url}${checksum}</span>`;
   }
 
   /**
@@ -204,7 +318,7 @@ export class PreviewClient {
       const archiveFilepath = `${getBuildPath(previewName, os)}/${archiveName}`;
       const remoteFilepath = `${getPreviewPath(previewName, os)}/${archiveName}`;
       console.log(highlight`=> Upload ${archiveFilepath} to ${remoteFilepath}`);
-      await this.#cellarClient.upload(archiveFilepath, remoteFilepath);
+      // await this.#cellarClient.upload(archiveFilepath, remoteFilepath);
       archiveDetails[os] = {
         os,
         url: this.#cellarClient.url(remoteFilepath),
