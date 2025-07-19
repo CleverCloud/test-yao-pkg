@@ -9,6 +9,9 @@ on:
 #     tags:
 #       - '*'
 
+env:
+  NFPM_VERSION: "2.43.0"
+
 jobs:
   build:
     uses: ./.github/workflows/build.yml
@@ -20,7 +23,6 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     env:
-      NFPM_VERSION: "2.43.0"
       RPM_GPG_PRIVATE_KEY: ${{ secrets.RPM_GPG_PRIVATE_KEY }}
       NFPM_PASSPHRASE: ${{ secrets.RPM_GPG_PASSPHRASE }}
       RPM_FILENAME: "clever-tools-${{ github.ref_name }}.rpm"
@@ -55,7 +57,6 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     env:
-      NFPM_VERSION: "2.43.0"
       DEB_FILENAME: "clever-tools-${{ github.ref_name }}.deb"
     steps:
       - name: 'Checkout sources'
@@ -82,13 +83,13 @@ jobs:
           path: ${{ env.DEB_FILENAME }}
           retention-days: 1
 
-  build-nupkg:
-    name: 'Build .nupkg'
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: 'foobar'
-        run: echo foobar
+#  build-nupkg:
+#    name: 'Build .nupkg'
+#    needs: build
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: 'foobar'
+#        run: echo foobar
 
   publish-npm:
     name: 'Publish to npm'
@@ -118,13 +119,13 @@ jobs:
     steps:
       - name: 'foobar'
         run: echo foobar
-  publish-cellar-nupkg:
-    name: 'Publish .nupkg to cellar'
-    needs: build-nupkg
-    runs-on: ubuntu-latest
-    steps:
-      - name: 'foobar'
-        run: echo foobar
+#  publish-cellar-nupkg:
+#    name: 'Publish .nupkg to cellar'
+#    needs: build-nupkg
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: 'foobar'
+#        run: echo foobar
 
   publish-aur:
     name: 'Publish to AUR'
@@ -169,10 +170,10 @@ jobs:
     steps:
       - name: 'foobar'
         run: echo foobar
-  publish-nexus-nupkg:
-    name: 'Publish .nupkg to Nexus'
-    needs: build-nupkg
-    runs-on: ubuntu-latest
-    steps:
-      - name: 'foobar'
-        run: echo foobar
+#  publish-nexus-nupkg:
+#    name: 'Publish .nupkg to Nexus'
+#    needs: build-nupkg
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: 'foobar'
+#        run: echo foobar
