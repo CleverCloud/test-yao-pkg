@@ -20,8 +20,7 @@ jobs:
       - name: 'Install nfpm'
         run: |
           curl -sL https://github.com/goreleaser/nfpm/releases/download/v${{ env.NFPM_VERSION }}/nfpm_${{ env.NFPM_VERSION }}_Linux_x86_64.tar.gz | tar -xz
-          sudo mv nfpm /usr/local/bin/
-          chmod +x /usr/local/bin/nfpm
+          chmod +x nfpm
       - name: 'Prepare GPG key for signing'
         run: |
           echo "$RPM_GPG_PRIVATE_KEY" > /tmp/signing-key.asc
@@ -30,7 +29,7 @@ jobs:
       - name: 'Build and sign RPM with nfpm'
         run: |
           export GITHUB_REF_NAME="${{ github.ref_name }}"
-          nfpm package --packager rpm --target .
+          ./nfpm package --packager rpm --target .
         env:
           NFPM_RPM_PASSPHRASE: ${{ env.RPM_GPG_PASSPHRASE }}
       - name: 'Upload RPM artifact'
