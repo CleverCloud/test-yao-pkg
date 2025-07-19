@@ -19,25 +19,66 @@ jobs:
     name: 'Build .rpm'
     needs: build
     runs-on: ubuntu-latest
+    env:
+      NFPM_VERSION: "2.43.0"
+      RPM_GPG_PRIVATE_KEY: ${{ secrets.RPM_GPG_PRIVATE_KEY }}
+      NFPM_PASSPHRASE: ${{ secrets.RPM_GPG_PASSPHRASE }}
+      RPM_FILENAME: "clever-tools-${{ github.ref_name }}.rpm"
     steps:
+      - name: 'Checkout sources'
+        uses: actions/checkout@v4
       - name: 'Download archives'
         uses: actions/download-artifact@v4
         with:
-          pattern: archive-checksum-linux
-      - name: 'foobar'
-        run: echo foobar
+          pattern: build-linux
+      - name: 'Download nfpm'
+        run: |
+          curl -sL https://github.com/goreleaser/nfpm/releases/download/v${{ env.NFPM_VERSION }}/nfpm_${{ env.NFPM_VERSION }}_Linux_x86_64.tar.gz | tar -xz
+          chmod +x nfpm
+      - name: 'Build and sign .rpm with nfpm'
+        run: |
+          echo "$RPM_GPG_PRIVATE_KEY" > /tmp/signing-key.asc
+          ./nfpm package --config scripts/templates/nfpm.yaml --packager rpm --target ${{ env.RPM_FILENAME }}
+        env:
+          VERSION: ${{ github.ref_name }}
+          NFPM_ARCH: "x86_64"
+      - name: 'Upload .rpm artifact'
+        uses: actions/upload-artifact@v4
+        with:
+          name: rpm-package
+          path: ${{ env.RPM_FILENAME }}
+          retention-days: 1
 
   build-deb:
     name: 'Build .deb'
     needs: build
     runs-on: ubuntu-latest
+    env:
+      NFPM_VERSION: "2.43.0"
+      DEB_FILENAME: "clever-tools-${{ github.ref_name }}.deb"
     steps:
+      - name: 'Checkout sources'
+        uses: actions/checkout@v4
       - name: 'Download archives'
         uses: actions/download-artifact@v4
         with:
-          pattern: archive-checksum-linux
-      - name: 'foobar'
-        run: echo foobar
+          pattern: build-linux
+      - name: 'Download nfpm'
+        run: |
+          curl -sL https://github.com/goreleaser/nfpm/releases/download/v${{ env.NFPM_VERSION }}/nfpm_${{ env.NFPM_VERSION }}_Linux_x86_64.tar.gz | tar -xz
+          chmod +x nfpm
+      - name: 'Build .deb with nfpm'
+        run: |
+          ./nfpm package --config scripts/templates/nfpm.yaml --packager deb --target ${{ env.DEB_FILENAME }}
+        env:
+          VERSION: "1.0.0-${{ github.ref_name }}"
+          NFPM_ARCH: "amd64"
+      - name: 'Upload .deb artifact'
+        uses: actions/upload-artifact@v4
+        with:
+          name: deb-package
+          path: ${{ env.DEB_FILENAME }}
+          retention-days: 1
 
   build-nupkg:
     name: 'Build .nupkg'

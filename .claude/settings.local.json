@@ -15,9 +15,7 @@
       "Bash(mkdir:*)",
       "Bash(mv:*)",
       "Bash(source:*)",
-      "WebFetch(domain:*.github.com)",
       "WebFetch(domain:nfpm.goreleaser.com)",
-      "mcp__github__*",
       "Bash(gh run view:*)"
     ],
     "deny": []
