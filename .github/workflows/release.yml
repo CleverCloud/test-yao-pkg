@@ -11,6 +11,9 @@ on:
 
 env:
   NFPM_VERSION: "2.43.0"
+  RPM_FILENAME: "clever-tools-${{ github.ref_name }}.rpm"
+  NEXUS_SERVER_URL: "https://nexus.clever-cloud.com"
+  NEXUS_RPM_REPOSITORY: "rpm-test"
 
 jobs:
   build:
@@ -25,7 +28,6 @@ jobs:
     env:
       RPM_GPG_PRIVATE_KEY: ${{ secrets.RPM_GPG_PRIVATE_KEY }}
       NFPM_PASSPHRASE: ${{ secrets.RPM_GPG_PASSPHRASE }}
-      RPM_FILENAME: "clever-tools-${{ github.ref_name }}.rpm"
     steps:
       - name: 'Checkout sources'
         uses: actions/checkout@v4
@@ -161,8 +163,22 @@ jobs:
     needs: build-rpm
     runs-on: ubuntu-latest
     steps:
-      - name: 'foobar'
-        run: echo foobar
+      - name: 'Download RPM artifact'
+        uses: actions/download-artifact@v4
+        with:
+          name: rpm-package
+          path: ./
+      - name: 'Publish RPM to Nexus Repository'
+        uses: sonatype-nexus-community/nexus-repo-github-action@master
+        with:
+          serverUrl: ${{ secrets.NEXUS_SERVER_URL }}
+          username: ${{ secrets.NEXUS_USERNAME }}
+          password: ${{ secrets.NEXUS_PASSWORD }}
+          format: yum
+          repository: ${{ secrets.NEXUS_RPM_REPOSITORY }}
+          coordinates: name=clever-tools version=${{ github.ref_name }} arch=x86_64
+          assets: extension=rpm
+          filename: ${{ env.RPM_FILENAME }}
   publish-nexus-deb:
     name: 'Publish .deb to Nexus'
     needs: build-deb
