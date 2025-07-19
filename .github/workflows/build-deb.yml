@@ -1,0 +1,33 @@
+name: Build DEB
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  NFPM_VERSION: "2.43.0"
+  DEB_FILENAME: "clever-tools-${{ github.ref_name }}.deb"
+
+jobs:
+  build-deb:
+    name: 'Build .deb'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Checkout sources'
+        uses: actions/checkout@v4
+      - name: 'Download nfpm'
+        run: |
+          curl -sL https://github.com/goreleaser/nfpm/releases/download/v${{ env.NFPM_VERSION }}/nfpm_${{ env.NFPM_VERSION }}_Linux_x86_64.tar.gz | tar -xz
+          chmod +x nfpm
+      - name: 'Build DEB with nfpm'
+        run: |
+          ./nfpm package --config scripts/templates/nfpm-deb.yaml --packager deb --target ${{ env.DEB_FILENAME }}
+        env:
+          VERSION: ${{ github.ref_name }}
+      - name: 'Upload DEB artifact'
+        uses: actions/upload-artifact@v4
+        with:
+          name: deb-package
+          path: ${{ env.DEB_FILENAME }}
+          retention-days: 1
