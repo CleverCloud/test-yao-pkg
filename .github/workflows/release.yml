@@ -12,8 +12,10 @@ on:
 env:
   NFPM_VERSION: "2.43.0"
   RPM_FILENAME: "clever-tools-${{ github.ref_name }}.rpm"
+  DEB_FILENAME: "clever-tools-${{ github.ref_name }}.deb"
   NEXUS_SERVER_URL: "https://nexus.clever-cloud.com"
   NEXUS_RPM_REPOSITORY: "rpm-test"
+  NEXUS_DEB_REPOSITORY: "deb-test"
 
 jobs:
   build:
@@ -54,36 +56,34 @@ jobs:
           path: ${{ env.RPM_FILENAME }}
           retention-days: 1
 
-#  build-deb:
-#    name: 'Build .deb'
-#    needs: build
-#    runs-on: ubuntu-latest
-#    env:
-#      DEB_FILENAME: "clever-tools-${{ github.ref_name }}.deb"
-#    steps:
-#      - name: 'Checkout sources'
-#        uses: actions/checkout@v4
-#      - name: 'Download build-linux artifact'
-#        uses: actions/download-artifact@v4
-#        with:
-#          name: build-linux
-#          path: build
-#      - name: 'Download nfpm'
-#        run: |
-#          curl -sL https://github.com/goreleaser/nfpm/releases/download/v${{ env.NFPM_VERSION }}/nfpm_${{ env.NFPM_VERSION }}_Linux_x86_64.tar.gz | tar -xz
-#          chmod +x nfpm
-#      - name: 'Build .deb with nfpm'
-#        run: |
-#          ./nfpm package --config scripts/templates/nfpm.yaml --packager deb --target ${{ env.DEB_FILENAME }}
-#        env:
-#          VERSION: "1.0.0-${{ github.ref_name }}"
-#          NFPM_ARCH: "amd64"
-#      - name: 'Upload .deb artifact'
-#        uses: actions/upload-artifact@v4
-#        with:
-#          name: deb-package
-#          path: ${{ env.DEB_FILENAME }}
-#          retention-days: 1
+  build-deb:
+    name: 'Build .deb'
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Checkout sources'
+        uses: actions/checkout@v4
+      - name: 'Download build-linux artifact'
+        uses: actions/download-artifact@v4
+        with:
+          name: build-linux
+          path: build
+      - name: 'Download nfpm'
+        run: |
+          curl -sL https://github.com/goreleaser/nfpm/releases/download/v${{ env.NFPM_VERSION }}/nfpm_${{ env.NFPM_VERSION }}_Linux_x86_64.tar.gz | tar -xz
+          chmod +x nfpm
+      - name: 'Build .deb with nfpm'
+        run: |
+          ./nfpm package --config scripts/templates/nfpm.yaml --packager deb --target ${{ env.DEB_FILENAME }}
+        env:
+          VERSION: ${{ github.ref_name }}
+          NFPM_ARCH: "amd64"
+      - name: 'Upload .deb artifact'
+        uses: actions/upload-artifact@v4
+        with:
+          name: deb-package
+          path: ${{ env.DEB_FILENAME }}
+          retention-days: 1
 
 #  build-nupkg:
 #    name: 'Build .nupkg'
@@ -173,13 +173,21 @@ jobs:
           curl -v -u "${{ secrets.NEXUS_USER }}:${{ secrets.NEXUS_PASSWORD }}" \
             --upload-file "${{ env.RPM_FILENAME }}" \
             "${{ env.NEXUS_SERVER_URL }}/repository/${{ env.NEXUS_RPM_REPOSITORY }}/${{ env.RPM_FILENAME }}"
-#  publish-nexus-deb:
-#    name: 'Publish .deb to Nexus'
-#    needs: build-deb
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: 'foobar'
-#        run: echo foobar
+  publish-nexus-deb:
+    name: 'Publish .deb to Nexus'
+    needs: build-deb
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Download DEB artifact'
+        uses: actions/download-artifact@v4
+        with:
+          name: deb-package
+          path: ./
+      - name: 'Publish DEB to Nexus Repository'
+        run: |
+          curl -v -u "${{ secrets.NEXUS_USER }}:${{ secrets.NEXUS_PASSWORD }}" \
+            --upload-file "${{ env.DEB_FILENAME }}" \
+            "${{ env.NEXUS_SERVER_URL }}/repository/${{ env.NEXUS_DEB_REPOSITORY }}/${{ env.DEB_FILENAME }}"
 #  publish-nexus-nupkg:
 #    name: 'Publish .nupkg to Nexus'
 #    needs: build-nupkg
