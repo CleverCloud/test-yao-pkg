@@ -33,27 +33,17 @@ jobs:
           arch: 'x86_64'
           desc: 'Command-line interface for interacting with Clever Cloud services'
           license: 'Apache-2.0'
-      - name: 'Import GPG key'
-        if: env.RPM_GPG_PRIVATE_KEY != ''
+      - name: 'Install RPM signing tools'
         run: |
-          echo "${{ secrets.RPM_GPG_PRIVATE_KEY }}" | gpg --import --batch
-        env:
-          RPM_GPG_PRIVATE_KEY: ${{ secrets.RPM_GPG_PRIVATE_KEY }}
-      - name: 'Sign RPM package'
-        if: env.RPM_GPG_PRIVATE_KEY != ''
+          sudo apt-get update
+          sudo apt-get install -y rpm gnupg
+      - name: 'Import GPG key and sign RPM'
         run: |
-          rpm --addsign ${{ steps.rpm_build.outputs.file_name }}
-        env:
-          RPM_GPG_PRIVATE_KEY: ${{ secrets.RPM_GPG_PRIVATE_KEY }}
+          echo "$RPM_GPG_PRIVATE_KEY" | gpg --import --batch
+          echo "$RPM_GPG_PASSPHRASE" | rpm --addsign ${{ steps.rpm_build.outputs.file_name }}
       - name: 'Upload RPM artifact'
         uses: actions/upload-artifact@v4
         with:
           name: rpm-package
-          path: ${{ steps.rpm_build.outputs.file_name }}
-          retention-days: 1
-      - name: 'Upload rpm artifact'
-        uses: actions/upload-artifact@v4
-        with:
-          name: rpm
           path: ${{ steps.rpm_build.outputs.file_name }}
           retention-days: 1
