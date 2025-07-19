@@ -169,16 +169,10 @@ jobs:
           name: rpm-package
           path: ./
       - name: 'Publish RPM to Nexus Repository'
-        uses: sonatype-nexus-community/nexus-repo-github-action@master
-        with:
-          serverUrl: ${{ env.NEXUS_SERVER_URL }}
-          username: ${{ secrets.NEXUS_USER }}
-          password: ${{ secrets.NEXUS_PASSWORD }}
-          format: yum
-          repository: ${{ env.NEXUS_RPM_REPOSITORY }}
-          coordinates: name=clever-tools version=${{ github.ref_name }} arch=x86_64
-          assets: extension=rpm
-          filename: ${{ env.RPM_FILENAME }}
+        run: |
+          curl -v -u "${{ secrets.NEXUS_USER }}:${{ secrets.NEXUS_PASSWORD }}" \
+            --upload-file "${{ env.RPM_FILENAME }}" \
+            "${{ env.NEXUS_SERVER_URL }}/repository/${{ env.NEXUS_RPM_REPOSITORY }}/${{ env.RPM_FILENAME }}"
 #  publish-nexus-deb:
 #    name: 'Publish .deb to Nexus'
 #    needs: build-deb
