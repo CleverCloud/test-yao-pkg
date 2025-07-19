@@ -1,5 +1,5 @@
 name: "clever-tools"
-arch: "x86_64"
+arch: "${NFPM_ARCH}"
 platform: "linux"
 version: "${VERSION}"
 maintainer: "Clever Cloud"
@@ -16,8 +16,3 @@ contents:
 rpm:
   signature:
     key_file: "/tmp/signing-key.asc"
-
-overrides:
-  deb:
-    arch: "amd64"
-    version: "1.0.0-${VERSION}"
