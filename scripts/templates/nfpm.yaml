@@ -1,5 +1,7 @@
 name: "clever-tools"
+arch: "x86_64"
 platform: "linux"
+version: "${VERSION}"
 maintainer: "Clever Cloud"
 description: "Command Line Interface for Clever Cloud."
 vendor: "Clever Cloud"
@@ -11,12 +13,11 @@ contents:
     file_info:
       mode: 0755
 
+rpm:
+  signature:
+    key_file: "/tmp/signing-key.asc"
+
 overrides:
-  rpm:
-    arch: "x86_64"
-    version: "${VERSION}"
-    signature:
-      key_file: "/tmp/signing-key.asc"
   deb:
     arch: "amd64"
     version: "1.0.0-${VERSION}"
