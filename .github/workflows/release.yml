@@ -186,7 +186,9 @@ jobs:
       - name: 'Publish DEB to Nexus Repository'
         run: |
           curl -v -u "${{ secrets.NEXUS_USER }}:${{ secrets.NEXUS_PASSWORD }}" \
-            --upload-file "${{ env.DEB_FILENAME }}" \
+            -H "Content-Type: application/octet-stream" \
+            --data-binary "@${{ env.DEB_FILENAME }}" \
+            -X POST \
             "${{ env.NEXUS_SERVER_URL }}/repository/${{ env.NEXUS_DEB_REPOSITORY }}/${{ env.DEB_FILENAME }}"
 #  publish-nexus-nupkg:
 #    name: 'Publish .nupkg to Nexus'
