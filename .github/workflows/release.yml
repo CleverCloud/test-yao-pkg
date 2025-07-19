@@ -170,7 +170,7 @@ jobs:
           path: ./
       - name: 'Publish RPM to Nexus Repository'
         run: |
-          HTTP_STATUS=$(curl -X PUT "${{ env.NEXUS_SERVER_URL }}/repository/${{ env.NEXUS_RPM_REPOSITORY }}" \
+          HTTP_STATUS=$(curl -X PUT "${{ env.NEXUS_SERVER_URL }}/repository/${{ env.NEXUS_RPM_REPOSITORY }}/${{ env.RPM_FILENAME }}" \
             -u "${{ secrets.NEXUS_USER }}:${{ secrets.NEXUS_PASSWORD }}" \
             --data-binary "@${{ env.RPM_FILENAME }}" \
             -v \
@@ -195,7 +195,7 @@ jobs:
           path: ./
       - name: 'Publish DEB to Nexus Repository'
         run: |
-          HTTP_STATUS=$(curl -X POST "${{ env.NEXUS_SERVER_URL }}/repository/${{ env.NEXUS_DEB_REPOSITORY }}" \
+          HTTP_STATUS=$(curl -X POST "${{ env.NEXUS_SERVER_URL }}/repository/${{ env.NEXUS_DEB_REPOSITORY }}/${{ env.DEB_FILENAME }}" \
             -u "${{ secrets.NEXUS_USER }}:${{ secrets.NEXUS_PASSWORD }}" \
             -H "accept: application/json" \
             -H "content-type: multipart/form-data" \
