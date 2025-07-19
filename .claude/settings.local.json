@@ -11,7 +11,18 @@
       "Bash(./scripts/preview.js:*)",
       "Bash(rm:*)",
       "WebFetch(domain:github.com)",
-      "Bash(chmod:*)"
+      "Bash(chmod:*)",
+      "WebFetch(domain:nfpm.goreleaser.com)",
+      "WebFetch(domain:nfpm.goreleaser.com)",
+      "WebFetch(domain:nfpm.goreleaser.com)",
+      "WebFetch(domain:nfpm.goreleaser.com)",
+      "Bash(git pull:*)",
+      "mcp__github__list_workflow_run_artifacts",
+      "Bash(gh run download:*)",
+      "Bash(ls:*)",
+      "Bash(docker run:*)",
+      "Bash(mkdir:*)",
+      "Bash(mv:*)"
     ],
     "deny": []
   }
