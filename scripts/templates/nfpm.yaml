@@ -1,7 +1,7 @@
 name: "clever-tools"
 arch: "x86_64"
 platform: "linux"
-version: "${GITHUB_REF_NAME}"
+version: "${VERSION}"
 maintainer: "Clever Cloud"
 description: "Command Line Interface for Clever Cloud."
 vendor: "Clever Cloud"
