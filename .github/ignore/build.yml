@@ -1,0 +1,71 @@
+name: Build
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+      node-version:
+        type: string
+        default: node22
+
+jobs:
+  bundle-cjs:
+    name: 'Bundle single clever.cjs'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Checkout sources'
+        uses: actions/checkout@v4
+      - name: 'Setup Node.js'
+        uses: actions/setup-node@v4
+        with: { node-version-file: 'package.json' }
+      - name: 'Install Node.js dependencies'
+        run: npm ci
+      - name: 'Bundle to single clever.cjs'
+        run: ./scripts/bundle-cjs.js ${{ inputs.version }}
+      - name: 'Upload bundle-cjs artifact'
+        uses: actions/upload-artifact@v4
+        with:
+          name: bundle-cjs
+          path: build
+          retention-days: 1
+
+  build-binaries:
+    name: 'Build for ${{ matrix.platform }}'
+    needs: bundle-cjs
+    runs-on: ${{ matrix.runs-on }}
+    strategy:
+      matrix:
+        include:
+          - platform: linux
+            runs-on: ubuntu-latest
+          - platform: macos
+            runs-on: macos-14
+          - platform: win
+            runs-on: windows-latest
+    steps:
+      - name: 'Checkout sources'
+        uses: actions/checkout@v4
+      - name: 'Setup Node.js'
+        uses: actions/setup-node@v4
+        with: { node-version-file: 'package.json' }
+      - name: 'Install Node.js dependencies'
+        run: npm ci
+      - name: 'Download bundle-cjs artifact'
+        uses: actions/download-artifact@v4
+        with:
+          name: bundle-cjs
+          path: build
+      - name: 'Build binary'
+        shell: bash
+        run: ./scripts/build-binary.js ${{ inputs.version }}
+      - name: 'Create archive'
+        shell: bash
+        run: ./scripts/create-archive.js ${{ inputs.version }}
+      - name: 'Upload build-${{ matrix.platform }} artifact'
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-${{ matrix.platform }}
+          path: build
+          retention-days: 1

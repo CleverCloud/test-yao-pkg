@@ -1,0 +1,139 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+# on:
+#   push:
+#     tags:
+#       - '*'
+
+jobs:
+  build:
+    uses: ./.github/workflows/build.yml
+    with:
+      version: ${{ github.ref_name }}
+
+  build-rpm:
+    name: 'Build .rpm'
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Download archives'
+        uses: actions/download-artifact@v4
+        with:
+          pattern: archive-checksum-linux
+      - name: 'foobar'
+        run: echo foobar
+
+  build-deb:
+    name: 'Build .deb'
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Download archives'
+        uses: actions/download-artifact@v4
+        with:
+          pattern: archive-checksum-linux
+      - name: 'foobar'
+        run: echo foobar
+
+  build-nupkg:
+    name: 'Build .nupkg'
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Download archives'
+        uses: actions/download-artifact@v4
+        with:
+          pattern: archive-checksum-windows
+      - name: 'foobar'
+        run: echo foobar
+
+  publish-npm:
+    name: 'Publish to npm'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'foobar'
+        run: echo foobar
+
+  publish-cellar-archives:
+    name: 'Publish archives to cellar'
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'foobar'
+        run: echo foobar
+  publish-cellar-rpm:
+    name: 'Publish .rpm to cellar'
+    needs: build-rpm
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'foobar'
+        run: echo foobar
+  publish-cellar-deb:
+    name: 'Publish .deb to cellar'
+    needs: build-deb
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'foobar'
+        run: echo foobar
+  publish-cellar-nupkg:
+    name: 'Publish .nupkg to cellar'
+    needs: build-nupkg
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'foobar'
+        run: echo foobar
+
+  publish-aur:
+    name: 'Publish to AUR'
+    needs: publish-cellar-archives
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'foobar'
+        run: echo foobar
+  publish-brew:
+    name: 'Publish to GitHub for Homebrew'
+    needs: publish-cellar-archives
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'foobar'
+        run: echo foobar
+  publish-dockerhub:
+    name: 'Publish Docker Hub'
+    needs: publish-cellar-archives
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'foobar'
+        run: echo foobar
+  publish-exherbo:
+    name: 'Publish to GitHub for exherbo'
+    needs: publish-cellar-archives
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'foobar'
+        run: echo foobar
+
+  publish-nexus-rpm:
+    name: 'Publish .rpm to Nexus'
+    needs: build-rpm
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'foobar'
+        run: echo foobar
+  publish-nexus-deb:
+    name: 'Publish .deb to Nexus'
+    needs: build-deb
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'foobar'
+        run: echo foobar
+  publish-nexus-nupkg:
+    name: 'Publish .nupkg to Nexus'
+    needs: build-nupkg
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'foobar'
+        run: echo foobar

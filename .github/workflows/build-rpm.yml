@@ -1,0 +1,55 @@
+name: Build RPM
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-rpm:
+    name: 'Build .rpm'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Checkout sources'
+        uses: actions/checkout@v4
+      - name: 'Prepare RPM package structure'
+        run: |
+          mkdir -p .rpmpkg/usr/bin
+          cp build/${{ github.ref_name }}/linux/clever .rpmpkg/usr/bin/clever
+          chmod +x .rpmpkg/usr/bin/clever
+      - name: 'Build RPM package'
+        id: rpm_build
+        uses: jiro4989/build-rpm-action@v2
+        with:
+          summary: 'Clever Tools CLI'
+          package: 'clever-tools'
+          package_root: '.rpmpkg'
+          maintainer: 'Clever Cloud'
+          version: ${{ github.ref_name }}
+          arch: 'x86_64'
+          desc: 'Command-line interface for interacting with Clever Cloud services'
+          license: 'Apache-2.0'
+      - name: 'Upload rpm artifact'
+        uses: actions/upload-artifact@v4
+        with:
+          name: rpm
+          path: ${{ steps.rpm_build.outputs.file_name }}
+          retention-days: 1
+#      - name: 'Import GPG key'
+#        if: env.RPM_GPG_PRIVATE_KEY != ''
+#        run: |
+#          echo "${{ secrets.RPM_GPG_PRIVATE_KEY }}" | gpg --import --batch
+#        env:
+#          RPM_GPG_PRIVATE_KEY: ${{ secrets.RPM_GPG_PRIVATE_KEY }}
+#      - name: 'Sign RPM package'
+#        if: env.RPM_GPG_PRIVATE_KEY != ''
+#        run: |
+#          rpm --addsign ${{ steps.rpm_build.outputs.file_name }}
+#        env:
+#          RPM_GPG_PRIVATE_KEY: ${{ secrets.RPM_GPG_PRIVATE_KEY }}
+#      - name: 'Upload RPM artifact'
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: rpm-package
+#          path: ${{ steps.rpm_build.outputs.file_name }}
+#          retention-days: 1

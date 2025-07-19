@@ -9,7 +9,8 @@
       "Bash(./scripts/preview.js links)",
       "Bash(source:*)",
       "Bash(./scripts/preview.js:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "WebFetch(domain:github.com)"
     ],
     "deny": []
   }
