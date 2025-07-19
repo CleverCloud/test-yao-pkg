@@ -76,10 +76,6 @@ chmod 755 %{buildroot}/usr/bin/clever
 
 %files
 /usr/bin/clever
-
-%changelog
-* $(date +'%a %b %d %Y') Builder <builder@example.com> - ${VERSION}-${RELEASE}
-- Initial RPM package
 EOF
 
 # Copy binary to SOURCES
@@ -97,12 +93,12 @@ if [ -n "$RPM_FILE" ]; then
     log_info "RPM package built successfully:"
     echo "  Location: $RPM_FILE"
     echo "  Size: $(du -h "$RPM_FILE" | cut -f1)"
-    
+
     # Copy to current directory
     FINAL_RPM="${PACKAGE_NAME}-${VERSION}-${RELEASE}.${ARCH}.rpm"
     cp "$RPM_FILE" "$FINAL_RPM"
     log_info "RPM copied to: $FINAL_RPM"
-    
+
     # Display package info
     log_info "Package information:"
     rpm -qip "$FINAL_RPM"
