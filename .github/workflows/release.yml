@@ -27,10 +27,11 @@ jobs:
     steps:
       - name: 'Checkout sources'
         uses: actions/checkout@v4
-      - name: 'Download archives'
+      - name: 'Download build-linux artifact'
         uses: actions/download-artifact@v4
         with:
-          pattern: build-linux
+          name: build-linux
+          path: build
       - name: 'Download nfpm'
         run: |
           curl -sL https://github.com/goreleaser/nfpm/releases/download/v${{ env.NFPM_VERSION }}/nfpm_${{ env.NFPM_VERSION }}_Linux_x86_64.tar.gz | tar -xz
@@ -59,10 +60,11 @@ jobs:
     steps:
       - name: 'Checkout sources'
         uses: actions/checkout@v4
-      - name: 'Download archives'
+      - name: 'Download build-linux artifact'
         uses: actions/download-artifact@v4
         with:
-          pattern: build-linux
+          name: build-linux
+          path: build
       - name: 'Download nfpm'
         run: |
           curl -sL https://github.com/goreleaser/nfpm/releases/download/v${{ env.NFPM_VERSION }}/nfpm_${{ env.NFPM_VERSION }}_Linux_x86_64.tar.gz | tar -xz
@@ -85,10 +87,6 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: 'Download archives'
-        uses: actions/download-artifact@v4
-        with:
-          pattern: archive-checksum-windows
       - name: 'foobar'
         run: echo foobar
 

@@ -16,7 +16,8 @@
       "Bash(mv:*)",
       "Bash(source:*)",
       "WebFetch(domain:nfpm.goreleaser.com)",
-      "Bash(gh run view:*)"
+      "Bash(gh run view:*)",
+      "Bash(gh workflow:*)"
     ],
     "deny": []
   }
