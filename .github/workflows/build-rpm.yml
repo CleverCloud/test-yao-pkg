@@ -25,13 +25,14 @@ jobs:
         id: rpm_build
         uses: jiro4989/build-rpm-action@v2
         with:
-          summary: 'Clever Tools CLI'
-          package: 'clever-tools'
           package_root: '.rpmpkg'
-          maintainer: 'Clever Cloud'
+          package: 'clever-tools'
           version: ${{ github.ref_name }}
           arch: 'x86_64'
-          desc: 'Command-line interface for interacting with Clever Cloud services'
+          maintainer: 'Clever Cloud'
+          vendor: 'Clever Cloud'
+          summary: 'Command Line Interface for Clever Cloud.'
+          desc: 'Command Line Interface for Clever Cloud.'
           license: 'Apache-2.0'
 #      - name: 'Install RPM signing tools'
 #        run: |
