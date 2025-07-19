@@ -40,10 +40,10 @@ jobs:
         include:
           - platform: linux
             runs-on: ubuntu-latest
-          - platform: macos
-            runs-on: macos-14
-          - platform: win
-            runs-on: windows-latest
+#          - platform: macos
+#            runs-on: macos-14
+#          - platform: win
+#            runs-on: windows-latest
     steps:
       - name: 'Checkout sources'
         uses: actions/checkout@v4
