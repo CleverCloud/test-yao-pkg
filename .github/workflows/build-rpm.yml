@@ -44,8 +44,10 @@ jobs:
           GPG_KEY_ID=$(gpg --list-secret-keys --with-colons | grep '^sec:' | cut -d: -f5)
           echo "%_gpg_name $GPG_KEY_ID" >> ~/.rpmmacros
           echo "%_signature gpg" >> ~/.rpmmacros
-          echo "%__gpg_sign_cmd %{__gpg} gpg --force-v3-sigs --batch --verbose --no-armor --passphrase-fd 3 --no-secmem-warning -u \"%{_gpg_name}\" -sbo %{__signature_filename} --digest-algo sha256 %{__plaintext_filename}" >> ~/.rpmmacros
-          echo "$RPM_GPG_PASSPHRASE" | rpm --addsign ${{ steps.rpm_build.outputs.file_name }}
+          echo "$RPM_GPG_PASSPHRASE" > /tmp/passphrase
+          echo "%__gpg_sign_cmd %{__gpg} gpg --force-v3-sigs --batch --verbose --no-armor --passphrase-file /tmp/passphrase --no-secmem-warning -u \"%{_gpg_name}\" -sbo %{__signature_filename} --digest-algo sha256 %{__plaintext_filename}" >> ~/.rpmmacros
+          rpm --addsign ${{ steps.rpm_build.outputs.file_name }}
+          rm -f /tmp/passphrase
       - name: 'Upload RPM artifact'
         uses: actions/upload-artifact@v4
         with:
