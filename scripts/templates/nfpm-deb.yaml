@@ -1,7 +1,7 @@
 name: "clever-tools"
 arch: "amd64"
 platform: "linux"
-version: "${VERSION}"
+version: "1.0.0-${VERSION}"
 maintainer: "Clever Cloud"
 description: "Command Line Interface for Clever Cloud."
 vendor: "Clever Cloud"
