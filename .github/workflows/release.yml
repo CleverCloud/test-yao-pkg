@@ -170,9 +170,19 @@ jobs:
           path: ./
       - name: 'Publish RPM to Nexus Repository'
         run: |
-          curl -v -u "${{ secrets.NEXUS_USER }}:${{ secrets.NEXUS_PASSWORD }}" \
-            --upload-file "${{ env.RPM_FILENAME }}" \
-            "${{ env.NEXUS_SERVER_URL }}/repository/${{ env.NEXUS_RPM_REPOSITORY }}/${{ env.RPM_FILENAME }}"
+          HTTP_STATUS=$(curl -X PUT "${{ env.NEXUS_SERVER_URL }}/repository/${{ env.NEXUS_RPM_REPOSITORY }}" \
+            -u "${{ secrets.NEXUS_USER }}:${{ secrets.NEXUS_PASSWORD }}" \
+            --data-binary "@${{ env.RPM_FILENAME }}" \
+            -v \
+            -w "%{http_code}" \
+            -o /dev/null \
+            -s)
+          echo "HTTP Status: $HTTP_STATUS"
+          if [[ "$HTTP_STATUS" -lt 200 || "$HTTP_STATUS" -ge 300 ]]; then
+            echo "Error: Upload failed with HTTP status $HTTP_STATUS"
+            exit 1
+          fi
+          echo "RPM upload successful with status $HTTP_STATUS"
   publish-nexus-deb:
     name: 'Publish .deb to Nexus'
     needs: build-deb
@@ -185,11 +195,21 @@ jobs:
           path: ./
       - name: 'Publish DEB to Nexus Repository'
         run: |
-          curl -v -u "${{ secrets.NEXUS_USER }}:${{ secrets.NEXUS_PASSWORD }}" \
-            -H "Content-Type: application/octet-stream" \
-            --data-binary "@${{ env.DEB_FILENAME }}" \
-            -X POST \
-            "${{ env.NEXUS_SERVER_URL }}/repository/${{ env.NEXUS_DEB_REPOSITORY }}/${{ env.DEB_FILENAME }}"
+          HTTP_STATUS=$(curl -X POST "${{ env.NEXUS_SERVER_URL }}/repository/${{ env.NEXUS_DEB_REPOSITORY }}" \
+            -u "${{ secrets.NEXUS_USER }}:${{ secrets.NEXUS_PASSWORD }}" \
+            -H "accept: application/json" \
+            -H "content-type: multipart/form-data" \
+            -F "file=@${{ env.DEB_FILENAME }}" \
+            -v \
+            -w "%{http_code}" \
+            -o /dev/null \
+            -s)
+          echo "HTTP Status: $HTTP_STATUS"
+          if [[ "$HTTP_STATUS" -lt 200 || "$HTTP_STATUS" -ge 300 ]]; then
+            echo "Error: Upload failed with HTTP status $HTTP_STATUS"
+            exit 1
+          fi
+          echo "DEB upload successful with status $HTTP_STATUS"
 #  publish-nexus-nupkg:
 #    name: 'Publish .nupkg to Nexus'
 #    needs: build-nupkg
