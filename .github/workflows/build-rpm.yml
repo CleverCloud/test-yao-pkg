@@ -5,6 +5,10 @@ on:
     branches:
       - main
 
+env:
+  RPM_GPG_PRIVATE_KEY: ${{ secrets.RPM_GPG_PRIVATE_KEY }}
+  RPM_GPG_PASSPHRASE: ${{ secrets.RPM_GPG_PASSPHRASE }}
+
 jobs:
   build-rpm:
     name: 'Build .rpm'
@@ -29,27 +33,27 @@ jobs:
           arch: 'x86_64'
           desc: 'Command-line interface for interacting with Clever Cloud services'
           license: 'Apache-2.0'
+      - name: 'Import GPG key'
+        if: env.RPM_GPG_PRIVATE_KEY != ''
+        run: |
+          echo "${{ secrets.RPM_GPG_PRIVATE_KEY }}" | gpg --import --batch
+        env:
+          RPM_GPG_PRIVATE_KEY: ${{ secrets.RPM_GPG_PRIVATE_KEY }}
+      - name: 'Sign RPM package'
+        if: env.RPM_GPG_PRIVATE_KEY != ''
+        run: |
+          rpm --addsign ${{ steps.rpm_build.outputs.file_name }}
+        env:
+          RPM_GPG_PRIVATE_KEY: ${{ secrets.RPM_GPG_PRIVATE_KEY }}
+      - name: 'Upload RPM artifact'
+        uses: actions/upload-artifact@v4
+        with:
+          name: rpm-package
+          path: ${{ steps.rpm_build.outputs.file_name }}
+          retention-days: 1
       - name: 'Upload rpm artifact'
         uses: actions/upload-artifact@v4
         with:
           name: rpm
           path: ${{ steps.rpm_build.outputs.file_name }}
           retention-days: 1
-#      - name: 'Import GPG key'
-#        if: env.RPM_GPG_PRIVATE_KEY != ''
-#        run: |
-#          echo "${{ secrets.RPM_GPG_PRIVATE_KEY }}" | gpg --import --batch
-#        env:
-#          RPM_GPG_PRIVATE_KEY: ${{ secrets.RPM_GPG_PRIVATE_KEY }}
-#      - name: 'Sign RPM package'
-#        if: env.RPM_GPG_PRIVATE_KEY != ''
-#        run: |
-#          rpm --addsign ${{ steps.rpm_build.outputs.file_name }}
-#        env:
-#          RPM_GPG_PRIVATE_KEY: ${{ secrets.RPM_GPG_PRIVATE_KEY }}
-#      - name: 'Upload RPM artifact'
-#        uses: actions/upload-artifact@v4
-#        with:
-#          name: rpm-package
-#          path: ${{ steps.rpm_build.outputs.file_name }}
-#          retention-days: 1
