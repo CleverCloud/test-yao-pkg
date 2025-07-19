@@ -6,9 +6,9 @@ on:
       - main
 
 env:
+  NFPM_VERSION: "2.43.0"
   RPM_GPG_PRIVATE_KEY: ${{ secrets.RPM_GPG_PRIVATE_KEY }}
   NFPM_PASSPHRASE: ${{ secrets.RPM_GPG_PASSPHRASE }}
-  NFPM_VERSION: "2.43.0"
   RPM_FILENAME: "clever-tools-${{ github.ref_name }}.rpm"
 
 jobs:
@@ -22,13 +22,13 @@ jobs:
         run: |
           curl -sL https://github.com/goreleaser/nfpm/releases/download/v${{ env.NFPM_VERSION }}/nfpm_${{ env.NFPM_VERSION }}_Linux_x86_64.tar.gz | tar -xz
           chmod +x nfpm
-      - name: 'Build and sign RPM with nfpm'
+      - name: 'Build and sign .rpm with nfpm'
         run: |
           echo "$RPM_GPG_PRIVATE_KEY" > /tmp/signing-key.asc
           ./nfpm package --config scripts/templates/nfpm.yaml --packager rpm --target ${{ env.RPM_FILENAME }}
         env:
           VERSION: ${{ github.ref_name }}
-      - name: 'Upload RPM artifact'
+      - name: 'Upload .rpm artifact'
         uses: actions/upload-artifact@v4
         with:
           name: rpm-package

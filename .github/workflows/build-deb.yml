@@ -20,12 +20,12 @@ jobs:
         run: |
           curl -sL https://github.com/goreleaser/nfpm/releases/download/v${{ env.NFPM_VERSION }}/nfpm_${{ env.NFPM_VERSION }}_Linux_x86_64.tar.gz | tar -xz
           chmod +x nfpm
-      - name: 'Build DEB with nfpm'
+      - name: 'Build .deb with nfpm'
         run: |
-          ./nfpm package --config scripts/templates/nfpm-deb.yaml --packager deb --target ${{ env.DEB_FILENAME }}
+          ./nfpm package --config scripts/templates/nfpm.yaml --packager deb --target ${{ env.DEB_FILENAME }}
         env:
           VERSION: ${{ github.ref_name }}
-      - name: 'Upload DEB artifact'
+      - name: 'Upload .deb artifact'
         uses: actions/upload-artifact@v4
         with:
           name: deb-package

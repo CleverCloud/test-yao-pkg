@@ -1,28 +1,23 @@
 {
   "permissions": {
     "allow": [
+      "Bash(./scripts/preview.js:*)",
       "Bash(act:*)",
-      "WebFetch(domain:docs.github.com)",
+      "Bash(chmod:*)",
+      "Bash(docker run:*)",
+      "Bash(gh run download:*)",
+      "Bash(gh run list:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(git push:*)",
-      "Bash(./scripts/preview.js links)",
-      "Bash(source:*)",
-      "Bash(./scripts/preview.js:*)",
-      "Bash(rm:*)",
-      "WebFetch(domain:github.com)",
-      "Bash(chmod:*)",
-      "WebFetch(domain:nfpm.goreleaser.com)",
-      "WebFetch(domain:nfpm.goreleaser.com)",
-      "WebFetch(domain:nfpm.goreleaser.com)",
-      "WebFetch(domain:nfpm.goreleaser.com)",
       "Bash(git pull:*)",
-      "mcp__github__list_workflow_run_artifacts",
-      "Bash(gh run download:*)",
+      "Bash(git push:*)",
       "Bash(ls:*)",
-      "Bash(docker run:*)",
       "Bash(mkdir:*)",
-      "Bash(mv:*)"
+      "Bash(mv:*)",
+      "Bash(source:*)",
+      "WebFetch(domain:*.github.com)",
+      "WebFetch(domain:nfpm.goreleaser.com)",
+      "mcp__github__*"
     ],
     "deny": []
   }
