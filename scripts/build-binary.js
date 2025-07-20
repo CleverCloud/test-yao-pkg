@@ -1,14 +1,16 @@
 #!/usr/bin/env node
 
 import { buildBinary } from './lib/build-binary.js';
-import { getOs, getVersion } from './lib/utils.js';
+import { getOs, getVersion, run } from './lib/utils.js';
 
-const [rawVersion] = process.argv.slice(2);
-if (rawVersion == null) {
-  throw new Error('Missing version');
-}
+run(async () => {
+  const [rawVersion] = process.argv.slice(2);
+  if (rawVersion == null) {
+    throw new Error('Missing version');
+  }
 
-const version = getVersion(rawVersion);
-const os = getOs();
+  const version = getVersion(rawVersion);
+  const os = getOs();
 
-await buildBinary(version, os);
+  await buildBinary(version, os);
+});

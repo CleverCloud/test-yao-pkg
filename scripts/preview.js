@@ -3,7 +3,16 @@
 import { styleText } from 'node:util';
 import textTable from 'text-table';
 import stringLength from 'string-length';
-import { clearDirectory, createTerminalLink, getEmoji, getOs, getVersion, highlight, readEnvVars } from './lib/utils.js';
+import {
+  clearDirectory,
+  createTerminalLink,
+  getEmoji,
+  getOs,
+  getVersion,
+  highlight,
+  readEnvVars,
+  run,
+} from './lib/utils.js';
 import { getCurrentBranch } from './lib/git.js';
 import { PreviewClient } from './lib/preview-client.js';
 import { bundleToSingleCjs } from './lib/bundle-cjs.js';
@@ -12,12 +21,7 @@ import { createArchive } from './lib/create-archive.js';
 import dedent from 'dedent';
 import { BUILD_DIR } from './lib/paths.js';
 
-/**
- * Main entry point for the preview management CLI tool.
- * @throws {Error} When required environment variables are missing, when the command is missing or when an unknown command is provided
- * @returns {Promise<void>}
- */
-async function run () {
+run(async () => {
 
   const [accessKeyId, secretAccessKey] = readEnvVars(['CC_CLEVER_TOOLS_PREVIEWS_CELLAR_KEY_ID', 'CC_CLEVER_TOOLS_PREVIEWS_CELLAR_SECRET_KEY']);
 
@@ -48,7 +52,7 @@ async function run () {
   }
 
   throw new Error(getUsage(`Unknown command "${command}"`));
-}
+});
 
 /**
  * Generates a usage message for the CLI tool.
@@ -169,8 +173,3 @@ async function publishPreview (previewClient, previewName) {
 async function deletePreview (previewClient, previewName) {
   await previewClient.deletePreview(previewName);
 }
-
-run().catch((e) => {
-  console.error(e.message);
-  process.exit(1);
-});

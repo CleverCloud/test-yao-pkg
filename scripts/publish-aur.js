@@ -4,7 +4,7 @@ import pkg from '../package.json' with { type: 'json' };
 import { applyTemplates } from './lib/templates.js';
 import { commitAndPush } from './lib/git.js';
 import { getAssetPath } from './lib/paths.js';
-import { getSha256, highlight } from './lib/utils.js';
+import { getSha256, highlight, run } from './lib/utils.js';
 import { simpleGit } from 'simple-git';
 
 const PKGBASE = 'clever-tools-bin';
@@ -13,26 +13,29 @@ const GIT_PATH = './git-aur';
 // const GIT_URL = `ssh://aur@aur.archlinux.org/${pkgbase}.git`;
 const GIT_URL = `git@github.com:hsablonniere/test.git`;
 
-const [version] = process.argv.slice(2);
-if (version == null) {
-  throw new Error('Missing version');
-}
+run(async () => {
 
-const archivePath = getAssetPath('archive', version, 'build', 'linux');
-const sha256 = getSha256(archivePath);
+  const [version] = process.argv.slice(2);
+  if (version == null) {
+    throw new Error('Missing version');
+  }
 
-console.log(highlight`=> Cloning AUR repository ${GIT_URL} to ${GIT_PATH}`);
-await simpleGit().clone(GIT_URL, GIT_PATH);
+  const archivePath = getAssetPath('archive', version, 'build', 'linux');
+  const sha256 = getSha256(archivePath);
 
-console.log(highlight`=> Applying templates to ${GIT_PATH}`);
-await applyTemplates(GIT_PATH, TEMPLATES_PATH, {
-  description: pkg.description,
-  license: pkg.license,
-  maintainer: pkg.author,
-  pkgbase: PKGBASE,
-  sha256,
-  url: pkg.homepage,
-  version,
+  console.log(highlight`=> Cloning AUR repository ${GIT_URL} to ${GIT_PATH}`);
+  await simpleGit().clone(GIT_URL, GIT_PATH);
+
+  console.log(highlight`=> Applying templates to ${GIT_PATH}`);
+  await applyTemplates(GIT_PATH, TEMPLATES_PATH, {
+    description: pkg.description,
+    license: pkg.license,
+    maintainer: pkg.author,
+    pkgbase: PKGBASE,
+    sha256,
+    url: pkg.homepage,
+    version,
+  });
+
+  await commitAndPush(GIT_PATH, GIT_URL, pkg.author, version);
 });
-
-await commitAndPush(GIT_PATH, GIT_URL, pkg.author, version);

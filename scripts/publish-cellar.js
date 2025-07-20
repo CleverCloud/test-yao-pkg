@@ -2,14 +2,9 @@
 
 import dedent from 'dedent';
 import { ReleaseClient } from './lib/release-client.js';
-import { readEnvVars } from './lib/utils.js';
+import { readEnvVars, run } from './lib/utils.js';
 
-/**
- * Main entry point for the cellar publishing CLI tool.
- * @throws {Error} When required arguments are missing or invalid
- * @returns {Promise<void>}
- */
-async function run () {
+run(async () => {
 
   const [accessKeyId, secretAccessKey] = readEnvVars(['CC_CLEVER_TOOLS_RELEASES_CELLAR_KEY_ID', 'CC_CLEVER_TOOLS_RELEASES_CELLAR_SECRET_KEY']);
 
@@ -47,7 +42,7 @@ async function run () {
       await releaseClient.publishDeb(version);
       break;
   }
-}
+});
 
 /**
  * Generates a usage message for the CLI tool.
@@ -71,8 +66,3 @@ function getUsage (message) {
       publish-to-cellar.js v1.2.3 deb
   `;
 }
-
-run().catch((e) => {
-  console.error(e.message);
-  process.exit(1);
-});

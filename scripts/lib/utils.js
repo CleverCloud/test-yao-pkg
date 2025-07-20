@@ -113,7 +113,7 @@ export function exec (command, cwd) {
     });
 
     child.on('error', (err) => {
-      reject(err);
+      reject(new Error(`Command execution failed!`));
     });
   });
 }
@@ -165,4 +165,16 @@ export function readEnvVars (variableNames) {
   }
 
   return values;
+}
+
+/**
+ * Runs a function and catches any errors, logging them to the console.
+ * @param {Function} fn
+ * @return {void}
+ */
+export function run (fn) {
+  fn().catch((e) => {
+    console.error(`${styleText(['red', 'bold'], 'ERROR:')} ${e.message}`);
+    process.exit(1);
+  });
 }
