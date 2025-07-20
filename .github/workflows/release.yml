@@ -131,16 +131,16 @@ jobs:
         with:
           name: build-linux
           path: build
-      - name: 'Download build-macos artifact'
-        uses: actions/download-artifact@v4
-        with:
-          name: build-macos
-          path: build
-      - name: 'Download build-win artifact'
-        uses: actions/download-artifact@v4
-        with:
-          name: build-win
-          path: build
+#      - name: 'Download build-macos artifact'
+#        uses: actions/download-artifact@v4
+#        with:
+#          name: build-macos
+#          path: build
+#      - name: 'Download build-win artifact'
+#        uses: actions/download-artifact@v4
+#        with:
+#          name: build-win
+#          path: build
       - name: 'Publish archives to cellar'
         run: ./scripts/publish-cellar.js ${{ github.ref_name }} archives
         env:
