@@ -19,7 +19,9 @@ jobs:
         uses: actions/checkout@v4
       - name: 'Setup Node.js'
         uses: actions/setup-node@v4
-        with: { node-version-file: 'package.json' }
+        with:
+          node-version-file: 'package.json'
+          cache: 'npm'
       - name: 'Install Node.js dependencies'
         run: npm ci
       - name: 'Bundle to single clever.cjs'
@@ -49,7 +51,9 @@ jobs:
         uses: actions/checkout@v4
       - name: 'Setup Node.js'
         uses: actions/setup-node@v4
-        with: { node-version-file: 'package.json' }
+        with:
+          node-version-file: 'package.json'
+          cache: 'npm'
       - name: 'Install Node.js dependencies'
         run: npm ci
       - name: 'Download bundle-cjs artifact'
