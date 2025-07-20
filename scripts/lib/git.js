@@ -42,7 +42,7 @@ export async function getCurrentAuthor () {
  * @param {string} version - The version to commit
  * @return {Promise<void>}
  */
-export async function commitAndPush (gitPath, gitUrl, author, version) {
+export async function commitAndPush (gitPath, gitUrl, author, version, message) {
 
   const git = simpleGit(gitPath);
 
@@ -52,7 +52,7 @@ export async function commitAndPush (gitPath, gitUrl, author, version) {
 
   console.log(highlight`=> Commiting changes`);
   await git.add('.');
-  const commitDetails = await git.commit(`Update to ${version}`);
+  const commitDetails = await git.commit(message ?? `Update to ${version}`);
 
   console.log(highlight`=> Pushing ${commitDetails.commit} to ${gitUrl}`);
   await git.push('origin');

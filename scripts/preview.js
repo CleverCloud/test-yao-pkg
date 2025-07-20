@@ -41,6 +41,8 @@ run(async () => {
   switch (command) {
     case 'list':
       return listPreviews(previewClient);
+    case 'update':
+      return updatePreviews(previewClient);
     case 'build':
       return buildPreview(previewClient, previewName, os);
     case 'pr-comment':
@@ -103,6 +105,21 @@ async function listPreviews (previewClient) {
   });
 
   console.log(textTable(table, { stringLength }));
+}
+
+/**
+
+ * @param {PreviewClient} previewClient - The client instance for preview operations
+ */
+async function updatePreviews (previewClient) {
+  const previews = await previewClient.listPreviews();
+
+  if (previews.length === 0) {
+    console.log('No previews right now.');
+    return;
+  }
+
+
 }
 
 /**

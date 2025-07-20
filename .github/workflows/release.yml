@@ -47,14 +47,14 @@ jobs:
       - name: 'Build and sign .rpm with nfpm'
         run: |
           echo "$RPM_GPG_PRIVATE_KEY" > /tmp/signing-key.asc
-          ./nfpm package --config scripts/templates/nfpm.yaml --packager rpm --target ${{ env.RPM_FILENAME }}
+          ./nfpm package --config scripts/templates/nfpm.yaml --packager .rpm --target ${{ env.RPM_FILENAME }}
         env:
           VERSION: ${{ github.ref_name }}
           NFPM_ARCH: "x86_64"
       - name: 'Upload .rpm artifact'
         uses: actions/upload-artifact@v4
         with:
-          name: rpm-package
+          name: build-rpm
           path: ${{ env.RPM_FILENAME }}
           retention-days: 1
 
@@ -77,26 +77,16 @@ jobs:
           chmod +x nfpm
       - name: 'Build .deb with nfpm'
         run: |
-          ./nfpm package --config scripts/templates/nfpm.yaml --packager deb --target ${{ env.DEB_FILENAME }}
+          ./nfpm package --config scripts/templates/nfpm.yaml --packager .deb --target ${{ env.DEB_FILENAME }}
         env:
           VERSION: ${{ github.ref_name }}
           NFPM_ARCH: "amd64"
       - name: 'Upload .deb artifact'
         uses: actions/upload-artifact@v4
         with:
-          name: deb-package
+          name: build-deb
           path: ${{ env.DEB_FILENAME }}
           retention-days: 1
-
-  # we won't need this
-  build-nupkg:
-    name: 'Build .nupkg'
-    needs: build
-    runs-on: ubuntu-latest
-    if: false
-    steps:
-      - name: 'foobar'
-        run: echo foobar
 
   publish-npm:
     name: 'Publish to npm'
@@ -166,12 +156,12 @@ jobs:
           cache: 'npm'
       - name: 'Install Node.js dependencies'
         run: npm ci
-      - name: 'Download RPM artifact'
+      - name: 'Download .rpm artifact'
         uses: actions/download-artifact@v4
         with:
-          name: rpm-package
+          name: build-rpm
           path: build/${{ github.ref_name }}
-      - name: 'Publish RPM to cellar'
+      - name: 'Publish .rpm to cellar'
         run: ./scripts/publish-cellar.js ${{ github.ref_name }} rpm
         env:
           CC_CLEVER_TOOLS_RELEASES_CELLAR_KEY_ID: ${{ secrets.CC_CLEVER_TOOLS_RELEASES_CELLAR_KEY_ID }}
@@ -192,26 +182,16 @@ jobs:
           cache: 'npm'
       - name: 'Install Node.js dependencies'
         run: npm ci
-      - name: 'Download DEB artifact'
+      - name: 'Download .deb artifact'
         uses: actions/download-artifact@v4
         with:
-          name: deb-package
+          name: build-deb
           path: build/${{ github.ref_name }}
-      - name: 'Publish DEB to cellar'
+      - name: 'Publish .deb to cellar'
         run: ./scripts/publish-cellar.js ${{ github.ref_name }} deb
         env:
           CC_CLEVER_TOOLS_RELEASES_CELLAR_KEY_ID: ${{ secrets.CC_CLEVER_TOOLS_RELEASES_CELLAR_KEY_ID }}
           CC_CLEVER_TOOLS_RELEASES_CELLAR_SECRET_KEY: ${{ secrets.CC_CLEVER_TOOLS_RELEASES_CELLAR_SECRET_KEY }}
-
-  # we won't need this
-  publish-cellar-nupkg:
-    name: 'Publish .nupkg to cellar'
-    needs: build-nupkg
-    runs-on: ubuntu-latest
-    if: false
-    steps:
-      - name: 'foobar'
-        run: echo foobar
 
   publish-aur:
     name: 'Publish to AUR'
@@ -241,7 +221,7 @@ jobs:
         run: ./scripts/publish-aur.js ${{ github.ref_name }}
 
   publish-homebrew:
-    name: 'Publish to GitHub for Homebrew'
+    name: 'Publish to Homebrew'
     needs: publish-cellar-archives
     runs-on: ubuntu-latest
     if: false
@@ -264,13 +244,14 @@ jobs:
         with:
           name: build-macos
           path: build
-      - name: 'Publish to homebrew'
+      - name: 'Publish to Homebrew'
         run: ./scripts/publish-homebrew.js ${{ github.ref_name }}
 
   publish-dockerhub:
-    name: 'Publish Docker Hub'
+    name: 'Publish to Docker Hub'
     needs: publish-cellar-archives
     runs-on: ubuntu-latest
+    if: false
     steps:
       - name: 'Checkout sources'
         uses: actions/checkout@v4
@@ -285,21 +266,33 @@ jobs:
           cache: 'npm'
       - name: 'Install Node.js dependencies'
         run: npm ci
-      - name: 'Publish to Docker Hub'
+      - name: 'Publish to Docker Hub (and related GitHub project)'
         run: ./scripts/publish-dockerhub.js ${{ github.ref_name }}
         env:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
-  # use templates and git
   publish-exherbo:
-    name: 'Publish to GitHub for exherbo'
+    name: 'Publish to exherbo'
     needs: publish-cellar-archives
     runs-on: ubuntu-latest
     if: false
     steps:
-      - name: 'foobar'
-        run: echo foobar
+      - name: 'Checkout sources'
+        uses: actions/checkout@v4
+      - name: 'Setup SSH key'
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: 'Setup Node.js'
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: 'package.json'
+          cache: 'npm'
+      - name: 'Install Node.js dependencies'
+        run: npm ci
+      - name: 'Publish to GitHub for exherbo'
+        run: ./scripts/publish-exherbo.js ${{ github.ref_name }}
 
   publish-nexus-rpm:
     name: 'Publish .rpm to Nexus'
@@ -307,12 +300,12 @@ jobs:
     runs-on: ubuntu-latest
     if: false
     steps:
-      - name: 'Download RPM artifact'
+      - name: 'Download .rpm artifact'
         uses: actions/download-artifact@v4
         with:
-          name: rpm-package
+          name: build-rpm
           path: ./
-      - name: 'Publish RPM to Nexus Repository'
+      - name: 'Publish .rpm to Nexus Repository'
         run: |
           HTTP_STATUS=$(curl -X PUT \
             -u "${{ secrets.NEXUS_USER }}:${{ secrets.NEXUS_PASSWORD }}" \
@@ -334,12 +327,12 @@ jobs:
     runs-on: ubuntu-latest
     if: false
     steps:
-      - name: 'Download DEB artifact'
+      - name: 'Download .deb artifact'
         uses: actions/download-artifact@v4
         with:
-          name: deb-package
+          name: build-deb
           path: ./
-      - name: 'Publish DEB to Nexus Repository'
+      - name: 'Publish .deb to Nexus Repository'
         run: |
           HTTP_STATUS=$(curl -X POST \
             -u "${{ secrets.NEXUS_USER }}:${{ secrets.NEXUS_PASSWORD }}" \
@@ -356,12 +349,3 @@ jobs:
             exit 1
           fi
           echo "DEB upload successful with status $HTTP_STATUS"
-  # we won't need this
-  publish-nexus-nupkg:
-    name: 'Publish .nupkg to Nexus'
-    needs: build-nupkg
-    runs-on: ubuntu-latest
-    if: false
-    steps:
-      - name: 'foobar'
-        run: echo foobar

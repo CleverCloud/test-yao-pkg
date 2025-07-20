@@ -4,6 +4,7 @@
 import { globSync } from 'tinyglobby';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { highlight } from './utils.js';
 
 function lodashTemplate (template, variables) {
   return template.replace(/<%= (.*?) %>/g, (_, variableName) => {
@@ -26,6 +27,7 @@ export async function writeStringToFile (content, destFilepath) {
 }
 
 export async function applyOneTemplate (destFilepath, templateFilepath, templateData) {
+  console.log(highlight`=> Applying template ${templateFilepath} to ${destFilepath}`);
   const template = await fs.readFile(templateFilepath, 'utf-8');
   const contents = lodashTemplate(template, templateData);
   await writeStringToFile(contents, destFilepath);

@@ -26,7 +26,6 @@ run(async () => {
   console.log(highlight`=> Cloning homebrew repository ${GIT_URL} to ${GIT_PATH}`);
   await simpleGit().clone(GIT_URL, GIT_PATH);
 
-  console.log(highlight`=> Applying templates to ${GIT_PATH}`);
   await applyTemplates(GIT_PATH, TEMPLATES_PATH, {
     description: pkg.description,
     gitProject: GIT_PROJECT,
