@@ -9,7 +9,7 @@ import { commitAndPush } from './lib/git.js';
 
 const PKGBASE = 'clever-tools-bin';
 const TEMPLATES_PATH = './scripts/templates/aur';
-const GIT_PATH = '/tmp/git-aur';
+const GIT_PATH = './git-aur';
 // const GIT_URL = `ssh://aur@aur.archlinux.org/${pkgbase}.git`;
 const GIT_URL = `git@github.com:hsablonniere/test.git`;
 
