@@ -205,11 +205,11 @@ jobs:
       - name: 'foobar'
         run: echo foobar
 
-  # use templates and git
   publish-aur:
     name: 'Publish to AUR'
     needs: publish-cellar-archives
     runs-on: ubuntu-latest
+    if: false
     steps:
       - name: 'Checkout sources'
         uses: actions/checkout@v4
@@ -249,7 +249,7 @@ jobs:
       - name: 'Download build-linux artifact'
         uses: actions/download-artifact@v4
         with:
-          name: build-linux
+          name: build-macos
           path: build
       - name: 'Publish to homebrew'
         run: ./scripts/publish-homebrew.js ${{ github.ref_name }}
