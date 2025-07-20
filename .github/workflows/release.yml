@@ -22,7 +22,6 @@ jobs:
     uses: ./.github/workflows/build.yml
     with:
       version: ${{ github.ref_name }}
-    if: false
 
   build-rpm:
     name: 'Build .rpm'
@@ -119,7 +118,6 @@ jobs:
     name: 'Publish archives to cellar'
     needs: build
     runs-on: ubuntu-latest
-    if: false
     steps:
       - name: 'Checkout sources'
         uses: actions/checkout@v4
@@ -212,10 +210,21 @@ jobs:
     name: 'Publish to AUR'
     needs: publish-cellar-archives
     runs-on: ubuntu-latest
-    if: false
     steps:
-      - name: 'foobar'
-        run: echo foobar
+      - name: 'Checkout sources'
+        uses: actions/checkout@v4
+      - name: 'Setup Node.js'
+        uses: actions/setup-node@v4
+        with: { node-version-file: 'package.json' }
+      - name: 'Install Node.js dependencies'
+        run: npm ci
+      - name: 'Download build-linux artifact'
+        uses: actions/download-artifact@v4
+        with:
+          name: build-linux
+          path: build
+      - name: 'Publish to AUR'
+        run: ./scripts/publish-aur.js ${{ github.ref_name }}
 
   # use templates and git
   publish-brew:
