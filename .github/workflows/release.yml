@@ -108,8 +108,33 @@ jobs:
     runs-on: ubuntu-latest
     if: false
     steps:
-      - name: 'foobar'
-        run: echo foobar
+      - name: 'Checkout sources'
+        uses: actions/checkout@v4
+      - name: 'Setup Node.js'
+        uses: actions/setup-node@v4
+        with: { node-version-file: 'package.json' }
+      - name: 'Install Node.js dependencies'
+        run: npm ci
+      - name: 'Download build-linux artifact'
+        uses: actions/download-artifact@v4
+        with:
+          name: build-linux
+          path: build
+      - name: 'Download build-macos artifact'
+        uses: actions/download-artifact@v4
+        with:
+          name: build-macos
+          path: build
+      - name: 'Download build-win artifact'
+        uses: actions/download-artifact@v4
+        with:
+          name: build-win
+          path: build
+      - name: 'Publish archives to cellar'
+        run: ./scripts/publish-to-cellar.js ${{ github.ref_name }} archives
+        env:
+          CC_CLEVER_TOOLS_RELEASES_CELLAR_KEY_ID: ${{ secrets.CC_CLEVER_TOOLS_RELEASES_CELLAR_KEY_ID }}
+          CC_CLEVER_TOOLS_RELEASES_CELLAR_SECRET_KEY: ${{ secrets.CC_CLEVER_TOOLS_RELEASES_CELLAR_SECRET_KEY }}
         
   publish-cellar-rpm:
     name: 'Publish .rpm to cellar'
@@ -117,8 +142,23 @@ jobs:
     runs-on: ubuntu-latest
     if: false
     steps:
-      - name: 'foobar'
-        run: echo foobar
+      - name: 'Checkout sources'
+        uses: actions/checkout@v4
+      - name: 'Setup Node.js'
+        uses: actions/setup-node@v4
+        with: { node-version-file: 'package.json' }
+      - name: 'Install Node.js dependencies'
+        run: npm ci
+      - name: 'Download RPM artifact'
+        uses: actions/download-artifact@v4
+        with:
+          name: rpm-package
+          path: build/${{ github.ref_name }}
+      - name: 'Publish RPM to cellar'
+        run: ./scripts/publish-to-cellar.js ${{ github.ref_name }} rpm
+        env:
+          CC_CLEVER_TOOLS_RELEASES_CELLAR_KEY_ID: ${{ secrets.CC_CLEVER_TOOLS_RELEASES_CELLAR_KEY_ID }}
+          CC_CLEVER_TOOLS_RELEASES_CELLAR_SECRET_KEY: ${{ secrets.CC_CLEVER_TOOLS_RELEASES_CELLAR_SECRET_KEY }}
         
   publish-cellar-deb:
     name: 'Publish .deb to cellar'
@@ -126,8 +166,23 @@ jobs:
     runs-on: ubuntu-latest
     if: false
     steps:
-      - name: 'foobar'
-        run: echo foobar
+      - name: 'Checkout sources'
+        uses: actions/checkout@v4
+      - name: 'Setup Node.js'
+        uses: actions/setup-node@v4
+        with: { node-version-file: 'package.json' }
+      - name: 'Install Node.js dependencies'
+        run: npm ci
+      - name: 'Download DEB artifact'
+        uses: actions/download-artifact@v4
+        with:
+          name: deb-package
+          path: build/${{ github.ref_name }}
+      - name: 'Publish DEB to cellar'
+        run: ./scripts/publish-to-cellar.js ${{ github.ref_name }} deb
+        env:
+          CC_CLEVER_TOOLS_RELEASES_CELLAR_KEY_ID: ${{ secrets.CC_CLEVER_TOOLS_RELEASES_CELLAR_KEY_ID }}
+          CC_CLEVER_TOOLS_RELEASES_CELLAR_SECRET_KEY: ${{ secrets.CC_CLEVER_TOOLS_RELEASES_CELLAR_SECRET_KEY }}
         
   publish-cellar-nupkg:
     name: 'Publish .nupkg to cellar'
