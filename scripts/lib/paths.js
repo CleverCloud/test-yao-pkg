@@ -60,3 +60,13 @@ export function getPreviewPath (version, os) {
   return `${PREVIEW_DIR}/${version}/${os}`;
 }
 
+export const RELEASES_DIR = 'releases';
+
+/**
+ * @param {string} version - The version
+ * @return {string}
+ */
+export function getReleasePath (version) {
+  return `${RELEASES_DIR}/${version}`;
+}
+

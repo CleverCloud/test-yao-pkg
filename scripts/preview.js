@@ -21,7 +21,7 @@ async function run () {
 
   const accessKeyId = process.env.CC_CLEVER_TOOLS_PREVIEWS_CELLAR_KEY_ID;
   const secretAccessKey = process.env.CC_CLEVER_TOOLS_PREVIEWS_CELLAR_SECRET_KEY;
-  if (!accessKeyId || !secretAccessKey) {
+  if (accessKeyId == null || secretAccessKey == null) {
     throw new Error(dedent`
       Could not read Cellar access/secret keys!
       You need the following environment variables:

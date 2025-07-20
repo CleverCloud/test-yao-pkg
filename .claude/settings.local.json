@@ -21,7 +21,8 @@
       "Bash(gh run:*)",
       "WebFetch(domain:help.sonatype.com)",
       "Bash(clever domain diag:*)",
-      "Bash(clever domain overview)"
+      "Bash(clever domain overview)",
+      "Bash(./scripts/publish-to-cellar.js:*)"
     ],
     "deny": []
   }
