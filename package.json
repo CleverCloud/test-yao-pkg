@@ -1,7 +1,11 @@
 {
-  "name": "clever-test-yao-pkg",
-  "version": "1.0.0",
+  "name": "@hsablonniere/test",
+  "version": "0.0.1",
   "type": "module",
+  "main": "bin/clever.js",
+  "bin": {
+    "clever": "bin/clever.js"
+  },
   "scripts": { },
   "dependencies": {
   },

@@ -22,11 +22,13 @@ jobs:
     uses: ./.github/workflows/build.yml
     with:
       version: ${{ github.ref_name }}
+    if: false
 
   build-rpm:
     name: 'Build .rpm'
     needs: build
     runs-on: ubuntu-latest
+    if: false
     env:
       RPM_GPG_PRIVATE_KEY: ${{ secrets.RPM_GPG_PRIVATE_KEY }}
       NFPM_PASSPHRASE: ${{ secrets.RPM_GPG_PASSPHRASE }}
@@ -60,6 +62,7 @@ jobs:
     name: 'Build .deb'
     needs: build
     runs-on: ubuntu-latest
+    if: false
     steps:
       - name: 'Checkout sources'
         uses: actions/checkout@v4
@@ -85,6 +88,7 @@ jobs:
           path: ${{ env.DEB_FILENAME }}
           retention-days: 1
 
+  # we won't need this
   build-nupkg:
     name: 'Build .nupkg'
     needs: build
@@ -97,16 +101,25 @@ jobs:
   publish-npm:
     name: 'Publish to npm'
     runs-on: ubuntu-latest
-    if: false
+    if: true
     steps:
-      - name: 'foobar'
-        run: echo foobar
+      - name: 'Checkout sources'
+        uses: actions/checkout@v4
+      - name: 'Setup Node.js'
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: 'package.json'
+          registry-url: 'https://registry.npmjs.org'
+      - name: 'Publish to npm'
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   publish-cellar-archives:
     name: 'Publish archives to cellar'
     needs: build
     runs-on: ubuntu-latest
-    if: true
+    if: false
     steps:
       - name: 'Checkout sources'
         uses: actions/checkout@v4
@@ -140,7 +153,7 @@ jobs:
     name: 'Publish .rpm to cellar'
     needs: build-rpm
     runs-on: ubuntu-latest
-    if: true
+    if: false
     steps:
       - name: 'Checkout sources'
         uses: actions/checkout@v4
@@ -164,7 +177,7 @@ jobs:
     name: 'Publish .deb to cellar'
     needs: build-deb
     runs-on: ubuntu-latest
-    if: true
+    if: false
     steps:
       - name: 'Checkout sources'
         uses: actions/checkout@v4
@@ -184,6 +197,7 @@ jobs:
           CC_CLEVER_TOOLS_RELEASES_CELLAR_KEY_ID: ${{ secrets.CC_CLEVER_TOOLS_RELEASES_CELLAR_KEY_ID }}
           CC_CLEVER_TOOLS_RELEASES_CELLAR_SECRET_KEY: ${{ secrets.CC_CLEVER_TOOLS_RELEASES_CELLAR_SECRET_KEY }}
 
+  # we won't need this
   publish-cellar-nupkg:
     name: 'Publish .nupkg to cellar'
     needs: build-nupkg
@@ -193,6 +207,7 @@ jobs:
       - name: 'foobar'
         run: echo foobar
 
+  # use templates and git
   publish-aur:
     name: 'Publish to AUR'
     needs: publish-cellar-archives
@@ -202,6 +217,7 @@ jobs:
       - name: 'foobar'
         run: echo foobar
 
+  # use templates and git
   publish-brew:
     name: 'Publish to GitHub for Homebrew'
     needs: publish-cellar-archives
@@ -211,6 +227,7 @@ jobs:
       - name: 'foobar'
         run: echo foobar
 
+  # find github action
   publish-dockerhub:
     name: 'Publish Docker Hub'
     needs: publish-cellar-archives
@@ -220,6 +237,7 @@ jobs:
       - name: 'foobar'
         run: echo foobar
 
+  # use templates and git
   publish-exherbo:
     name: 'Publish to GitHub for exherbo'
     needs: publish-cellar-archives
@@ -284,6 +302,7 @@ jobs:
             exit 1
           fi
           echo "DEB upload successful with status $HTTP_STATUS"
+  # we won't need this
   publish-nexus-nupkg:
     name: 'Publish .nupkg to Nexus'
     needs: build-nupkg
