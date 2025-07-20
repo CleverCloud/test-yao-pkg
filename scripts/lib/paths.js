@@ -89,3 +89,63 @@ export function getReleasePath (version) {
   return `${RELEASES_DIR}/${version}`;
 }
 
+/**
+ * @param {'bundle'|'binary'|'archive'|'rpm'|'deb'} type - Asset type
+ * @param {string} version - The version
+ * @param {'linux'|'macos'|'win'} [os] - Operating system
+ * @return {string}
+ */
+function getFilename (type, version, os) {
+  switch (type) {
+    case 'bundle':
+      return 'clever.cjs';
+    case 'binary':
+      return getExecutableName(os);
+    case 'archive':
+      return getArchiveName(version, os);
+    case 'rpm':
+      return `clever-tools-${version}.rpm`;
+    case 'deb':
+      return `clever-tools-${version}.deb`;
+  }
+}
+
+/**
+ * @param {'local'|'build'|'preview'|'release'} location - Location type
+ * @param {string} version - The version
+ * @param {'linux'|'macos'|'win'} [os] - Operating system
+ * @param {'bundle'|'binary'|'archive'|'rpm'|'deb'} type - Asset type
+ * @return {string}
+ */
+function getDirectory (location, version, os, type) {
+  switch (location) {
+    case 'local':
+      return '';
+    case 'build':
+      if (os && (type === 'binary' || type === 'archive')) {
+        return `${BUILD_DIR}/${version}/${os}`;
+      }
+      return `${BUILD_DIR}/${version}`;
+    case 'preview':
+      if (os && (type === 'binary' || type === 'archive')) {
+        return `${PREVIEW_DIR}/${version}/${os}`;
+      }
+      return `${PREVIEW_DIR}/${version}`;
+    case 'release':
+      return `${RELEASES_DIR}/${version}`;
+  }
+}
+
+/**
+ * Get the path for any built asset
+ * @param {'bundle'|'binary'|'archive'|'rpm'|'deb'} type - Asset type
+ * @param {string} version - The version
+ * @param {'local'|'build'|'preview'|'release'} location - Where the asset should be located
+ * @param {'linux'|'macos'|'win'} [os] - Operating system (required for binary/archive)
+ * @return {string} The complete path or filename
+ */
+export function getAssetPath (type, version, location, os) {
+  const filename = getFilename(type, version, os);
+  const directory = getDirectory(location, version, os, type);
+  return directory === '' ? filename : `${directory}/${filename}`;
+}
