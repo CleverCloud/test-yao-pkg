@@ -1,13 +1,31 @@
 #!/usr/bin/env node
 
 import dedent from 'dedent';
+import { ReleaseClient } from './lib/release-client.js';
 
 /**
  * Main entry point for the cellar publishing CLI tool.
  * @throws {Error} When required arguments are missing or invalid
  * @returns {Promise<void>}
  */
-async function run() {
+async function run () {
+
+  const accessKeyId = process.env.CC_CLEVER_TOOLS_RELEASES_CELLAR_KEY_ID;
+  const secretAccessKey = process.env.CC_CLEVER_TOOLS_RELEASES_CELLAR_SECRET_KEY;
+  if (accessKeyId == null || secretAccessKey == null) {
+    throw new Error(dedent`
+      Could not read Cellar access/secret keys!
+      You need the following environment variables:
+        - CC_CLEVER_TOOLS_RELEASES_CELLAR_KEY_ID
+        - CC_CLEVER_TOOLS_RELEASES_CELLAR_SECRET_KEY
+    `);
+  }
+
+  const releaseClient = new ReleaseClient({
+    accessKeyId,
+    secretAccessKey,
+  });
+
   const [version, artifact] = process.argv.slice(2);
 
   if (version == null) {
@@ -23,29 +41,20 @@ async function run() {
     throw new Error(getUsage(`Invalid artifact "${artifact}". Must be one of: ${validArtifacts.join(', ')}`));
   }
 
-  console.log(`=> Publishing to cellar:`);
-  console.log(`   Version: ${version}`);
-  console.log(`   Artifact: ${artifact}`);
-
   switch (artifact) {
     case 'archives':
-      console.log(`=> [DUMMY] Processing archives artifact`);
-      console.log(`   Source: build/${version}/archives/`);
-      console.log(`   Destination: cellar://clever-tools-releases/archives/${version}/`);
+      const osList = ['linux', 'macos', 'win'];
+      for (const os of osList) {
+        await releaseClient.publishArchive(version, os);
+      }
       break;
     case 'rpm':
-      console.log(`=> [DUMMY] Processing RPM artifact`);
-      console.log(`   Source: build/${version}/rpm/`);
-      console.log(`   Destination: cellar://clever-tools-releases/rpm/${version}/`);
+      await releaseClient.publishRpm(version);
       break;
     case 'deb':
-      console.log(`=> [DUMMY] Processing DEB artifact`);
-      console.log(`   Source: build/${version}/deb/`);
-      console.log(`   Destination: cellar://clever-tools-releases/deb/${version}/`);
+      await releaseClient.publishDeb(version);
       break;
   }
-
-  console.log(`=> [DUMMY] Upload completed successfully`);
 }
 
 /**
@@ -53,7 +62,7 @@ async function run() {
  * @param {string} message
  * @return {string}
  */
-function getUsage(message) {
+function getUsage (message) {
   return dedent`
     ${message}
 

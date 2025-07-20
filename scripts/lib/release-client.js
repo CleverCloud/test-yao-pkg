@@ -1,5 +1,6 @@
 import { CellarClient } from './cellar-client.js';
-import { getArchiveName, getBuildPath, getReleasePath } from './paths.js';
+import { getArchiveName, getBuildPath, getDebName, getReleasePath, getRpmName } from './paths.js';
+import { highlight } from './utils.js';
 
 /**
  * A client for managing release artifacts in Clever Cloud's storage.
@@ -38,10 +39,8 @@ export class ReleaseClient {
     const localPath = `${buildPath}/${archiveName}`;
     const remotePath = `${releasePath}/${archiveName}`;
 
-    console.log(`=> Publishing archive for version ${version} and OS ${os}`);
-    console.log(`   Source: ${localPath}`);
-    console.log(`   Target: ${remotePath}`);
-    console.log(`=> Archive upload completed`);
+    console.log(highlight`=> Upload ${localPath} to ${remotePath}`);
+    await this.#cellarClient.upload(localPath, remotePath);
   }
 
   /**
@@ -50,13 +49,15 @@ export class ReleaseClient {
    * @throws {Error} When upload fails
    */
   async publishRpm (version) {
-    const sourcePath = `build/${version}/rpm/`;
-    const targetPath = `rpm/${version}/`;
+    const rpmName = getRpmName(version);
+    const buildPath = getBuildPath(version);
+    const releasePath = getReleasePath(version);
 
-    console.log(`=> Publishing RPM for version ${version}`);
-    console.log(`   Source: ${sourcePath}`);
-    console.log(`   Target: ${targetPath}`);
-    console.log(`=> RPM upload completed`);
+    const localPath = `${buildPath}/${rpmName}`;
+    const remotePath = `${releasePath}/${rpmName}`;
+
+    console.log(highlight`=> Upload ${localPath} to ${remotePath}`);
+    await this.#cellarClient.upload(localPath, remotePath);
   }
 
   /**
@@ -65,13 +66,15 @@ export class ReleaseClient {
    * @throws {Error} When upload fails
    */
   async publishDeb (version) {
-    const sourcePath = `build/${version}/deb/`;
-    const targetPath = `deb/${version}/`;
+    const debName = getDebName(version);
+    const buildPath = getBuildPath(version);
+    const releasePath = getReleasePath(version);
 
-    console.log(`=> Publishing DEB for version ${version}`);
-    console.log(`   Source: ${sourcePath}`);
-    console.log(`   Target: ${targetPath}`);
-    console.log(`=> DEB upload completed`);
+    const localPath = `${buildPath}/${debName}`;
+    const remotePath = `${releasePath}/${debName}`;
+
+    console.log(highlight`=> Upload ${localPath} to ${remotePath}`);
+    await this.#cellarClient.upload(localPath, remotePath);
   }
 
 }

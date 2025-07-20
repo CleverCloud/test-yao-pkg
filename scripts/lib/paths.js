@@ -10,10 +10,13 @@ export function getBundleCjsPath (version) {
 
 /**
  * @param {string} version - The version
- * @param {'linux'|'macos'|'win'} os - The operating system
+ * @param {'linux'|'macos'|'win'} [os] - The operating system
  * @return {string}
  */
 export function getBuildPath (version, os) {
+  if (os == null) {
+    return `${BUILD_DIR}/${version}`;
+  }
   return `${BUILD_DIR}/${version}/${os}`;
 }
 
@@ -44,6 +47,22 @@ export function getArchiveName (version, os) {
   return os === 'win'
     ? `clever-tools-${version}_${os}.zip`
     : `clever-tools-${version}_${os}.tar.gz`;
+}
+
+/**
+ * @param {string} version - The version
+ * @return {string}
+ */
+export function getRpmName (version) {
+  return `clever-tools-${version}.rpm`;
+}
+
+/**
+ * @param {string} version - The version
+ * @return {string}
+ */
+export function getDebName (version) {
+  return `clever-tools-${version}.deb`;
 }
 
 export const PREVIEW_DIR = 'previews';
