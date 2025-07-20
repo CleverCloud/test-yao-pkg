@@ -18,7 +18,10 @@
       "WebFetch(domain:nfpm.goreleaser.com)",
       "Bash(gh run view:*)",
       "Bash(gh workflow:*)",
-      "Bash(gh run:*)"
+      "Bash(gh run:*)",
+      "WebFetch(domain:help.sonatype.com)",
+      "Bash(clever domain diag:*)",
+      "Bash(clever domain overview)"
     ],
     "deny": []
   }
