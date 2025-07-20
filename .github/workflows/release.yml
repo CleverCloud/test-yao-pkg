@@ -126,16 +126,16 @@ jobs:
         with: { node-version-file: 'package.json' }
       - name: 'Install Node.js dependencies'
         run: npm ci
-      - name: 'Download build-linux artifact'
-        uses: actions/download-artifact@v4
-        with:
-          name: build-linux
-          path: build
-#      - name: 'Download build-macos artifact'
+#      - name: 'Download build-linux artifact'
 #        uses: actions/download-artifact@v4
 #        with:
-#          name: build-macos
+#          name: build-linux
 #          path: build
+      - name: 'Download build-macos artifact'
+        uses: actions/download-artifact@v4
+        with:
+          name: build-macos
+          path: build
 #      - name: 'Download build-win artifact'
 #        uses: actions/download-artifact@v4
 #        with:
@@ -230,15 +230,29 @@ jobs:
       - name: 'Publish to AUR'
         run: ./scripts/publish-aur.js ${{ github.ref_name }}
 
-  # use templates and git
-  publish-brew:
+  publish-homebrew:
     name: 'Publish to GitHub for Homebrew'
     needs: publish-cellar-archives
     runs-on: ubuntu-latest
-    if: false
     steps:
-      - name: 'foobar'
-        run: echo foobar
+      - name: 'Checkout sources'
+        uses: actions/checkout@v4
+      - name: 'Setup SSH key'
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: 'Setup Node.js'
+        uses: actions/setup-node@v4
+        with: { node-version-file: 'package.json' }
+      - name: 'Install Node.js dependencies'
+        run: npm ci
+      - name: 'Download build-linux artifact'
+        uses: actions/download-artifact@v4
+        with:
+          name: build-linux
+          path: build
+      - name: 'Publish to homebrew'
+        run: ./scripts/publish-homebrew.js ${{ github.ref_name }}
 
   # find github action
   publish-dockerhub:

@@ -10,6 +10,10 @@
   "bin": {
     "clever": "bin/clever.js"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hsablonniere/test-yao-pkg.git"
+  },
   "scripts": {},
   "devDependencies": {
     "@aws-sdk/client-s3": "^3.848.0",
