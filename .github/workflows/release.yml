@@ -85,78 +85,94 @@ jobs:
           path: ${{ env.DEB_FILENAME }}
           retention-days: 1
 
-#  build-nupkg:
-#    name: 'Build .nupkg'
-#    needs: build
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: 'foobar'
-#        run: echo foobar
+  build-nupkg:
+    name: 'Build .nupkg'
+    needs: build
+    runs-on: ubuntu-latest
+    if: false
+    steps:
+      - name: 'foobar'
+        run: echo foobar
 
-#  publish-npm:
-#    name: 'Publish to npm'
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: 'foobar'
-#        run: echo foobar
+  publish-npm:
+    name: 'Publish to npm'
+    runs-on: ubuntu-latest
+    if: false
+    steps:
+      - name: 'foobar'
+        run: echo foobar
 
-#  publish-cellar-archives:
-#    name: 'Publish archives to cellar'
-#    needs: build
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: 'foobar'
-#        run: echo foobar
-#  publish-cellar-rpm:
-#    name: 'Publish .rpm to cellar'
-#    needs: build-rpm
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: 'foobar'
-#        run: echo foobar
-#  publish-cellar-deb:
-#    name: 'Publish .deb to cellar'
-#    needs: build-deb
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: 'foobar'
-#        run: echo foobar
-#  publish-cellar-nupkg:
-#    name: 'Publish .nupkg to cellar'
-#    needs: build-nupkg
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: 'foobar'
-#        run: echo foobar
+  publish-cellar-archives:
+    name: 'Publish archives to cellar'
+    needs: build
+    runs-on: ubuntu-latest
+    if: false
+    steps:
+      - name: 'foobar'
+        run: echo foobar
+        
+  publish-cellar-rpm:
+    name: 'Publish .rpm to cellar'
+    needs: build-rpm
+    runs-on: ubuntu-latest
+    if: false
+    steps:
+      - name: 'foobar'
+        run: echo foobar
+        
+  publish-cellar-deb:
+    name: 'Publish .deb to cellar'
+    needs: build-deb
+    runs-on: ubuntu-latest
+    if: false
+    steps:
+      - name: 'foobar'
+        run: echo foobar
+        
+  publish-cellar-nupkg:
+    name: 'Publish .nupkg to cellar'
+    needs: build-nupkg
+    runs-on: ubuntu-latest
+    if: false
+    steps:
+      - name: 'foobar'
+        run: echo foobar
 
-#  publish-aur:
-#    name: 'Publish to AUR'
-#    needs: publish-cellar-archives
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: 'foobar'
-#        run: echo foobar
-#  publish-brew:
-#    name: 'Publish to GitHub for Homebrew'
-#    needs: publish-cellar-archives
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: 'foobar'
-#        run: echo foobar
-#  publish-dockerhub:
-#    name: 'Publish Docker Hub'
-#    needs: publish-cellar-archives
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: 'foobar'
-#        run: echo foobar
-#  publish-exherbo:
-#    name: 'Publish to GitHub for exherbo'
-#    needs: publish-cellar-archives
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: 'foobar'
-#        run: echo foobar
+  publish-aur:
+    name: 'Publish to AUR'
+    needs: publish-cellar-archives
+    runs-on: ubuntu-latest
+    if: false
+    steps:
+      - name: 'foobar'
+        run: echo foobar
+        
+  publish-brew:
+    name: 'Publish to GitHub for Homebrew'
+    needs: publish-cellar-archives
+    runs-on: ubuntu-latest
+    if: false
+    steps:
+      - name: 'foobar'
+        run: echo foobar
+        
+  publish-dockerhub:
+    name: 'Publish Docker Hub'
+    needs: publish-cellar-archives
+    runs-on: ubuntu-latest
+    if: false
+    steps:
+      - name: 'foobar'
+        run: echo foobar
+        
+  publish-exherbo:
+    name: 'Publish to GitHub for exherbo'
+    needs: publish-cellar-archives
+    runs-on: ubuntu-latest
+    if: false
+    steps:
+      - name: 'foobar'
+        run: echo foobar
 
   publish-nexus-rpm:
     name: 'Publish .rpm to Nexus'
@@ -211,10 +227,11 @@ jobs:
             exit 1
           fi
           echo "DEB upload successful with status $HTTP_STATUS"
-#  publish-nexus-nupkg:
-#    name: 'Publish .nupkg to Nexus'
-#    needs: build-nupkg
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: 'foobar'
-#        run: echo foobar
+  publish-nexus-nupkg:
+    name: 'Publish .nupkg to Nexus'
+    needs: build-nupkg
+    runs-on: ubuntu-latest
+    if: false
+    steps:
+      - name: 'foobar'
+        run: echo foobar
