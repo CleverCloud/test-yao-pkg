@@ -1,5 +1,5 @@
 import { exec } from './utils.js';
-import { getArchiveName, getBuildPath, getExecutableName } from './paths.js';
+import { getAssetParts } from './paths.js';
 
 /**
  * Creates an archive with the binary
@@ -9,13 +9,12 @@ import { getArchiveName, getBuildPath, getExecutableName } from './paths.js';
  */
 export async function createArchive (version, os) {
 
-  const cwd = getBuildPath(version, os);
+  const archive = getAssetParts('archive', version, 'local', os);
+  const binary = getAssetParts('binary', version, 'local', os);
 
-  const archiveName = getArchiveName(version, os);
-  const executableName = getExecutableName(os);
   const command = (os === 'win')
-    ? `powershell -Command "Compress-Archive -DestinationPath ${archiveName} -Path ${executableName}"`
-    : `tar czf ${archiveName} ${executableName}`;
+    ? `powershell -Command "Compress-Archive -DestinationPath ${archive.filename} -Path ${binary.filename}"`
+    : `tar czf ${archive.filename} ${binary.filename}`;
 
-  await exec(command, cwd);
+  await exec(command, archive.directory);
 }

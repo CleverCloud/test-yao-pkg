@@ -1,5 +1,5 @@
 import pkg from '@yao-pkg/pkg';
-import { getBinaryPath, getBundleCjsPath } from './paths.js';
+import { getAssetPath } from './paths.js';
 import { highlight } from './utils.js';
 
 const NODE_VERSION = '22';
@@ -24,8 +24,8 @@ const ARCHS = {
  */
 export async function buildBinary (version, os) {
 
-  const input = getBundleCjsPath(version);
-  const output = getBinaryPath(version, os);
+  const input = getAssetPath('bundle', version, 'build');
+  const output = getAssetPath('binary', version, 'build', os);
 
   const platform = PLATFORMS[os];
   const arch = ARCHS[os];

@@ -1,5 +1,5 @@
 import { exec } from './utils.js';
-import { getBundleCjsPath } from './paths.js';
+import { getAssetPath } from './paths.js';
 
 /**
  * Bundle the whole project to a single CommonJS file with Rollup
@@ -7,6 +7,6 @@ import { getBundleCjsPath } from './paths.js';
  * @returns {Promise<void>}
  */
 export async function bundleToSingleCjs (version) {
-  const filename = getBundleCjsPath(version);
+  const filename = getAssetPath('bundle', version, 'build');
   await exec(`npx rollup -c rollup.config.js -o ${filename}`);
 }

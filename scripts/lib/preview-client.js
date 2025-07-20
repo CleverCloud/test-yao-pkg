@@ -1,7 +1,7 @@
 import { CellarClient } from './cellar-client.js';
 import fs from 'node:fs';
 import { getCurrentAuthor, getCurrentCommit } from './git.js';
-import { BUILD_DIR, getArchiveName, getBuildPath, getPreviewPath, PREVIEW_DIR } from './paths.js';
+import { BUILD_DIR, getArchiveName, getBuildPath, getPreviewPath, PREVIEW_DIR, getAssetPath } from './paths.js';
 import { getEmoji, getSha256, highlight } from './utils.js';
 import dedent from 'dedent';
 

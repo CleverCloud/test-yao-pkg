@@ -1,5 +1,5 @@
 import { CellarClient } from './cellar-client.js';
-import { getArchiveName, getBuildPath, getDebName, getReleasePath, getRpmName } from './paths.js';
+import { getArchiveName, getBuildPath, getReleasePath, getAssetPath } from './paths.js';
 import { highlight } from './utils.js';
 
 /**
@@ -49,7 +49,7 @@ export class ReleaseClient {
    * @throws {Error} When upload fails
    */
   async publishRpm (version) {
-    const rpmName = getRpmName(version);
+    const rpmName = getAssetPath('rpm', version, 'local');
     const buildPath = getBuildPath(version);
     const releasePath = getReleasePath(version);
 
@@ -66,7 +66,7 @@ export class ReleaseClient {
    * @throws {Error} When upload fails
    */
   async publishDeb (version) {
-    const debName = getDebName(version);
+    const debName = getAssetPath('deb', version, 'local');
     const buildPath = getBuildPath(version);
     const releasePath = getReleasePath(version);
 
