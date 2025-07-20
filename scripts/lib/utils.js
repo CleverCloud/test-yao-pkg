@@ -121,13 +121,13 @@ export function exec (command, cwd) {
 /**
  * Executes a shell command synchronously and returns the output.
  * @param {string} command - The shell command to execute
- * @param {string} [stdin] - Optional text to pass to the command via stdin
+ * @param {string} [input] - Optional text to pass to the command via stdin
  * @returns {Promise<void>}
  * @throws {Error} When the command fails
  */
-export function execWithStdin (command, stdin) {
+export function execWithStdin (command, input) {
   console.log(styleText('blue', '=> ') + styleText('blue', command));
-  const stdout = childProcess.execSync(command, { stdin });
+  const stdout = childProcess.execSync(command, { input });
   console.log(stdout);
   return stdout;
 }
