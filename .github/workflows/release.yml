@@ -106,7 +106,7 @@ jobs:
     name: 'Publish archives to cellar'
     needs: build
     runs-on: ubuntu-latest
-    if: false
+    if: true
     steps:
       - name: 'Checkout sources'
         uses: actions/checkout@v4
@@ -135,12 +135,12 @@ jobs:
         env:
           CC_CLEVER_TOOLS_RELEASES_CELLAR_KEY_ID: ${{ secrets.CC_CLEVER_TOOLS_RELEASES_CELLAR_KEY_ID }}
           CC_CLEVER_TOOLS_RELEASES_CELLAR_SECRET_KEY: ${{ secrets.CC_CLEVER_TOOLS_RELEASES_CELLAR_SECRET_KEY }}
-        
+
   publish-cellar-rpm:
     name: 'Publish .rpm to cellar'
     needs: build-rpm
     runs-on: ubuntu-latest
-    if: false
+    if: true
     steps:
       - name: 'Checkout sources'
         uses: actions/checkout@v4
@@ -159,12 +159,12 @@ jobs:
         env:
           CC_CLEVER_TOOLS_RELEASES_CELLAR_KEY_ID: ${{ secrets.CC_CLEVER_TOOLS_RELEASES_CELLAR_KEY_ID }}
           CC_CLEVER_TOOLS_RELEASES_CELLAR_SECRET_KEY: ${{ secrets.CC_CLEVER_TOOLS_RELEASES_CELLAR_SECRET_KEY }}
-        
+
   publish-cellar-deb:
     name: 'Publish .deb to cellar'
     needs: build-deb
     runs-on: ubuntu-latest
-    if: false
+    if: true
     steps:
       - name: 'Checkout sources'
         uses: actions/checkout@v4
@@ -183,7 +183,7 @@ jobs:
         env:
           CC_CLEVER_TOOLS_RELEASES_CELLAR_KEY_ID: ${{ secrets.CC_CLEVER_TOOLS_RELEASES_CELLAR_KEY_ID }}
           CC_CLEVER_TOOLS_RELEASES_CELLAR_SECRET_KEY: ${{ secrets.CC_CLEVER_TOOLS_RELEASES_CELLAR_SECRET_KEY }}
-        
+
   publish-cellar-nupkg:
     name: 'Publish .nupkg to cellar'
     needs: build-nupkg
@@ -201,7 +201,7 @@ jobs:
     steps:
       - name: 'foobar'
         run: echo foobar
-        
+
   publish-brew:
     name: 'Publish to GitHub for Homebrew'
     needs: publish-cellar-archives
@@ -210,7 +210,7 @@ jobs:
     steps:
       - name: 'foobar'
         run: echo foobar
-        
+
   publish-dockerhub:
     name: 'Publish Docker Hub'
     needs: publish-cellar-archives
@@ -219,7 +219,7 @@ jobs:
     steps:
       - name: 'foobar'
         run: echo foobar
-        
+
   publish-exherbo:
     name: 'Publish to GitHub for exherbo'
     needs: publish-cellar-archives
@@ -233,6 +233,7 @@ jobs:
     name: 'Publish .rpm to Nexus'
     needs: build-rpm
     runs-on: ubuntu-latest
+    if: false
     steps:
       - name: 'Download RPM artifact'
         uses: actions/download-artifact@v4
@@ -259,6 +260,7 @@ jobs:
     name: 'Publish .deb to Nexus'
     needs: build-deb
     runs-on: ubuntu-latest
+    if: false
     steps:
       - name: 'Download DEB artifact'
         uses: actions/download-artifact@v4
