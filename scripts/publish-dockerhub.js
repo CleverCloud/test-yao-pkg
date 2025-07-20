@@ -4,7 +4,7 @@ import dedent from 'dedent';
 import pkg from '../package.json' with { type: 'json' };
 import { applyTemplates } from './lib/templates.js';
 import { commitAndPush, tagAndPush } from './lib/git.js';
-import { exec, execWithStdin, highlight } from './lib/utils.js';
+import { exec, execWithStdin, highlight, readEnvVars } from './lib/utils.js';
 import { simpleGit } from 'simple-git';
 
 // const IMAGE_NAME = 'clevercloud/clever-tools';
@@ -14,16 +14,7 @@ const GIT_PATH = './git-dockerhub';
 // const GIT_URL = 'ssh://git@github.com/CleverCloud/clever-tools-dockerhub.git';
 const GIT_URL = `git@github.com:hsablonniere/test.git`;
 
-const dockerHubUser = process.env.DOCKERHUB_USERNAME;
-const dockerHubToken = process.env.DOCKERHUB_TOKEN;
-if (dockerHubUser == null || dockerHubToken == null) {
-  throw new Error(dedent`
-    Could not read DockerHub credentials!
-    You need the following environment variables:
-      - DOCKERHUB_USERNAME
-      - DOCKERHUB_TOKEN
-  `);
-}
+const [dockerHubUser, dockerHubToken] = readEnvVars(['DOCKERHUB_USERNAME', 'DOCKERHUB_TOKEN']);
 
 const [version] = process.argv.slice(2);
 if (version == null) {

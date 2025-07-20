@@ -3,7 +3,7 @@
 import { styleText } from 'node:util';
 import textTable from 'text-table';
 import stringLength from 'string-length';
-import { clearDirectory, createTerminalLink, getEmoji, getOs, getVersion, highlight } from './lib/utils.js';
+import { clearDirectory, createTerminalLink, getEmoji, getOs, getVersion, highlight, readEnvVars } from './lib/utils.js';
 import { getCurrentBranch } from './lib/git.js';
 import { PreviewClient } from './lib/preview-client.js';
 import { bundleToSingleCjs } from './lib/bundle-cjs.js';
@@ -19,16 +19,7 @@ import { BUILD_DIR } from './lib/paths.js';
  */
 async function run () {
 
-  const accessKeyId = process.env.CC_CLEVER_TOOLS_PREVIEWS_CELLAR_KEY_ID;
-  const secretAccessKey = process.env.CC_CLEVER_TOOLS_PREVIEWS_CELLAR_SECRET_KEY;
-  if (accessKeyId == null || secretAccessKey == null) {
-    throw new Error(dedent`
-      Could not read Cellar access/secret keys!
-      You need the following environment variables:
-        - CC_CLEVER_TOOLS_PREVIEWS_CELLAR_KEY_ID
-        - CC_CLEVER_TOOLS_PREVIEWS_CELLAR_SECRET_KEY
-    `);
-  }
+  const [accessKeyId, secretAccessKey] = readEnvVars(['CC_CLEVER_TOOLS_PREVIEWS_CELLAR_KEY_ID', 'CC_CLEVER_TOOLS_PREVIEWS_CELLAR_SECRET_KEY']);
 
   const previewClient = new PreviewClient({
     accessKeyId,

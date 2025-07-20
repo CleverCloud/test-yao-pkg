@@ -140,3 +140,29 @@ export function execWithStdin (command, input) {
 export async function clearDirectory (path) {
   fs.rmSync(path, { recursive: true, force: true });
 }
+
+/**
+ * Reads environment variables and validates they are all present.
+ * @param {string[]} variableNames - Array of environment variable names to read
+ * @returns {string[]} Array of environment variable values in the same order
+ * @throws {Error} When any environment variable is null, undefined, or empty string
+ */
+export function readEnvVars (variableNames) {
+  const values = [];
+  const missing = [];
+
+  for (const varName of variableNames) {
+    const value = process.env[varName];
+    values.push(value);
+    if (value == null || value === '') {
+      missing.push(varName);
+    }
+  }
+
+  if (missing.length > 0) {
+    const missingList = missing.map(name => `- ${name}`).join('\n');
+    throw new Error('Missing environment variables:\n' + missingList);
+  }
+
+  return values;
+}

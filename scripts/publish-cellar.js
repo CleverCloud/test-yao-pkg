@@ -2,6 +2,7 @@
 
 import dedent from 'dedent';
 import { ReleaseClient } from './lib/release-client.js';
+import { readEnvVars } from './lib/utils.js';
 
 /**
  * Main entry point for the cellar publishing CLI tool.
@@ -10,16 +11,7 @@ import { ReleaseClient } from './lib/release-client.js';
  */
 async function run () {
 
-  const accessKeyId = process.env.CC_CLEVER_TOOLS_RELEASES_CELLAR_KEY_ID;
-  const secretAccessKey = process.env.CC_CLEVER_TOOLS_RELEASES_CELLAR_SECRET_KEY;
-  if (accessKeyId == null || secretAccessKey == null) {
-    throw new Error(dedent`
-      Could not read Cellar access/secret keys!
-      You need the following environment variables:
-        - CC_CLEVER_TOOLS_RELEASES_CELLAR_KEY_ID
-        - CC_CLEVER_TOOLS_RELEASES_CELLAR_SECRET_KEY
-    `);
-  }
+  const [accessKeyId, secretAccessKey] = readEnvVars(['CC_CLEVER_TOOLS_RELEASES_CELLAR_KEY_ID', 'CC_CLEVER_TOOLS_RELEASES_CELLAR_SECRET_KEY']);
 
   const releaseClient = new ReleaseClient({
     accessKeyId,
