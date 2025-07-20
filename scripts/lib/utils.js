@@ -90,17 +90,19 @@ export function highlight (strings, ...values) {
  * Executes a shell command asynchronously and logs the output.
  * Prints the command being executed and any stdout/stderr output.
  * @param {string} command - The shell command to execute
- * @param {string} [cwd] - The working directory to execute the command in
+ * @param {string} [options] - The working directory to execute the command in
+ * @param {string} [options.cwd] - The working directory to execute the command in
+ * @param {string} [options.stdin] - Optional text to pass to the command via stdin
  * @returns {Promise<void>}
  * @throws {Error} When the command fails
  */
-export function exec (command, cwd) {
+export function exec (command, { cwd, stdin } = {}) {
   if (cwd != null) {
     console.log(styleText('blue', '=> cd ' + cwd));
   }
   console.log(styleText('blue', '=> ') + styleText('blue', `${command}`) + ' ');
   return new Promise((resolve, reject) => {
-    childProcess.exec(command, { cwd }, (err, stdout, stderr) => {
+    const child = childProcess.exec(command, { cwd }, (err, stdout, stderr) => {
       if (stdout !== '') {
         console.log(stdout);
       }
@@ -112,6 +114,10 @@ export function exec (command, cwd) {
       }
       return resolve();
     });
+    if (stdin != null) {
+      child.stdin.write(stdin);
+      child.stdin.end();
+    }
   });
 }
 

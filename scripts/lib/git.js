@@ -57,3 +57,16 @@ export async function commitAndPush (gitPath, gitUrl, author, version) {
   console.log(highlight`=> Pushing ${commitDetails.commit} to ${gitUrl}`);
   await git.push('origin');
 }
+
+/**
+ * Tags the current commit and pushes the tag to the remote repository.
+ * @param {string} gitPath
+ * @param {string} tagName
+ * @return {Promise<void>}
+ */
+export async function tagAndPush (gitPath, gitUrl, tagName) {
+  const git = simpleGit(gitPath);
+  console.log(highlight`=> Pushing tag ${tagName} to ${gitUrl}`);
+  await git.addTag(tagName);
+  await git.pushTags('origin');
+}

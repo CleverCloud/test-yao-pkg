@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 
+import pkg from '../package.json' with { type: 'json' };
+import { applyTemplates } from './lib/templates.js';
+import { commitAndPush } from './lib/git.js';
 import { getAssetPath } from './lib/paths.js';
 import { getSha256, highlight } from './lib/utils.js';
 import { simpleGit } from 'simple-git';
-import { applyTemplates } from './lib/templates.js';
-import pkg from '../package.json' with { type: 'json' };
-import { commitAndPush } from './lib/git.js';
 
 const PKGBASE = 'clever-tools-bin';
 const TEMPLATES_PATH = './scripts/templates/aur';
