@@ -125,7 +125,7 @@ export function exec (command, cwd) {
  * @returns {Promise<void>}
  * @throws {Error} When the command fails
  */
-export function execSync (command, stdin) {
+export function execWithStdin (command, stdin) {
   console.log(styleText('blue', '=> ') + styleText('blue', command));
   const stdout = childProcess.execSync(command, { stdin });
   console.log(stdout);

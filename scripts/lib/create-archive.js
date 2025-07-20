@@ -16,5 +16,5 @@ export async function createArchive (version, os) {
     ? `powershell -Command "Compress-Archive -DestinationPath ${archive.filename} -Path ${binary.filename}"`
     : `tar czf ${archive.filename} ${binary.filename}`;
 
-  await exec(command, { cwd: archive.directory });
+  await exec(command, archive.directory);
 }
