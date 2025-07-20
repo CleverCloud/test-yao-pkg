@@ -1,7 +1,7 @@
 import { CellarClient } from './cellar-client.js';
 import fs from 'node:fs';
 import { getCurrentAuthor, getCurrentCommit } from './git.js';
-import { BUILD_DIR, getPreviewPath, PREVIEW_DIR, getAssetPath, getAssetParts } from './paths.js';
+import { BUILD_DIR, getAssetParts, getAssetPath, PREVIEW_DIR } from './paths.js';
 import { getEmoji, getSha256, highlight } from './utils.js';
 import dedent from 'dedent';
 
@@ -323,16 +323,16 @@ export class PreviewClient {
     const archiveDetails = {};
 
     for (const os of osList) {
-      const localArchive = getAssetPath('archive', previewName, 'local', os);
-      const previewArchive = getAssetParts('archive', previewName, 'preview', os);
-      console.log(highlight`=> Upload ${localArchive} to ${previewArchive}`);
-      await this.#cellarClient.upload(localArchive, previewArchive);
+      const localPath = getAssetPath('archive', previewName, 'local', os);
+      const remotePath = getAssetPath('archive', previewName, 'preview', os);
+      console.log(highlight`=> Upload ${localPath} to ${remotePath}`);
+      await this.#cellarClient.upload(localPath, remotePath);
       archiveDetails[os] = {
         os,
-        url: this.#cellarClient.url(previewArchive),
+        url: this.#cellarClient.url(remotePath),
         checksum: {
           type: 'sha256',
-          value: getSha256(localArchive),
+          value: getSha256(localPath),
         },
       };
     }
@@ -376,9 +376,9 @@ export class PreviewClient {
       throw new Error(`Preview "${previewName}" does not exist!`);
     }
 
-    const previewPath = getPreviewPath(previewName);
-    console.log(highlight`=> Delete ${previewPath + '/**'}`);
-    await this.#cellarClient.delete(previewPath);
+    const previewDirectory = getAssetParts('archive', previewName, 'preview').directory;
+    console.log(highlight`=> Delete ${previewDirectory + '/**'}`);
+    await this.#cellarClient.delete(previewDirectory);
 
     manifest.previews = manifest.previews.filter((p) => p.name !== previewName);
 

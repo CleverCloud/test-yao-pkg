@@ -1,5 +1,5 @@
 import { CellarClient } from './cellar-client.js';
-import { getArchiveName, getBuildPath, getReleasePath, getAssetPath } from './paths.js';
+import { getAssetPath } from './paths.js';
 import { highlight } from './utils.js';
 
 /**
@@ -32,13 +32,8 @@ export class ReleaseClient {
    * @throws {Error} When upload fails
    */
   async publishArchive (version, os) {
-    const archiveName = getArchiveName(version, os);
-    const buildPath = getBuildPath(version, os);
-    const releasePath = getReleasePath(version);
-
-    const localPath = `${buildPath}/${archiveName}`;
-    const remotePath = `${releasePath}/${archiveName}`;
-
+    const localPath = getAssetPath('archive', version, 'local', os);
+    const remotePath = getAssetPath('archive', version, 'release', os);
     console.log(highlight`=> Upload ${localPath} to ${remotePath}`);
     await this.#cellarClient.upload(localPath, remotePath);
   }
@@ -49,13 +44,8 @@ export class ReleaseClient {
    * @throws {Error} When upload fails
    */
   async publishRpm (version) {
-    const rpmName = getAssetPath('rpm', version, 'local');
-    const buildPath = getBuildPath(version);
-    const releasePath = getReleasePath(version);
-
-    const localPath = `${buildPath}/${rpmName}`;
-    const remotePath = `${releasePath}/${rpmName}`;
-
+    const localPath = getAssetPath('rpm', version, 'local');
+    const remotePath = getAssetPath('rpm', version, 'release');
     console.log(highlight`=> Upload ${localPath} to ${remotePath}`);
     await this.#cellarClient.upload(localPath, remotePath);
   }
@@ -66,13 +56,8 @@ export class ReleaseClient {
    * @throws {Error} When upload fails
    */
   async publishDeb (version) {
-    const debName = getAssetPath('deb', version, 'local');
-    const buildPath = getBuildPath(version);
-    const releasePath = getReleasePath(version);
-
-    const localPath = `${buildPath}/${debName}`;
-    const remotePath = `${releasePath}/${debName}`;
-
+    const localPath = getAssetPath('deb', version, 'local');
+    const remotePath = getAssetPath('deb', version, 'release');
     console.log(highlight`=> Upload ${localPath} to ${remotePath}`);
     await this.#cellarClient.upload(localPath, remotePath);
   }
