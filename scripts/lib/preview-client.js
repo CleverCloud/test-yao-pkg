@@ -1,7 +1,7 @@
 import { CellarClient } from './cellar-client.js';
 import fs from 'node:fs';
 import { getCurrentAuthor, getCurrentCommit } from './git.js';
-import { BUILD_DIR, getArchiveName, getBuildPath, getPreviewPath, PREVIEW_DIR, getAssetPath } from './paths.js';
+import { BUILD_DIR, getPreviewPath, PREVIEW_DIR, getAssetPath, getAssetParts } from './paths.js';
 import { getEmoji, getSha256, highlight } from './utils.js';
 import dedent from 'dedent';
 
@@ -323,17 +323,16 @@ export class PreviewClient {
     const archiveDetails = {};
 
     for (const os of osList) {
-      const archiveName = getArchiveName(previewName, os);
-      const archiveFilepath = `${getBuildPath(previewName, os)}/${archiveName}`;
-      const remoteFilepath = `${getPreviewPath(previewName, os)}/${archiveName}`;
-      console.log(highlight`=> Upload ${archiveFilepath} to ${remoteFilepath}`);
-      await this.#cellarClient.upload(archiveFilepath, remoteFilepath);
+      const localArchive = getAssetPath('archive', previewName, 'local', os);
+      const previewArchive = getAssetParts('archive', previewName, 'preview', os);
+      console.log(highlight`=> Upload ${localArchive} to ${previewArchive}`);
+      await this.#cellarClient.upload(localArchive, previewArchive);
       archiveDetails[os] = {
         os,
-        url: this.#cellarClient.url(remoteFilepath),
+        url: this.#cellarClient.url(previewArchive),
         checksum: {
           type: 'sha256',
-          value: getSha256(archiveFilepath),
+          value: getSha256(localArchive),
         },
       };
     }
