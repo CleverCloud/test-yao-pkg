@@ -31,20 +31,20 @@ if (version == null) {
 }
 
 console.log(highlight`=> Cloning homebrew repository ${GIT_URL} to ${GIT_PATH}`);
-await simpleGit().clone(GIT_URL, GIT_PATH);
+// await simpleGit().clone(GIT_URL, GIT_PATH);
 
 console.log(highlight`=> Applying templates to ${GIT_PATH}`);
-await applyTemplates(GIT_PATH, TEMPLATES_PATH, {
-  description: pkg.description,
-  license: pkg.license,
-  maintainer: pkg.maintainer,
-  version,
-});
-
-await commitAndPush(GIT_PATH, GIT_URL, pkg.author, version);
-await tagAndPush(GIT_PATH, GIT_URL, version);
-
-await exec(`docker build -t ${IMAGE_NAME}:latest -t ${IMAGE_NAME}:${version} .`, GIT_PATH);
+// await applyTemplates(GIT_PATH, TEMPLATES_PATH, {
+//   description: pkg.description,
+//   license: pkg.license,
+//   maintainer: pkg.maintainer,
+//   version,
+// });
+//
+// await commitAndPush(GIT_PATH, GIT_URL, pkg.author, version);
+// await tagAndPush(GIT_PATH, GIT_URL, version);
+//
+// await exec(`docker build -t ${IMAGE_NAME}:latest -t ${IMAGE_NAME}:${version} .`, GIT_PATH);
 await execWithStdin(`docker login -u ${dockerHubUser} --password-stdin`, dockerHubToken);
-await exec(`docker push -a ${IMAGE_NAME}`);
+// await exec(`docker push -a ${IMAGE_NAME}`);
 await exec('docker logout');

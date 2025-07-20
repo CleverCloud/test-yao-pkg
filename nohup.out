@@ -1,0 +1,12 @@
+=> Cloning homebrew repository git@github.com:hsablonniere/test.git to ./git-dockerhub
+=> Applying templates to ./git-dockerhub
+=> docker login -u hsablonniere --password-stdin
+
+WARNING! Your credentials are stored unencrypted in '/home/hsablonniere/.docker/config.json'.
+Configure a credential helper to remove this warning. See
+https://docs.docker.com/go/credential-store/
+
+Login Succeeded
+
+=> docker logout
+Removing login credentials for https://index.docker.io/v1/

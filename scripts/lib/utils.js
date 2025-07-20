@@ -127,7 +127,7 @@ export function exec (command, cwd) {
  */
 export function execWithStdin (command, input) {
   console.log(styleText('blue', '=> ') + styleText('blue', command));
-  const stdout = childProcess.execSync(command, { input });
+  const stdout = childProcess.execSync(command, { input, encoding: 'utf8' });
   console.log(stdout);
   return stdout;
 }
