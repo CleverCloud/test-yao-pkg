@@ -4,7 +4,7 @@ import dedent from 'dedent';
 import pkg from '../package.json' with { type: 'json' };
 import { applyTemplates } from './lib/templates.js';
 import { commitAndPush, tagAndPush } from './lib/git.js';
-import { exec, highlight } from './lib/utils.js';
+import { exec, execSync, highlight } from './lib/utils.js';
 import { simpleGit } from 'simple-git';
 
 // const IMAGE_NAME = 'clevercloud/clever-tools';
@@ -45,6 +45,6 @@ await commitAndPush(GIT_PATH, GIT_URL, pkg.author, version);
 await tagAndPush(GIT_PATH, GIT_URL, version);
 
 await exec(`docker build -t ${IMAGE_NAME}:latest -t ${IMAGE_NAME}:${version} .`, { cwd: GIT_PATH });
-await exec(`docker login -u ${dockerHubUser} --password-stdin`, { stdin: dockerHubToken });
+await execSync(`docker login -u ${dockerHubUser} --password-stdin`, { stdin: dockerHubToken });
 await exec(`docker push -a ${IMAGE_NAME}`);
 await exec('docker logout');

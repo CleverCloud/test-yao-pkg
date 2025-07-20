@@ -90,39 +90,46 @@ export function highlight (strings, ...values) {
  * Executes a shell command asynchronously and logs the output.
  * Prints the command being executed and any stdout/stderr output.
  * @param {string} command - The shell command to execute
- * @param {string} [options] - The working directory to execute the command in
- * @param {string} [options.cwd] - The working directory to execute the command in
- * @param {string} [options.stdin] - Optional text to pass to the command via stdin
+ * @param {string} [cwd] - The working directory to execute the command in
  * @returns {Promise<void>}
  * @throws {Error} When the command fails
  */
-export function exec (command, { cwd, stdin } = {}) {
+export function exec (command, cwd) {
   if (cwd != null) {
     console.log(styleText('blue', '=> cd ' + cwd));
   }
-  console.log(styleText('blue', '=> ') + styleText('blue', `${command}`) + ' ');
+  console.log(styleText('blue', '=> ') + styleText('blue', command));
   return new Promise((resolve, reject) => {
     const child = childProcess.exec(command, { cwd });
-    
+
     child.stdout.pipe(process.stdout);
     child.stderr.pipe(process.stderr);
-    
+
     child.on('close', (code) => {
       if (code !== 0) {
         return reject(new Error(`Command failed with exit code ${code}`));
       }
       return resolve();
     });
-    
+
     child.on('error', (err) => {
       reject(err);
     });
-    
-    if (stdin != null) {
-      child.stdin.write(stdin);
-      child.stdin.end();
-    }
   });
+}
+
+/**
+ * Executes a shell command synchronously and returns the output.
+ * @param {string} command - The shell command to execute
+ * @param {string} [stdin] - Optional text to pass to the command via stdin
+ * @returns {Promise<void>}
+ * @throws {Error} When the command fails
+ */
+export function execSync (command, stdin) {
+  console.log(styleText('blue', '=> ') + styleText('blue', command));
+  const stdout = childProcess.execSync(command, { stdin });
+  console.log(stdout);
+  return stdout;
 }
 
 /**
