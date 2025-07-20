@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 
 import { getAssetPath } from './lib/paths.js';
-import { getSha256 } from './lib/utils.js';
+import { getSha256, highlight } from './lib/utils.js';
 import { simpleGit } from 'simple-git';
 import { applyTemplates } from './lib/templates.js';
 import pkg from '../package.json' with { type: 'json' };
+import { commitAndPush } from './lib/git.js';
 
 const PKGBASE = 'clever-tools-bin';
 const TEMPLATES_PATH = './scripts/templates/aur';
@@ -20,9 +21,10 @@ if (version == null) {
 const archivePath = getAssetPath('archive', version, 'build', 'linux');
 const sha256 = getSha256(archivePath);
 
-const git = simpleGit(GIT_PATH);
-await git.clone(GIT_URL, GIT_PATH);
+console.log(highlight`=> Cloning AUR repository ${GIT_URL} to ${GIT_PATH}`);
+await simpleGit().clone(GIT_URL, GIT_PATH);
 
+console.log(highlight`=> Applying templates to ${GIT_PATH}`);
 await applyTemplates(GIT_PATH, TEMPLATES_PATH, {
   description: pkg.description,
   license: pkg.license,
@@ -33,6 +35,4 @@ await applyTemplates(GIT_PATH, TEMPLATES_PATH, {
   version,
 });
 
-await git.add('.');
-await git.commit(`Update to ${version}`);
-await git.push('origin');
+await commitAndPush(GIT_PATH, GIT_URL, pkg.author, version);

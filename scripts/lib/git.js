@@ -1,4 +1,5 @@
 import { simpleGit } from 'simple-git';
+import { highlight } from './utils.js';
 
 /**
  * Gets the name of the current Git branch.
@@ -31,4 +32,28 @@ export async function getCurrentAuthor () {
   const git = simpleGit();
   const log = await git.log({ n: 1 });
   return log.latest ? log.latest.author_name : null;
+}
+
+/**
+ * Add changes, commit and push changes to a git repository.
+ * @param {string} gitPath - The path to the git repository
+ * @param {string} gitUrl - The URL of the git repository
+ * @param {string} author - The author of the commit in the format "Name <email>"
+ * @param {string} version - The version to commit
+ * @return {Promise<void>}
+ */
+export async function commitAndPush (gitPath, gitUrl, author, version) {
+
+  const git = simpleGit(gitPath);
+
+  const gitUser = author.match(/^(?<name>.+?) <(?<email>.+)>$/).groups;
+  await git.addConfig('user.name', gitUser.name);
+  await git.addConfig('user.email', gitUser.email);
+
+  console.log(highlight`=> Commiting changes`);
+  await git.add('.');
+  const commitDetails = await git.commit(`Update to ${version}`);
+
+  console.log(highlight`=> Pushing ${commitDetails.commit} to ${gitUrl}`);
+  await git.push('origin');
 }
