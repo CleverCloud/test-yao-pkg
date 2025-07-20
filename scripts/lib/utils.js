@@ -102,18 +102,22 @@ export function exec (command, { cwd, stdin } = {}) {
   }
   console.log(styleText('blue', '=> ') + styleText('blue', `${command}`) + ' ');
   return new Promise((resolve, reject) => {
-    const child = childProcess.exec(command, { cwd }, (err, stdout, stderr) => {
-      if (stdout !== '') {
-        console.log(stdout);
-      }
-      if (stderr !== '') {
-        console.error(stderr);
-      }
-      if (err) {
-        return reject(err);
+    const child = childProcess.exec(command, { cwd });
+    
+    child.stdout.pipe(process.stdout);
+    child.stderr.pipe(process.stderr);
+    
+    child.on('close', (code) => {
+      if (code !== 0) {
+        return reject(new Error(`Command failed with exit code ${code}`));
       }
       return resolve();
     });
+    
+    child.on('error', (err) => {
+      reject(err);
+    });
+    
     if (stdin != null) {
       child.stdin.write(stdin);
       child.stdin.end();

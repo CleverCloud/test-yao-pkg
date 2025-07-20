@@ -43,8 +43,7 @@ async function run () {
 
   switch (artifact) {
     case 'archives':
-      // const osList = ['linux', 'macos', 'win'];
-      const osList = ['macos'];
+      const osList = ['linux', 'macos', 'win'];
       for (const os of osList) {
         await releaseClient.publishArchive(version, os);
       }

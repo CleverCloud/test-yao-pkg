@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - 3.0.0
 # on:
 #   push:
 #     tags:
@@ -234,6 +235,7 @@ jobs:
     name: 'Publish to GitHub for Homebrew'
     needs: publish-cellar-archives
     runs-on: ubuntu-latest
+    if: false
     steps:
       - name: 'Checkout sources'
         uses: actions/checkout@v4
@@ -254,15 +256,27 @@ jobs:
       - name: 'Publish to homebrew'
         run: ./scripts/publish-homebrew.js ${{ github.ref_name }}
 
-  # find github action
   publish-dockerhub:
     name: 'Publish Docker Hub'
     needs: publish-cellar-archives
     runs-on: ubuntu-latest
-    if: false
     steps:
-      - name: 'foobar'
-        run: echo foobar
+      - name: 'Checkout sources'
+        uses: actions/checkout@v4
+      - name: 'Setup SSH key'
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: 'Setup Node.js'
+        uses: actions/setup-node@v4
+        with: { node-version-file: 'package.json' }
+      - name: 'Install Node.js dependencies'
+        run: npm ci
+      - name: 'Publish to Docker Hub'
+        run: ./scripts/publish-dockerhub.js ${{ github.ref_name }}
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
   # use templates and git
   publish-exherbo:
