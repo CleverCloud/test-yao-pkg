@@ -1,0 +1,4 @@
+'use strict';
+
+console.log('Hello, World! 123');
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiY2xldmVyLmNqcyIsInNvdXJjZXMiOlsiLi4vYmluL2NsZXZlci5qcyJdLCJzb3VyY2VzQ29udGVudCI6WyJjb25zb2xlLmxvZygnSGVsbG8sIFdvcmxkISAxMjMnKTtcbiJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOztBQUFBLE9BQU8sQ0FBQyxHQUFHLENBQUMsbUJBQW1CLENBQUM7OyJ9

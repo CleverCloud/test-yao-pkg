@@ -32,7 +32,7 @@ export class ReleaseClient {
    * @throws {Error} When upload fails
    */
   async publishArchive (version, os) {
-    const localPath = getAssetPath('archive', version, 'local', os);
+    const localPath = getAssetPath('archive', version, 'build', os);
     const remotePath = getAssetPath('archive', version, 'release', os);
     console.log(highlight`=> Upload ${localPath} to ${remotePath}`);
     await this.#cellarClient.upload(localPath, remotePath);
@@ -44,7 +44,7 @@ export class ReleaseClient {
    * @throws {Error} When upload fails
    */
   async publishRpm (version) {
-    const localPath = getAssetPath('rpm', version, 'local');
+    const localPath = getAssetPath('rpm', version, 'build');
     const remotePath = getAssetPath('rpm', version, 'release');
     console.log(highlight`=> Upload ${localPath} to ${remotePath}`);
     await this.#cellarClient.upload(localPath, remotePath);
@@ -56,7 +56,7 @@ export class ReleaseClient {
    * @throws {Error} When upload fails
    */
   async publishDeb (version) {
-    const localPath = getAssetPath('deb', version, 'local');
+    const localPath = getAssetPath('deb', version, 'build');
     const remotePath = getAssetPath('deb', version, 'release');
     console.log(highlight`=> Upload ${localPath} to ${remotePath}`);
     await this.#cellarClient.upload(localPath, remotePath);

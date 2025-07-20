@@ -9,8 +9,8 @@ import { getAssetParts } from './paths.js';
  */
 export async function createArchive (version, os) {
 
-  const archive = getAssetParts('archive', version, 'local', os);
-  const binary = getAssetParts('binary', version, 'local', os);
+  const archive = getAssetParts('archive', version, 'build', os);
+  const binary = getAssetParts('binary', version, 'build', os);
 
   const command = (os === 'win')
     ? `powershell -Command "Compress-Archive -DestinationPath ${archive.filename} -Path ${binary.filename}"`

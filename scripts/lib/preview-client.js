@@ -323,7 +323,7 @@ export class PreviewClient {
     const archiveDetails = {};
 
     for (const os of osList) {
-      const localPath = getAssetPath('archive', previewName, 'local', os);
+      const localPath = getAssetPath('archive', previewName, 'build', os);
       const remotePath = getAssetPath('archive', previewName, 'preview', os);
       console.log(highlight`=> Upload ${localPath} to ${remotePath}`);
       await this.#cellarClient.upload(localPath, remotePath);

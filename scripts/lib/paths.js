@@ -3,6 +3,30 @@ export const PREVIEW_DIR = 'previews';
 export const RELEASES_DIR = 'releases';
 
 /**
+ * @param {'build'|'preview'|'release'} location - Location type
+ * @param {string} version - The version
+ * @param {'linux'|'macos'|'win'} [os] - Operating system
+ * @param {'bundle'|'binary'|'archive'|'rpm'|'deb'} type - Asset type
+ * @return {string}
+ */
+function getDirectory (location, version, os, type) {
+  switch (location) {
+    case 'build':
+      if ((type === 'binary' || type === 'archive') && os != null) {
+        return `${BUILD_DIR}/${version}/${os}`;
+      }
+      return `${BUILD_DIR}/${version}`;
+    case 'preview':
+      if ((type === 'binary' || type === 'archive') && os != null) {
+        return `${PREVIEW_DIR}/${version}/${os}`;
+      }
+      return `${PREVIEW_DIR}/${version}`;
+    case 'release':
+      return `${RELEASES_DIR}/${version}`;
+  }
+}
+
+/**
  * @param {'bundle'|'binary'|'archive'|'rpm'|'deb'} type - Asset type
  * @param {string} version - The version
  * @param {'linux'|'macos'|'win'} [os] - Operating system
@@ -26,34 +50,10 @@ function getFilename (type, version, os) {
 }
 
 /**
- * @param {'local'|'preview'|'release'} location - Location type
- * @param {string} version - The version
- * @param {'linux'|'macos'|'win'} [os] - Operating system
- * @param {'bundle'|'binary'|'archive'|'rpm'|'deb'} type - Asset type
- * @return {string}
- */
-function getDirectory (location, version, os, type) {
-  switch (location) {
-    case 'local':
-      if ((type === 'binary' || type === 'archive') && os != null) {
-        return `${BUILD_DIR}/${version}/${os}`;
-      }
-      return `${BUILD_DIR}/${version}`;
-    case 'preview':
-      if ((type === 'binary' || type === 'archive') && os != null) {
-        return `${PREVIEW_DIR}/${version}/${os}`;
-      }
-      return `${PREVIEW_DIR}/${version}`;
-    case 'release':
-      return `${RELEASES_DIR}/${version}`;
-  }
-}
-
-/**
  * Get the parts of an asset path
  * @param {'bundle'|'binary'|'archive'|'rpm'|'deb'} type - Asset type
  * @param {string} version - The version
- * @param {'local'|'preview'|'release'} location - Where the asset should be located
+ * @param {'build'|'preview'|'release'} location - Where the asset should be located
  * @param {'linux'|'macos'|'win'} [os] - Operating system (required for binary/archive)
  * @return {{ directory: string, filename: string }}
  */
@@ -67,7 +67,7 @@ export function getAssetParts (type, version, location, os) {
  * Get the path for any built asset
  * @param {'bundle'|'binary'|'archive'|'rpm'|'deb'} type - Asset type
  * @param {string} version - The version
- * @param {'local'|'preview'|'release'} location - Where the asset should be located
+ * @param {'build'|'preview'|'release'} location - Where the asset should be located
  * @param {'linux'|'macos'|'win'} [os] - Operating system (required for binary/archive)
  * @return {string}
  */
