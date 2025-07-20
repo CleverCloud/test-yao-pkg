@@ -23,7 +23,10 @@
       "Bash(clever domain diag:*)",
       "Bash(clever domain overview)",
       "Bash(./scripts/publish-to-cellar.js:*)",
-      "WebFetch(domain:nodejs.org)"
+      "WebFetch(domain:nodejs.org)",
+      "mcp__context7__resolve-library-id",
+      "mcp__context7__get-library-docs",
+      "WebFetch(domain:stackoverflow.com)"
     ],
     "deny": []
   }
