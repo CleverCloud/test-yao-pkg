@@ -40,12 +40,12 @@ jobs:
     strategy:
       matrix:
         include:
-          - platform: linux
-            runs-on: ubuntu-latest
+#          - platform: linux
+#            runs-on: ubuntu-latest
           - platform: macos
             runs-on: macos-14
-          - platform: win
-            runs-on: windows-latest
+#          - platform: win
+#            runs-on: windows-latest
     steps:
       - name: 'Checkout sources'
         uses: actions/checkout@v4
@@ -73,3 +73,6 @@ jobs:
           name: build-${{ matrix.platform }}
           path: build
           retention-days: 1
+      - name: 'macos sign and notarization'
+        shell: bash
+        run: echo this is it
