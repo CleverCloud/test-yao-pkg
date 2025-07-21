@@ -175,6 +175,7 @@ export function readEnvVars (variableNames) {
 export function run (fn) {
   fn().catch((e) => {
     console.error(`${styleText(['red', 'bold'], 'ERROR:')} ${e.message}`);
+    console.error(e);
     process.exit(1);
   });
 }

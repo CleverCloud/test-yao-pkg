@@ -87,6 +87,10 @@ async function listPreviews (previewClient) {
     return;
   }
 
+  displayPreviews(previews);
+}
+
+function displayPreviews (previews) {
   const table = previews.map((p) => {
     const date = p.updatedAt.substring(0, 10);
     const dateObject = new Date(p.updatedAt);
@@ -112,13 +116,8 @@ async function listPreviews (previewClient) {
  * @param {PreviewClient} previewClient - The client instance for preview operations
  */
 async function updatePreviews (previewClient) {
-  const previews = await previewClient.listPreviews();
 
-  if (previews.length === 0) {
-    console.log('No previews right now.');
-    return;
-  }
-
+  console.log('updatePreviews');
 
 }
 
