@@ -14,12 +14,13 @@ export class ReleaseClient {
   /**
    * Creates a new ReleaseClient instance.
    * @param {Object} config - Configuration object
+   * @param {string} config.bucket - The bucket name for Cellar
    * @param {string} config.accessKeyId - AWS access key ID for Cellar
    * @param {string} config.secretAccessKey - AWS secret access key for Cellar
    */
-  constructor ({ accessKeyId, secretAccessKey }) {
+  constructor ({ bucket, accessKeyId, secretAccessKey }) {
     this.#cellarClient = new CellarClient({
-      bucket: 'm84ilsmeqobuxempbkuc',
+      bucket,
       accessKeyId,
       secretAccessKey,
     });

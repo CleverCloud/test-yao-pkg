@@ -6,24 +6,20 @@ import { commitAndPush, tagAndPush } from './lib/git.js';
 import { exec, execWithStdin, highlight, readEnvVars, run } from './lib/utils.js';
 import { simpleGit } from 'simple-git';
 
-// const IMAGE_NAME = 'clevercloud/clever-tools';
-const IMAGE_NAME = 'hsablonniere/test';
 const TEMPLATES_PATH = './scripts/templates/dockerhub';
 const GIT_PATH = './git-dockerhub';
-// const GIT_URL = 'ssh://git@github.com/CleverCloud/clever-tools-dockerhub.git';
-const GIT_URL = `git@github.com:hsablonniere/test.git`;
 
 run(async () => {
-
-  const [dockerHubUser, dockerHubToken] = readEnvVars(['DOCKERHUB_USERNAME', 'DOCKERHUB_TOKEN']);
 
   const [version] = process.argv.slice(2);
   if (version == null) {
     throw new Error('Missing version');
   }
 
-  console.log(highlight`=> Cloning dockerhub repository ${GIT_URL} to ${GIT_PATH}`);
-  await simpleGit().clone(GIT_URL, GIT_PATH);
+  const [dockerHubUser, dockerHubToken, dockerImageName, gitUrl] = readEnvVars(['DOCKERHUB_USERNAME', 'DOCKERHUB_TOKEN', 'DOCKER_IMAGE_NAME', 'DOCKERHUB_GIT_URL']);
+
+  console.log(highlight`=> Cloning dockerhub repository ${gitUrl} to ${GIT_PATH}`);
+  await simpleGit().clone(gitUrl, GIT_PATH);
 
   await applyTemplates(GIT_PATH, TEMPLATES_PATH, {
     description: pkg.description,
@@ -32,11 +28,11 @@ run(async () => {
     version,
   });
 
-  await commitAndPush(GIT_PATH, GIT_URL, pkg.author, version);
-  await tagAndPush(GIT_PATH, GIT_URL, version);
+  await commitAndPush(GIT_PATH, gitUrl, pkg.author, version);
+  await tagAndPush(GIT_PATH, gitUrl, version);
 
-  await exec(`docker build -t ${IMAGE_NAME}:latest -t ${IMAGE_NAME}:${version} .`, GIT_PATH);
+  await exec(`docker build -t ${dockerImageName}:latest -t ${dockerImageName}:${version} .`, { cwd: GIT_PATH });
   await execWithStdin(`docker login -u ${dockerHubUser} --password-stdin`, dockerHubToken);
-  await exec(`docker push -a ${IMAGE_NAME}`);
+  await exec(`docker push -a ${dockerImageName}`);
   await exec('docker logout');
 });

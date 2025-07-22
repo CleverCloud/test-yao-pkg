@@ -26,12 +26,13 @@ export class PreviewClient {
   /**
    * Creates a new PreviewClient instance.
    * @param {Object} config - Configuration object
+   * @param {string} config.bucket - The bucket name for Cellar
    * @param {string} config.accessKeyId - AWS access key ID for Cellar
    * @param {string} config.secretAccessKey - AWS secret access key for Cellar
    */
-  constructor ({ accessKeyId, secretAccessKey }) {
+  constructor ({ bucket, accessKeyId, secretAccessKey }) {
     this.#cellarClient = new CellarClient({
-      bucket: '6mt2ilnafne8nzomvlg2',
+      bucket,
       accessKeyId,
       secretAccessKey,
     });

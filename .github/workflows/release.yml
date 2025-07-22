@@ -9,14 +9,6 @@ on:
 #     tags:
 #       - '*'
 
-env:
-  NFPM_VERSION: "2.43.0"
-  RPM_FILENAME: "clever-tools-${{ github.ref_name }}.rpm"
-  DEB_FILENAME: "clever-tools-${{ github.ref_name }}.deb"
-  NEXUS_SERVER_URL: "https://nexus.clever-cloud.com"
-  NEXUS_RPM_REPOSITORY: "rpm-test"
-  NEXUS_DEB_REPOSITORY: "deb-test"
-
 jobs:
   build:
     uses: ./.github/workflows/build.yml
@@ -28,33 +20,31 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     if: false
-    env:
-      RPM_GPG_PRIVATE_KEY: ${{ secrets.RPM_GPG_PRIVATE_KEY }}
-      NFPM_PASSPHRASE: ${{ secrets.RPM_GPG_PASSPHRASE }}
     steps:
       - name: 'Checkout sources'
         uses: actions/checkout@v4
+      - name: 'Setup Node.js'
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: 'package.json'
+          cache: 'npm'
+      - name: 'Install Node.js dependencies'
+        run: npm ci
       - name: 'Download build-linux artifact'
         uses: actions/download-artifact@v4
         with:
           name: build-linux
           path: build
-      - name: 'Download nfpm'
-        run: |
-          curl -sL https://github.com/goreleaser/nfpm/releases/download/v${{ env.NFPM_VERSION }}/nfpm_${{ env.NFPM_VERSION }}_Linux_x86_64.tar.gz | tar -xz
-          chmod +x nfpm
-      - name: 'Build and sign .rpm with nfpm'
-        run: |
-          echo "$RPM_GPG_PRIVATE_KEY" > /tmp/signing-key.asc
-          ./nfpm package --config scripts/templates/nfpm.yaml --packager .rpm --target ${{ env.RPM_FILENAME }}
+      - name: 'Build .rpm with nfpm'
+        run: ./scripts/nfpm.js ${{ github.ref_name }} rpm
         env:
-          VERSION: ${{ github.ref_name }}
-          NFPM_ARCH: "x86_64"
+          RPM_GPG_PRIVATE_KEY: ${{ secrets.RPM_GPG_PRIVATE_KEY }}
+          RPM_GPG_PASSPHRASE: ${{ secrets.RPM_GPG_PASSPHRASE }}
       - name: 'Upload .rpm artifact'
         uses: actions/upload-artifact@v4
         with:
           name: build-rpm
-          path: ${{ env.RPM_FILENAME }}
+          path: build/clever-tools-${{ github.ref_name }}.rpm
           retention-days: 1
 
   build-deb:
@@ -65,26 +55,25 @@ jobs:
     steps:
       - name: 'Checkout sources'
         uses: actions/checkout@v4
+      - name: 'Setup Node.js'
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: 'package.json'
+          cache: 'npm'
+      - name: 'Install Node.js dependencies'
+        run: npm ci
       - name: 'Download build-linux artifact'
         uses: actions/download-artifact@v4
         with:
           name: build-linux
           path: build
-      - name: 'Download nfpm'
-        run: |
-          curl -sL https://github.com/goreleaser/nfpm/releases/download/v${{ env.NFPM_VERSION }}/nfpm_${{ env.NFPM_VERSION }}_Linux_x86_64.tar.gz | tar -xz
-          chmod +x nfpm
       - name: 'Build .deb with nfpm'
-        run: |
-          ./nfpm package --config scripts/templates/nfpm.yaml --packager .deb --target ${{ env.DEB_FILENAME }}
-        env:
-          VERSION: ${{ github.ref_name }}
-          NFPM_ARCH: "amd64"
+        run: ./scripts/nfpm.js ${{ github.ref_name }} deb
       - name: 'Upload .deb artifact'
         uses: actions/upload-artifact@v4
         with:
           name: build-deb
-          path: ${{ env.DEB_FILENAME }}
+          path: build/clever-tools-${{ github.ref_name }}.deb
           retention-days: 1
 
   publish-npm:
@@ -138,6 +127,7 @@ jobs:
       - name: 'Publish archives to cellar'
         run: ./scripts/publish-cellar.js ${{ github.ref_name }} archives
         env:
+          CC_CLEVER_TOOLS_RELEASES_CELLAR_BUCKET: ${{ secrets.CC_CLEVER_TOOLS_RELEASES_CELLAR_BUCKET }}
           CC_CLEVER_TOOLS_RELEASES_CELLAR_KEY_ID: ${{ secrets.CC_CLEVER_TOOLS_RELEASES_CELLAR_KEY_ID }}
           CC_CLEVER_TOOLS_RELEASES_CELLAR_SECRET_KEY: ${{ secrets.CC_CLEVER_TOOLS_RELEASES_CELLAR_SECRET_KEY }}
 
@@ -164,6 +154,7 @@ jobs:
       - name: 'Publish .rpm to cellar'
         run: ./scripts/publish-cellar.js ${{ github.ref_name }} rpm
         env:
+          CC_CLEVER_TOOLS_RELEASES_CELLAR_BUCKET: ${{ secrets.CC_CLEVER_TOOLS_RELEASES_CELLAR_BUCKET }}
           CC_CLEVER_TOOLS_RELEASES_CELLAR_KEY_ID: ${{ secrets.CC_CLEVER_TOOLS_RELEASES_CELLAR_KEY_ID }}
           CC_CLEVER_TOOLS_RELEASES_CELLAR_SECRET_KEY: ${{ secrets.CC_CLEVER_TOOLS_RELEASES_CELLAR_SECRET_KEY }}
 
@@ -190,6 +181,7 @@ jobs:
       - name: 'Publish .deb to cellar'
         run: ./scripts/publish-cellar.js ${{ github.ref_name }} deb
         env:
+          CC_CLEVER_TOOLS_RELEASES_CELLAR_BUCKET: ${{ secrets.CC_CLEVER_TOOLS_RELEASES_CELLAR_BUCKET }}
           CC_CLEVER_TOOLS_RELEASES_CELLAR_KEY_ID: ${{ secrets.CC_CLEVER_TOOLS_RELEASES_CELLAR_KEY_ID }}
           CC_CLEVER_TOOLS_RELEASES_CELLAR_SECRET_KEY: ${{ secrets.CC_CLEVER_TOOLS_RELEASES_CELLAR_SECRET_KEY }}
 
@@ -219,6 +211,8 @@ jobs:
           path: build
       - name: 'Publish to AUR'
         run: ./scripts/publish-aur.js ${{ github.ref_name }}
+        env:
+          AUR_GIT_URL: ${{ vars.AUR_GIT_URL }}
 
   publish-homebrew:
     name: 'Publish to Homebrew'
@@ -246,6 +240,8 @@ jobs:
           path: build
       - name: 'Publish to Homebrew'
         run: ./scripts/publish-homebrew.js ${{ github.ref_name }}
+        env:
+          HOMEBREW_GIT_URL: ${{ vars.HOMEBREW_GIT_URL }}
 
   publish-dockerhub:
     name: 'Publish to Docker Hub'
@@ -271,6 +267,8 @@ jobs:
         env:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+          DOCKER_IMAGE_NAME: ${{ vars.DOCKER_IMAGE_NAME }}
+          DOCKERHUB_GIT_URL: ${{ vars.DOCKERHUB_GIT_URL }}
 
   publish-exherbo:
     name: 'Publish to exherbo'
@@ -293,6 +291,8 @@ jobs:
         run: npm ci
       - name: 'Publish to GitHub for exherbo'
         run: ./scripts/publish-exherbo.js ${{ github.ref_name }}
+        env:
+          EXHERBO_GIT_URL: ${{ vars.EXHERBO_GIT_URL }}
 
   publish-nexus-rpm:
     name: 'Publish .rpm to Nexus'
@@ -300,52 +300,68 @@ jobs:
     runs-on: ubuntu-latest
     if: false
     steps:
+      - name: 'Checkout sources'
+        uses: actions/checkout@v4
+      - name: 'Setup Node.js'
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: 'package.json'
+          cache: 'npm'
+      - name: 'Install Node.js dependencies'
+        run: npm ci
       - name: 'Download .rpm artifact'
         uses: actions/download-artifact@v4
         with:
           name: build-rpm
-          path: ./
+          path: build/${{ github.ref_name }}
       - name: 'Publish .rpm to Nexus Repository'
-        run: |
-          HTTP_STATUS=$(curl -X PUT \
-            -u "${{ secrets.NEXUS_USER }}:${{ secrets.NEXUS_PASSWORD }}" \
-            --data-binary "@${{ env.RPM_FILENAME }}" \
-            "${{ env.NEXUS_SERVER_URL }}/repository/${{ env.NEXUS_RPM_REPOSITORY }}/${{ env.RPM_FILENAME }}" \
-            -v \
-            -w "%{http_code}" \
-            -o /dev/null \
-            -s)
-          echo "HTTP Status: $HTTP_STATUS"
-          if [[ "$HTTP_STATUS" -lt 200 || "$HTTP_STATUS" -ge 300 ]]; then
-            echo "Error: Upload failed with HTTP status $HTTP_STATUS"
-            exit 1
-          fi
-          echo "RPM upload successful with status $HTTP_STATUS"
+        run: ./scripts/publish-nexus.js ${{ github.ref_name }} rpm
+        env:
+          NEXUS_USER: ${{ secrets.NEXUS_USER }}
+          NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+          NEXUS_RPM_REPOSITORY: ${{ vars.NEXUS_RPM_REPOSITORY }}
   publish-nexus-deb:
     name: 'Publish .deb to Nexus'
     needs: build-deb
     runs-on: ubuntu-latest
     if: false
     steps:
+      - name: 'Checkout sources'
+        uses: actions/checkout@v4
+      - name: 'Setup Node.js'
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: 'package.json'
+          cache: 'npm'
+      - name: 'Install Node.js dependencies'
+        run: npm ci
       - name: 'Download .deb artifact'
         uses: actions/download-artifact@v4
         with:
           name: build-deb
-          path: ./
+          path: build/${{ github.ref_name }}
       - name: 'Publish .deb to Nexus Repository'
-        run: |
-          HTTP_STATUS=$(curl -X POST \
-            -u "${{ secrets.NEXUS_USER }}:${{ secrets.NEXUS_PASSWORD }}" \
-            -H "Content-Type: multipart/form-data" \
-            -F "data=@${{ env.DEB_FILENAME }}" \
-            "${{ env.NEXUS_SERVER_URL }}/repository/${{ env.NEXUS_DEB_REPOSITORY }}/" \
-            -v \
-            -w "%{http_code}" \
-            -o /dev/null \
-            -s)
-          echo "HTTP Status: $HTTP_STATUS"
-          if [[ "$HTTP_STATUS" -lt 200 || "$HTTP_STATUS" -ge 300 ]]; then
-            echo "Error: Upload failed with HTTP status $HTTP_STATUS"
-            exit 1
-          fi
-          echo "DEB upload successful with status $HTTP_STATUS"
+        run: ./scripts/publish-nexus.js ${{ github.ref_name }} deb
+        env:
+          NEXUS_USER: ${{ secrets.NEXUS_USER }}
+          NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+          NEXUS_DEB_REPOSITORY: ${{ vars.NEXUS_DEB_REPOSITORY }}
+
+  publish-winget:
+    name: 'Publish .deb to Nexus'
+    needs: publish-cellar-archives
+    runs-on: windows-latest
+    if: false
+    steps:
+      - name: 'Checkout sources'
+        uses: actions/checkout@v4
+      - name: 'Setup Node.js'
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: 'package.json'
+          cache: 'npm'
+      - name: 'Install Node.js dependencies'
+        run: npm ci
+      - name: 'Publish to Winget'
+        shell: bash
+        run: ./scripts/publish-winget.js ${{ github.ref_name }}

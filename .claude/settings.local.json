@@ -28,7 +28,15 @@
       "mcp__context7__get-library-docs",
       "WebFetch(domain:stackoverflow.com)",
       "Bash(node:*)",
-      "Bash(timeout:*)"
+      "Bash(timeout:*)",
+      "Bash(nfpm package:*)",
+      "Bash(NFPM_ARCH=amd64 nfpm package --config scripts/templates/nfpm.yaml --packager deb --target build/$VERSION/clever-tools-$VERSION.deb)",
+      "Bash(./scripts/publish-nexus.js:*)",
+      "Bash(VERSION=1.2.3 ./scripts/publish-deb.sh:*)",
+      "Bash(gh variable:*)",
+      "Bash(gh repo create:*)",
+      "Bash(git clone:*)",
+      "Bash(gh variable set:*)"
     ],
     "deny": []
   }

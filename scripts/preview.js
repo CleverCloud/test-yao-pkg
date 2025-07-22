@@ -23,9 +23,10 @@ import { BUILD_DIR } from './lib/paths.js';
 
 run(async () => {
 
-  const [accessKeyId, secretAccessKey] = readEnvVars(['CC_CLEVER_TOOLS_PREVIEWS_CELLAR_KEY_ID', 'CC_CLEVER_TOOLS_PREVIEWS_CELLAR_SECRET_KEY']);
+  const [bucket, accessKeyId, secretAccessKey] = readEnvVars(['CC_CLEVER_TOOLS_PREVIEWS_CELLAR_BUCKET','CC_CLEVER_TOOLS_PREVIEWS_CELLAR_KEY_ID', 'CC_CLEVER_TOOLS_PREVIEWS_CELLAR_SECRET_KEY']);
 
   const previewClient = new PreviewClient({
+    bucket,
     accessKeyId,
     secretAccessKey,
   });
