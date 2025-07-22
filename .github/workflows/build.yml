@@ -9,6 +9,10 @@ on:
       node-version:
         type: string
         default: node22
+      include-windows:
+        type: boolean
+        default: true
+        description: 'Whether to include Windows in the build matrix'
 
 jobs:
   bundle-cjs:
@@ -44,8 +48,7 @@ jobs:
             runs-on: ubuntu-latest
           - platform: macos
             runs-on: macos-14
-          - platform: win
-            runs-on: windows-latest
+          - ${{ inputs.include-windows && fromJSON('{"platform": "win", "runs-on": "windows-latest"}') || fromJSON('null') }}
     steps:
       - name: 'Checkout sources'
         uses: actions/checkout@v4
