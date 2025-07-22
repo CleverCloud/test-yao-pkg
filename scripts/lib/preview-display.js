@@ -16,6 +16,7 @@ export class PreviewDisplay {
   #remotePreviews;
   #localPreviews;
   #os;
+  #previewActions;
 
   /**
    * @param {Array<Preview>} remotePreviews - Remote preview builds
@@ -31,23 +32,32 @@ export class PreviewDisplay {
    * Initialize the display interface and handle preview updates
    */
   async init () {
-    const previewActions = this.#categorizePreviews(this.#remotePreviews, this.#localPreviews, this.#os);
+    this.#previewActions = this.#categorizePreviews(this.#remotePreviews, this.#localPreviews, this.#os);
+    this.#displayPreviews(this.#previewActions);
+  }
 
-    this.#displayPreviews(previewActions);
+  /**
+   * Update the details of a specific preview
+   * @param {string} previewName - Name of the preview to update
+   * @param {string} details - New details for the preview
+   */
+  update (previewName, details) {
+  }
 
-    for (const preview of previewActions) {
+  async startUpdate () {
+    for (const preview of this.#previewActions) {
       const action = preview.action ?? 'unknown';
 
       switch (action) {
-        case 'up-to-date':
+        case 'keep':
           // Do nothing
           break;
         case 'update':
         case 'download':
-          await this.#downloadAndInstallPreview(preview, this.#os);
+          this.#downloadAndInstallPreview(preview, this.#os);
           break;
         case 'delete':
-          await this.#deleteLocalPreview(preview.name);
+          this.#deleteLocalPreview(preview.name);
           break;
         case 'no-preview-for-os':
           console.log(styleText('yellow', `Warning: No ${this.#os} build available for preview ${preview.name}`));
@@ -62,18 +72,6 @@ export class PreviewDisplay {
     }
 
     await this.#updateLocalManifest(this.#remotePreviews);
-  }
-
-  /**
-   * Update the details of a specific preview
-   * @param {string} previewName - Name of the preview to update
-   * @param {string} details - New details for the preview
-   */
-  update (previewName, details) {
-  }
-
-  startUpdate () {
-
   }
 
   /**
@@ -162,7 +160,7 @@ export class PreviewDisplay {
    * @param {Preview|null} remotePreview - Remote preview
    * @param {Preview|null} localPreview - Local preview
    * @param {'linux'|'macos'|'win'} os - The operating system to focus on
-   * @return {'up-to-date'|'update'|'download'|'delete'|'no-preview-for-os'|'ignore'}
+   * @return {'keep'|'update'|'download'|'delete'|'no-preview-for-os'|'ignore'}
    */
   #getPreviewAction (remotePreview, localPreview, os) {
     // No remote preview, local exists
@@ -185,7 +183,7 @@ export class PreviewDisplay {
     if (remoteUrlForOs != null && localUrlForOs != null) {
       const remoteChecksum = remoteUrlForOs.checksum.value;
       const localChecksum = localUrlForOs.checksum.value;
-      return remoteChecksum === localChecksum ? 'up-to-date' : 'update';
+      return remoteChecksum === localChecksum ? 'keep' : 'update';
     }
 
     // Remote has OS build, local doesn't
