@@ -41,7 +41,6 @@ jobs:
     name: 'Build for ${{ matrix.platform }}'
     needs: bundle-cjs
     runs-on: ${{ matrix.runs-on }}
-    if: ${{ matrix.should-run }}
     strategy:
       matrix:
         include:
@@ -56,26 +55,33 @@ jobs:
             should-run: ${{ inputs.include-windows }}
     steps:
       - name: 'Checkout sources'
+        if: ${{ matrix.should-run }}
         uses: actions/checkout@v4
       - name: 'Setup Node.js'
+        if: ${{ matrix.should-run }}
         uses: actions/setup-node@v4
         with:
           node-version-file: 'package.json'
           cache: 'npm'
       - name: 'Install Node.js dependencies'
+        if: ${{ matrix.should-run }}
         run: npm ci
       - name: 'Download bundle-cjs artifact'
+        if: ${{ matrix.should-run }}
         uses: actions/download-artifact@v4
         with:
           name: bundle-cjs
           path: build
       - name: 'Build binary'
+        if: ${{ matrix.should-run }}
         shell: bash
         run: ./scripts/build-binary.js ${{ inputs.version }}
       - name: 'Create archive'
+        if: ${{ matrix.should-run }}
         shell: bash
         run: ./scripts/create-archive.js ${{ inputs.version }}
       - name: 'Upload build-${{ matrix.platform }} artifact'
+        if: ${{ matrix.should-run }}
         uses: actions/upload-artifact@v4
         with:
           name: build-${{ matrix.platform }}
