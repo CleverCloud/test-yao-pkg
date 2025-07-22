@@ -73,6 +73,3 @@ jobs:
           name: build-${{ matrix.platform }}
           path: build
           retention-days: 1
-      - name: 'macos sign and notarization'
-        shell: bash
-        run: echo this is it
