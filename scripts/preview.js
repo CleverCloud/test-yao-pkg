@@ -108,7 +108,7 @@ async function updatePreviews (previewClient) {
   const remotePreviews = await previewClient.listPreviews();
   const localPreviews = await getLocalPreviews();
   const previewStatuses = categorizePreviews(remotePreviews, localPreviews, os);
-  displayPreviewStatuses(previewStatuses);
+  displayPreviews(previewStatuses);
   // await updateLocalManifest(remotePreviews);
 }
 
@@ -126,27 +126,6 @@ async function getLocalPreviews () {
   catch (error) {
     return [];
   }
-}
-
-function displayPreviews (previews) {
-  const table = previews.map((p) => {
-    const date = p.updatedAt.substring(0, 10);
-    const dateObject = new Date(p.updatedAt);
-    const time = dateObject.toLocaleTimeString();
-    const links = p.urls.map((u) => {
-      return `${getEmoji(u.os)} ${createTerminalLink(u.url, u.os)}`;
-    });
-    return [
-      styleText('yellow', p.name),
-      styleText('blue', p.commitId.substring(0, 8)),
-      date,
-      time,
-      styleText('green', p.author),
-      ...links,
-    ];
-  });
-
-  console.log(textTable(table, { stringLength }));
 }
 
 /**
@@ -169,7 +148,6 @@ function categorizePreviews (remotePreviews, localPreviews, os) {
     const remote = remoteMap.get(name);
     const local = localMap.get(name);
     const status = getPreviewStatus(remote, local, os);
-    // Use remote preview data if available, otherwise use local
     const preview = remote ?? local;
     results.push({ ...preview, status });
   }
@@ -224,10 +202,10 @@ function getPreviewStatus (remotePreview, localPreview, os) {
 }
 
 /**
- * Displays preview statuses using the same format as displayPreviews but with status at the end
- * @param {Array} previewStatuses - Array of objects with name, status, and preview data
+ * Displays previews with statuses
+ * @param {Array} previewStatuses - Array of previews + a status field
  */
-function displayPreviewStatuses (previewStatuses) {
+function displayPreviews (previewStatuses) {
   if (previewStatuses.length === 0) {
     console.log('No previews to display.');
     return;
@@ -247,7 +225,7 @@ function displayPreviewStatuses (previewStatuses) {
       time,
       styleText('green', p.author),
       ...links,
-      styleText('cyan', p.status),
+      styleText('cyan', p.status ?? 'unknown'),
     ];
   });
 
