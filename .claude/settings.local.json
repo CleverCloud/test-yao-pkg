@@ -36,7 +36,8 @@
       "Bash(gh variable:*)",
       "Bash(gh repo create:*)",
       "Bash(git clone:*)",
-      "Bash(gh variable set:*)"
+      "Bash(gh variable set:*)",
+      "Bash(find:*)"
     ],
     "deny": []
   }
