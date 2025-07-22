@@ -150,6 +150,34 @@ function displayPreviews (previews) {
 }
 
 /**
+ * Categorizes previews by comparing remote and local versions
+ * @param {Array<Preview>} remotePreviews - Remote previews
+ * @param {Array<Preview>} localPreviews - Local previews
+ * @param {'linux'|'macos'|'win'} os - The operating system to focus on
+ * @returns {Array} Array of objects with name, status, and preview data
+ */
+function categorizePreviews (remotePreviews, localPreviews, os) {
+  /** @type {Map<string, Preview>} */
+  const remoteMap = new Map(remotePreviews.map((p) => [p.name, p]));
+  /** @type {Map<string, Preview>} */
+  const localMap = new Map(localPreviews.map((p) => [p.name, p]));
+  const allNames = new Set([...remoteMap.keys(), ...localMap.keys()]);
+
+  const results = [];
+
+  for (const name of allNames) {
+    const remote = remoteMap.get(name);
+    const local = localMap.get(name);
+    const status = getPreviewStatus(remote, local, os);
+    // Use remote preview data if available, otherwise use local
+    const preview = remote ?? local;
+    results.push({ ...preview, status });
+  }
+
+  return results;
+}
+
+/**
  * Determines the status of a preview for a specific OS
  * @param {Preview|null} remotePreview - Remote preview
  * @param {Preview|null} localPreview - Local preview
@@ -157,13 +185,14 @@ function displayPreviews (previews) {
  * @return {'up-to-date'|'update'|'download'|'delete'|'no-preview-for-os'|'ignore'}
  */
 function getPreviewStatus (remotePreview, localPreview, os) {
-  const remoteUrlForOs = remotePreview?.urls.find((u) => u.os === os);
-  const localUrlForOs = localPreview?.urls.find((u) => u.os === os);
 
   // No remote preview, local exists
   if (remotePreview == null && localPreview != null) {
     return 'delete';
   }
+
+  const remoteUrlForOs = remotePreview?.urls.find((u) => u.os === os);
+  const localUrlForOs = localPreview?.urls.find((u) => u.os === os);
 
   // Remote exists, no local preview
   if (remotePreview != null && localPreview == null) {
@@ -195,34 +224,6 @@ function getPreviewStatus (remotePreview, localPreview, os) {
 }
 
 /**
- * Categorizes previews by comparing remote and local versions
- * @param {Array<Preview>} remotePreviews - Remote previews
- * @param {Array<Preview>} localPreviews - Local previews
- * @param {'linux'|'macos'|'win'} os - The operating system to focus on
- * @returns {Array} Array of objects with name, status, and preview data
- */
-function categorizePreviews (remotePreviews, localPreviews, os) {
-  /** @type {Map<string, Preview>} */
-  const remoteMap = new Map(remotePreviews.map((p) => [p.name, p]));
-  /** @type {Map<string, Preview>} */
-  const localMap = new Map(localPreviews.map((p) => [p.name, p]));
-  const allNames = new Set([...remoteMap.keys(), ...localMap.keys()]);
-
-  const results = [];
-
-  for (const name of allNames) {
-    const remote = remoteMap.get(name);
-    const local = localMap.get(name);
-    const status = getPreviewStatus(remote, local, os);
-    // Use remote preview data if available, otherwise use local
-    const preview = remote || local;
-    results.push({ name, status, preview });
-  }
-
-  return results;
-}
-
-/**
  * Displays preview statuses using the same format as displayPreviews but with status at the end
  * @param {Array} previewStatuses - Array of objects with name, status, and preview data
  */
@@ -233,32 +234,18 @@ function displayPreviewStatuses (previewStatuses) {
   }
 
   const table = previewStatuses.map((p) => {
-    if (!p.preview) {
-      // If no preview data available, show minimal info
-      return [
-        styleText('yellow', p.name),
-        '', // commitId
-        '', // date
-        '', // time
-        '', // author
-        '', // links (empty)
-        styleText('cyan', p.status),
-      ];
-    }
-
-    const preview = p.preview;
-    const date = preview.updatedAt.substring(0, 10);
-    const dateObject = new Date(preview.updatedAt);
+    const date = p.updatedAt.substring(0, 10);
+    const dateObject = new Date(p.updatedAt);
     const time = dateObject.toLocaleTimeString();
-    const links = preview.urls.map((u) => {
+    const links = p.urls.map((u) => {
       return `${getEmoji(u.os)} ${createTerminalLink(u.url, u.os)}`;
     });
     return [
-      styleText('yellow', preview.name),
-      styleText('blue', preview.commitId.substring(0, 8)),
+      styleText('yellow', p.name),
+      styleText('blue', p.commitId.substring(0, 8)),
       date,
       time,
-      styleText('green', preview.author),
+      styleText('green', p.author),
       ...links,
       styleText('cyan', p.status),
     ];
