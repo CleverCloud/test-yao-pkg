@@ -20,6 +20,7 @@ import { buildBinary } from './lib/build-binary.js';
 import { createArchive } from './lib/create-archive.js';
 import dedent from 'dedent';
 import { BUILD_DIR } from './lib/paths.js';
+import fs from 'node:fs';
 
 run(async () => {
 
@@ -68,6 +69,7 @@ function getUsage (message) {
 
     USAGE
       preview.js list
+      preview.js update
       preview.js pr-comment [preview-name]
       preview.js build [preview-name]
       preview.js publish [preview-name]
@@ -117,9 +119,124 @@ function displayPreviews (previews) {
  * @param {PreviewClient} previewClient - The client instance for preview operations
  */
 async function updatePreviews (previewClient) {
+  const os = getOs();
+  
+  // Get list of remote previews
+  const remotePreviews = await previewClient.listPreviews();
+  
+  // Get list of local previews
+  const localPreviews = await getLocalPreviews();
+  
+  // Filter previews for current platform only
+  const remoteForOs = remotePreviews.map(preview => ({
+    ...preview,
+    urls: preview.urls.filter(url => url.os === os)
+  })).filter(preview => preview.urls.length > 0);
+  
+  const localForOs = localPreviews.map(preview => ({
+    ...preview,
+    urls: preview.urls.filter(url => url.os === os)
+  })).filter(preview => preview.urls.length > 0);
+  
+  // Combine and categorize previews
+  const previewStatuses = categorizePreviews(remoteForOs, localForOs);
+  
+  // Display results
+  displayPreviewStatuses(previewStatuses);
+  
+  // Update local manifest
+  await updateLocalManifest(remotePreviews);
+}
 
-  console.log('updatePreviews');
+/**
+ * Reads local preview manifest from .preview-binaries/manifest.json
+ * @returns {Promise<Array>} Array of local previews, empty if file doesn't exist
+ */
+async function getLocalPreviews() {
+  const localManifestPath = '.preview-binaries/manifest.json';
+  try {
+    const manifestJson = await fs.promises.readFile(localManifestPath, 'utf8');
+    const manifest = JSON.parse(manifestJson);
+    return manifest.previews || [];
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      return [];
+    }
+    throw error;
+  }
+}
 
+/**
+ * Categorizes previews by comparing remote and local versions
+ * @param {Array} remotePreviews - Remote previews filtered for current OS
+ * @param {Array} localPreviews - Local previews filtered for current OS
+ * @returns {Array} Array of objects with name and status
+ */
+function categorizePreviews(remotePreviews, localPreviews) {
+  const remoteMap = new Map(remotePreviews.map(p => [p.name, p]));
+  const localMap = new Map(localPreviews.map(p => [p.name, p]));
+  const allNames = new Set([...remoteMap.keys(), ...localMap.keys()]);
+  
+  const results = [];
+  
+  for (const name of allNames) {
+    const remote = remoteMap.get(name);
+    const local = localMap.get(name);
+    
+    let status;
+    if (remote && local) {
+      // Both exist - check if different (compare checksums)
+      const remoteChecksum = remote.urls[0]?.checksum?.value;
+      const localChecksum = local.urls[0]?.checksum?.value;
+      status = remoteChecksum === localChecksum ? 'up-to-date' : 'update';
+    } else if (remote && !local) {
+      status = 'download';
+    } else if (!remote && local) {
+      status = 'delete';
+    }
+    
+    results.push({ name, status });
+  }
+  
+  return results;
+}
+
+/**
+ * Displays preview statuses in a simple table
+ * @param {Array} previewStatuses - Array of objects with name and status
+ */
+function displayPreviewStatuses(previewStatuses) {
+  if (previewStatuses.length === 0) {
+    console.log('No previews to display.');
+    return;
+  }
+  
+  const table = previewStatuses.map(p => [p.name, p.status]);
+  console.log(textTable(table, { stringLength }));
+}
+
+/**
+ * Updates the local manifest file with remote manifest data
+ * @param {Array} remotePreviews - Complete remote preview list
+ */
+async function updateLocalManifest(remotePreviews) {
+  const localManifestPath = '.preview-binaries/manifest.json';
+  const localManifestDir = '.preview-binaries';
+  
+  // Create directory if it doesn't exist
+  try {
+    await fs.promises.mkdir(localManifestDir, { recursive: true });
+  } catch (error) {
+    // Ignore error if directory already exists
+  }
+  
+  const manifest = {
+    version: '1',
+    previews: remotePreviews
+  };
+  
+  const manifestJson = JSON.stringify(manifest, null, 2);
+  await fs.promises.writeFile(localManifestPath, manifestJson, 'utf8');
 }
 
 /**
