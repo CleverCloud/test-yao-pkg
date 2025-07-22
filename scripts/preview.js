@@ -218,15 +218,22 @@ function displayPreviews (previewStatuses) {
     const links = p.urls.map((u) => {
       return `${getEmoji(u.os)} ${createTerminalLink(u.url, u.os)}`;
     });
-    return [
+
+    const status = p.status ?? 'unknown';
+    const isDeleted = status === 'delete';
+
+    const row = [
       styleText('yellow', p.name),
       styleText('blue', p.commitId.substring(0, 8)),
       date,
       time,
       styleText('green', p.author),
       ...links,
-      styleText('cyan', p.status ?? 'unknown'),
+      styleText('cyan', status),
     ];
+
+    // Dim the entire row if status is 'delete'
+    return isDeleted ? row.map((cell) => styleText('dim', cell)) : row;
   });
 
   console.log(textTable(table, { stringLength }));
