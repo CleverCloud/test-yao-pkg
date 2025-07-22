@@ -150,14 +150,61 @@ async function getLocalPreviews () {
 }
 
 /**
+ * Determines the status of a preview for a specific OS
+ * @param {Preview|null} remotePreview - Remote preview
+ * @param {Preview|null} localPreview - Local preview
+ * @param {'linux'|'macos'|'win'} os - The operating system to focus on
+ * @return {'up-to-date'|'update'|'download'|'delete'|'no-preview-for-os'|'ignore'}
+ */
+function getPreviewStatus (remotePreview, localPreview, os) {
+  const remoteUrlForOs = remotePreview?.urls.find((u) => u.os === os);
+  const localUrlForOs = localPreview?.urls.find((u) => u.os === os);
+
+  // No remote preview, local exists
+  if (remotePreview == null && localPreview != null) {
+    return 'delete';
+  }
+
+  // Remote exists, no local preview
+  if (remotePreview != null && localPreview == null) {
+    if (remoteUrlForOs != null) {
+      return 'download';
+    }
+    return 'no-preview-for-os';
+  }
+
+  // Both previews have the OS build - compare checksums
+  if (remoteUrlForOs != null && localUrlForOs != null) {
+    const remoteChecksum = remoteUrlForOs.checksum.value;
+    const localChecksum = localUrlForOs.checksum.value;
+    return remoteChecksum === localChecksum ? 'up-to-date' : 'update';
+  }
+
+  // Remote has OS build, local doesn't
+  if (remoteUrlForOs != null && localUrlForOs == null) {
+    return 'download';
+  }
+
+  // Remote no longer has OS build, but local does
+  if (remoteUrlForOs == null && localUrlForOs != null) {
+    return 'delete';
+  }
+
+  // Neither has OS build - skip this entry
+  return 'ignore';
+}
+
+/**
  * Categorizes previews by comparing remote and local versions
  * @param {Array<Preview>} remotePreviews - Remote previews
  * @param {Array<Preview>} localPreviews - Local previews
  * @param {'linux'|'macos'|'win'} os - The operating system to focus on
  * @returns {Array} Array of objects with name and status
  */
-function categorizePreviews (remotePreviews, localPreviews) {
+function categorizePreviews (remotePreviews, localPreviews, os) {
+  /** @type {Map<string, Preview>} */
   const remoteMap = new Map(remotePreviews.map((p) => [p.name, p]));
+  /** @type {Map<string, Preview>} */
   const localMap = new Map(localPreviews.map((p) => [p.name, p]));
   const allNames = new Set([...remoteMap.keys(), ...localMap.keys()]);
 
@@ -166,20 +213,8 @@ function categorizePreviews (remotePreviews, localPreviews) {
   for (const name of allNames) {
     const remote = remoteMap.get(name);
     const local = localMap.get(name);
-
-    let status;
-    if (remote && local) {
-      const remoteChecksum = remote.urls[0]?.checksum?.value;
-      const localChecksum = local.urls[0]?.checksum?.value;
-      status = remoteChecksum === localChecksum ? 'up-to-date' : 'update';
-    }
-    else if (remote && !local) {
-      status = 'download';
-    }
-    else if (!remote && local) {
-      status = 'delete';
-    }
-
+    const status = getPreviewStatus(remote, local, os);
+    // Only add entries that have a status (skip irrelevant cases)
     results.push({ name, status });
   }
 
