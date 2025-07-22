@@ -169,7 +169,6 @@ function categorizePreviews (remotePreviews, localPreviews) {
 
     let status;
     if (remote && local) {
-      // Both exist - check if different (compare checksums)
       const remoteChecksum = remote.urls[0]?.checksum?.value;
       const localChecksum = local.urls[0]?.checksum?.value;
       status = remoteChecksum === localChecksum ? 'up-to-date' : 'update';
