@@ -100,10 +100,10 @@ function displayPreviews (previews) {
       return `${getEmoji(u.os)} ${createTerminalLink(u.url, u.os)}`;
     });
     return [
+      styleText('yellow', p.name),
+      styleText('blue', p.commitId.substring(0, 8)),
       date,
       time,
-      styleText('blue', p.commitId.substring(0, 8)),
-      styleText('yellow', p.name),
       styleText('green', p.author),
       ...links,
     ];

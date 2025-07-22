@@ -244,9 +244,9 @@ export class PreviewClient {
     return dedent`
       <table>
         <tr>
-          <th>Updated</th>
-          <th>Commit ID</th>
           <th>Branch</th>
+          <th>Commit ID</th>
+          <th>Updated</th>
           <th>Author</th>
           <th>Binaries</th>
         </tr>
@@ -263,9 +263,9 @@ export class PreviewClient {
   #renderPreview (preview) {
     return dedent`
       <tr>
-        <td><cc-datetime-relative datetime="${preview.updatedAt}">${preview.updatedAt}</cc-datetime-relative></td>
-        <td><code class="commit" title="${preview.commitId}"><a href="https://github.com/CleverCloud/clever-tools/commit/${preview.commitId}">${preview.commitId.substring(0, 8)}</a></code></td>
         <td><code class="branch"><a href="https://github.com/CleverCloud/clever-tools/tree/${preview.name}">${preview.name}</a></code></td>
+        <td><code class="commit" title="${preview.commitId}"><a href="https://github.com/CleverCloud/clever-tools/commit/${preview.commitId}">${preview.commitId.substring(0, 8)}</a></code></td>
+        <td><cc-datetime-relative datetime="${preview.updatedAt}">${preview.updatedAt}</cc-datetime-relative></td>
         <td><span>${preview.author}</span></td>
         <td>
           <div class="binaries">
