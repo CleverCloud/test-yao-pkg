@@ -11,11 +11,42 @@ concurrency:
   cancel-in-progress: true
 
 env:
+  CC_CLEVER_TOOLS_PREVIEWS_CELLAR_BUCKET: ${{ secrets.CC_CLEVER_TOOLS_PREVIEWS_CELLAR_BUCKET }}
   CC_CLEVER_TOOLS_PREVIEWS_CELLAR_KEY_ID: ${{ secrets.CC_CLEVER_TOOLS_PREVIEWS_CELLAR_KEY_ID }}
   CC_CLEVER_TOOLS_PREVIEWS_CELLAR_SECRET_KEY: ${{ secrets.CC_CLEVER_TOOLS_PREVIEWS_CELLAR_SECRET_KEY }}
 
 jobs:
+  check-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      should-skip: ${{ steps.check.outputs.should-skip }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Check if only markdown files changed
+        id: check
+        run: |
+          # Get all changed files in the PR
+          changed_files=$(git diff --name-only origin/${{ github.event.pull_request.base.ref }}...HEAD)
+          echo "Changed files:"
+          echo "$changed_files"
+          
+          # Check if all changed files are markdown files
+          non_md_files=$(echo "$changed_files" | grep -v '\.md$' || true)
+          
+          if [ -z "$non_md_files" ] && [ -n "$changed_files" ]; then
+            echo "Only markdown files changed, skipping workflow"
+            echo "should-skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "Non-markdown files changed, proceeding with workflow"
+            echo "should-skip=false" >> $GITHUB_OUTPUT
+          fi
+
   build:
+    needs: check-changes
+    if: needs.check-changes.outputs.should-skip != 'true'
     uses: ./.github/workflows/build.yml
     with:
       version: ${{ github.event.pull_request.head.ref }}

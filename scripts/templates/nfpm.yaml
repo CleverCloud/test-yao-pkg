@@ -1,14 +1,14 @@
 name: "clever-tools"
-arch: "${NFPM_ARCH}"
+arch: "<%= arch %>"
 platform: "linux"
-version: "${VERSION}"
+version: "<%= version %>"
 maintainer: "Clever Cloud"
 description: "Command Line Interface for Clever Cloud."
 vendor: "Clever Cloud"
 license: "Apache-2.0"
 
 contents:
-  - src: "build/main/linux/clever"
+  - src: "build/<%= version %>/linux/clever"
     dst: "/usr/bin/clever"
     file_info:
       mode: 0755

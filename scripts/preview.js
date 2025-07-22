@@ -23,9 +23,10 @@ import { BUILD_DIR } from './lib/paths.js';
 
 run(async () => {
 
-  const [accessKeyId, secretAccessKey] = readEnvVars(['CC_CLEVER_TOOLS_PREVIEWS_CELLAR_KEY_ID', 'CC_CLEVER_TOOLS_PREVIEWS_CELLAR_SECRET_KEY']);
+  const [bucket, accessKeyId, secretAccessKey] = readEnvVars(['CC_CLEVER_TOOLS_PREVIEWS_CELLAR_BUCKET','CC_CLEVER_TOOLS_PREVIEWS_CELLAR_KEY_ID', 'CC_CLEVER_TOOLS_PREVIEWS_CELLAR_SECRET_KEY']);
 
   const previewClient = new PreviewClient({
+    bucket,
     accessKeyId,
     secretAccessKey,
   });
@@ -99,10 +100,10 @@ function displayPreviews (previews) {
       return `${getEmoji(u.os)} ${createTerminalLink(u.url, u.os)}`;
     });
     return [
+      styleText('yellow', p.name),
+      styleText('blue', p.commitId.substring(0, 8)),
       date,
       time,
-      styleText('blue', p.commitId.substring(0, 8)),
-      styleText('yellow', p.name),
       styleText('green', p.author),
       ...links,
     ];

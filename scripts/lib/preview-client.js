@@ -26,12 +26,13 @@ export class PreviewClient {
   /**
    * Creates a new PreviewClient instance.
    * @param {Object} config - Configuration object
+   * @param {string} config.bucket - The bucket name for Cellar
    * @param {string} config.accessKeyId - AWS access key ID for Cellar
    * @param {string} config.secretAccessKey - AWS secret access key for Cellar
    */
-  constructor ({ accessKeyId, secretAccessKey }) {
+  constructor ({ bucket, accessKeyId, secretAccessKey }) {
     this.#cellarClient = new CellarClient({
-      bucket: '6mt2ilnafne8nzomvlg2',
+      bucket,
       accessKeyId,
       secretAccessKey,
     });
@@ -101,7 +102,7 @@ export class PreviewClient {
         body {
           margin: 0 auto;
           font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
-          max-width: 60em;
+          max-width: 65em;
           background-color: #f6f8fa;
           padding: 1em;
         }
@@ -144,13 +145,13 @@ export class PreviewClient {
 
         th,
         td {
-          font-size: 0.8em;
+          font-size: 0.9em;
           border-bottom: 1px solid #d1d9e0;
           padding-inline: 1em;
         }
 
-        th:first-child,
-        td:first-child {
+        th.right,
+        td.right {
           text-align: right;
         }
 
@@ -175,7 +176,7 @@ export class PreviewClient {
 
         cc-datetime-relative {
           color: #656d76;
-          font-size: 0.875em;
+          font-size: 0.9em;
         }
 
         code {
@@ -243,9 +244,9 @@ export class PreviewClient {
     return dedent`
       <table>
         <tr>
-          <th>Updated</th>
-          <th>Commit ID</th>
           <th>Branch</th>
+          <th>Commit ID</th>
+          <th class="right">Updated</th>
           <th>Author</th>
           <th>Binaries</th>
         </tr>
@@ -262,9 +263,9 @@ export class PreviewClient {
   #renderPreview (preview) {
     return dedent`
       <tr>
-        <td><cc-datetime-relative datetime="${preview.updatedAt}">${preview.updatedAt}</cc-datetime-relative></td>
-        <td><code class="commit" title="${preview.commitId}"><a href="https://github.com/CleverCloud/clever-tools/commit/${preview.commitId}">${preview.commitId.substring(0, 8)}</a></code></td>
         <td><code class="branch"><a href="https://github.com/CleverCloud/clever-tools/tree/${preview.name}">${preview.name}</a></code></td>
+        <td><code class="commit" title="${preview.commitId}"><a href="https://github.com/CleverCloud/clever-tools/commit/${preview.commitId}">${preview.commitId.substring(0, 8)}</a></code></td>
+        <td class="right"><cc-datetime-relative datetime="${preview.updatedAt}">${preview.updatedAt}</cc-datetime-relative></td>
         <td><span>${preview.author}</span></td>
         <td>
           <div class="binaries">

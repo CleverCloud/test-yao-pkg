@@ -14,11 +14,9 @@ run(async () => {
   });
 
   const [version, artifact] = process.argv.slice(2);
-
   if (version == null) {
     throw new Error(getUsage('Missing version parameter'));
   }
-
   if (artifact == null) {
     throw new Error(getUsage('Missing artifact parameter'));
   }
@@ -61,8 +59,8 @@ function getUsage (message) {
       artifact  Type of artifact: archives, rpm, or deb
 
     EXAMPLES
-      publish-to-cellar.js v1.2.3 archives
-      publish-to-cellar.js v1.2.3 rpm
-      publish-to-cellar.js v1.2.3 deb
+      publish-to-cellar.js 1.2.3 archives
+      publish-to-cellar.js 1.2.3 rpm
+      publish-to-cellar.js 1.2.3 deb
   `;
 }

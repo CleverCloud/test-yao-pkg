@@ -90,17 +90,23 @@ export function highlight (strings, ...values) {
  * Executes a shell command asynchronously and logs the output.
  * Prints the command being executed and any stdout/stderr output.
  * @param {string} command - The shell command to execute
- * @param {string} [cwd] - The working directory to execute the command in
+ * @param {{cwd?: string, env?: object}} [options] - Options object with cwd and env properties
  * @returns {Promise<void>}
  * @throws {Error} When the command fails
  */
-export function exec (command, cwd) {
+export function exec (command, options = {}) {
+  const { cwd, env } = options;
+  
   if (cwd != null) {
     console.log(styleText('blue', '=> cd ' + cwd));
   }
   console.log(styleText('blue', '=> ') + styleText('blue', command));
   return new Promise((resolve, reject) => {
-    const child = childProcess.exec(command, { cwd });
+    const execOptions = { cwd };
+    if (env) {
+      execOptions.env = { ...process.env, ...env };
+    }
+    const child = childProcess.exec(command, execOptions);
 
     child.stdout.pipe(process.stdout);
     child.stderr.pipe(process.stderr);
@@ -175,7 +181,6 @@ export function readEnvVars (variableNames) {
 export function run (fn) {
   fn().catch((e) => {
     console.error(`${styleText(['red', 'bold'], 'ERROR:')} ${e.message}`);
-    console.error(e);
     process.exit(1);
   });
 }
