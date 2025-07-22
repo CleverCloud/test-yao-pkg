@@ -3,3 +3,4 @@ build
 .env.preview
 .idea/
 .preview-binaries
+.claude/settings.local.json
