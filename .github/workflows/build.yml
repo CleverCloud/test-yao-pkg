@@ -37,18 +37,10 @@ jobs:
           path: build
           retention-days: 1
 
-  build-binaries:
-    name: 'Build for ${{ matrix.platform }}'
+  build-linux:
+    name: 'Build for linux'
     needs: bundle-cjs
-    runs-on: ${{ matrix.runs-on }}
-    strategy:
-      matrix:
-        include:
-          - platform: linux
-            runs-on: ubuntu-latest
-          - platform: macos
-            runs-on: macos-14
-          - ${{ inputs.include-windows && fromJSON('{"platform": "win", "runs-on": "windows-latest"}') || fromJSON('null') }}
+    runs-on: ubuntu-latest
     steps:
       - name: 'Checkout sources'
         uses: actions/checkout@v4
@@ -70,9 +62,74 @@ jobs:
       - name: 'Create archive'
         shell: bash
         run: ./scripts/create-archive.js ${{ inputs.version }}
-      - name: 'Upload build-${{ matrix.platform }} artifact'
+      - name: 'Upload build-linux artifact'
         uses: actions/upload-artifact@v4
         with:
-          name: build-${{ matrix.platform }}
+          name: build-linux
+          path: build
+          retention-days: 1
+
+  build-macos:
+    name: 'Build for macos'
+    needs: bundle-cjs
+    runs-on: macos-14
+    steps:
+      - name: 'Checkout sources'
+        uses: actions/checkout@v4
+      - name: 'Setup Node.js'
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: 'package.json'
+          cache: 'npm'
+      - name: 'Install Node.js dependencies'
+        run: npm ci
+      - name: 'Download bundle-cjs artifact'
+        uses: actions/download-artifact@v4
+        with:
+          name: bundle-cjs
+          path: build
+      - name: 'Build binary'
+        shell: bash
+        run: ./scripts/build-binary.js ${{ inputs.version }}
+      - name: 'Create archive'
+        shell: bash
+        run: ./scripts/create-archive.js ${{ inputs.version }}
+      - name: 'Upload build-macos artifact'
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-macos
+          path: build
+          retention-days: 1
+
+  build-windows:
+    name: 'Build for windows'
+    needs: bundle-cjs
+    runs-on: windows-latest
+    if: ${{ inputs.include-windows }}
+    steps:
+      - name: 'Checkout sources'
+        uses: actions/checkout@v4
+      - name: 'Setup Node.js'
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: 'package.json'
+          cache: 'npm'
+      - name: 'Install Node.js dependencies'
+        run: npm ci
+      - name: 'Download bundle-cjs artifact'
+        uses: actions/download-artifact@v4
+        with:
+          name: bundle-cjs
+          path: build
+      - name: 'Build binary'
+        shell: bash
+        run: ./scripts/build-binary.js ${{ inputs.version }}
+      - name: 'Create archive'
+        shell: bash
+        run: ./scripts/create-archive.js ${{ inputs.version }}
+      - name: 'Upload build-win artifact'
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-win
           path: build
           retention-days: 1
