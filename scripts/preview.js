@@ -21,6 +21,9 @@ import { createArchive } from './lib/create-archive.js';
 import dedent from 'dedent';
 import { BUILD_DIR } from './lib/paths.js';
 import fs from 'node:fs';
+import path from 'node:path';
+import { exec } from './lib/utils.js';
+import { PreviewDisplay } from './lib/preview-display.js';
 
 /**
  * @typedef {import('./preview-client.types.js').Manifest} Manifest
@@ -107,9 +110,138 @@ async function updatePreviews (previewClient) {
   const os = getOs();
   const remotePreviews = await previewClient.listPreviews();
   const localPreviews = await getLocalPreviews();
+
+  const previewDisplay = new PreviewDisplay(remotePreviews, localPreviews);
+
+  previewDisplay.init();
+
+  // TODO: everything below this line, you be moved to previewDisplay.init()
+  // including the sub function present in this file
+  // move them as methods of the class
+
   const previewStatuses = categorizePreviews(remotePreviews, localPreviews, os);
+
   displayPreviews(previewStatuses);
-  // await updateLocalManifest(remotePreviews);
+
+  for (const preview of previewStatuses) {
+    const status = preview.status ?? 'unknown';
+
+    switch (status) {
+      case 'up-to-date':
+        // Do nothing
+        break;
+      case 'update':
+      case 'download':
+        await downloadAndInstallPreview(preview, os);
+        break;
+      case 'delete':
+        await deleteLocalPreview(preview.name);
+        break;
+      case 'no-preview-for-os':
+        console.log(styleText('yellow', `Warning: No ${os} build available for preview ${preview.name}`));
+        break;
+      case 'ignore':
+        // Skip this entry
+        break;
+      case 'unknown':
+        console.error(styleText('red', `Error: Unknown status for preview ${preview.name}`));
+        break;
+    }
+  }
+
+  await updateLocalManifest(remotePreviews);
+}
+
+/**
+ * Downloads and installs a preview binary
+ * @param {Preview} preview - The preview object containing URL information
+ * @param {'linux'|'macos'|'win'} os - The current operating system
+ */
+async function downloadAndInstallPreview(preview, os) {
+  const previewUrl = preview.urls.find(u => u.os === os);
+  if (!previewUrl) {
+    console.log(styleText('yellow', `Warning: No ${os} build available for preview ${preview.name}`));
+    return;
+  }
+
+  const tmpDir = '/tmp';
+  const archiveName = `clever-tools-${preview.name}_${os}.tar.gz`;
+  const tmpArchivePath = path.join(tmpDir, archiveName);
+  const tmpExtractPath = path.join(tmpDir, `clever-extract-${preview.name}`);
+
+  try {
+    console.log(styleText('blue', `Downloading ${preview.name} for ${os}...`));
+
+    // Download the archive
+    const response = await fetch(previewUrl.url);
+    if (!response.ok) {
+      throw new Error(`Download failed: ${response.statusText}`);
+    }
+
+    const arrayBuffer = await response.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    await fs.promises.writeFile(tmpArchivePath, buffer);
+
+    // Create extraction directory
+    await fs.promises.mkdir(tmpExtractPath, { recursive: true });
+
+    // Extract the archive
+    console.log(styleText('blue', `Extracting ${archiveName}...`));
+    await exec(`tar -xzf "${tmpArchivePath}" -C "${tmpExtractPath}"`);
+
+    // Create .preview-binaries directory if it doesn't exist
+    const previewBinariesDir = '.preview-binaries';
+    await fs.promises.mkdir(previewBinariesDir, { recursive: true });
+
+    // Find the extracted binary and move it
+    const extractedFiles = await fs.promises.readdir(tmpExtractPath);
+    const binaryName = os === 'win' ? 'clever.exe' : 'clever';
+    const binaryPath = path.join(tmpExtractPath, binaryName);
+    const targetBinaryName = `clever--${preview.name}${os === 'win' ? '.exe' : ''}`;
+    const targetBinaryPath = path.join(previewBinariesDir, targetBinaryName);
+
+    if (await fs.promises.access(binaryPath).then(() => true).catch(() => false)) {
+      await fs.promises.copyFile(binaryPath, targetBinaryPath);
+      await fs.promises.chmod(targetBinaryPath, 0o755);
+      console.log(styleText('green', `Installed ${preview.name} to ${targetBinaryPath}`));
+    } else {
+      throw new Error(`Binary not found in extracted archive: ${binaryPath}`);
+    }
+
+  } catch (error) {
+    console.error(styleText('red', `Failed to download/install preview ${preview.name}: ${error.message}`));
+  } finally {
+    // Cleanup temporary files
+    try {
+      await fs.promises.unlink(tmpArchivePath);
+      await fs.promises.rm(tmpExtractPath, { recursive: true, force: true });
+    } catch (cleanupError) {
+      // Ignore cleanup errors
+    }
+  }
+}
+
+/**
+ * Deletes a local preview binary
+ * @param {string} previewName - The name of the preview to delete
+ */
+async function deleteLocalPreview(previewName) {
+  const previewBinariesDir = '.preview-binaries';
+  const os = getOs();
+  const binaryExtension = os === 'win' ? '.exe' : '';
+  const binaryName = `clever--${previewName}${binaryExtension}`;
+  const binaryPath = path.join(previewBinariesDir, binaryName);
+
+  try {
+    await fs.promises.unlink(binaryPath);
+    console.log(styleText('green', `Deleted local preview binary: ${binaryPath}`));
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      console.log(styleText('yellow', `Local preview binary not found: ${binaryPath}`));
+    } else {
+      console.error(styleText('red', `Failed to delete local preview binary ${binaryPath}: ${error.message}`));
+    }
+  }
 }
 
 /**
