@@ -99,27 +99,6 @@ async function listPreviews (previewClient) {
   displayPreviews(previews);
 }
 
-function displayPreviews (previews) {
-  const table = previews.map((p) => {
-    const date = p.updatedAt.substring(0, 10);
-    const dateObject = new Date(p.updatedAt);
-    const time = dateObject.toLocaleTimeString();
-    const links = p.urls.map((u) => {
-      return `${getEmoji(u.os)} ${createTerminalLink(u.url, u.os)}`;
-    });
-    return [
-      styleText('yellow', p.name),
-      styleText('blue', p.commitId.substring(0, 8)),
-      date,
-      time,
-      styleText('green', p.author),
-      ...links,
-    ];
-  });
-
-  console.log(textTable(table, { stringLength }));
-}
-
 /**
 
  * @param {PreviewClient} previewClient - The client instance for preview operations
@@ -147,6 +126,27 @@ async function getLocalPreviews () {
   catch (error) {
     return [];
   }
+}
+
+function displayPreviews (previews) {
+  const table = previews.map((p) => {
+    const date = p.updatedAt.substring(0, 10);
+    const dateObject = new Date(p.updatedAt);
+    const time = dateObject.toLocaleTimeString();
+    const links = p.urls.map((u) => {
+      return `${getEmoji(u.os)} ${createTerminalLink(u.url, u.os)}`;
+    });
+    return [
+      styleText('yellow', p.name),
+      styleText('blue', p.commitId.substring(0, 8)),
+      date,
+      time,
+      styleText('green', p.author),
+      ...links,
+    ];
+  });
+
+  console.log(textTable(table, { stringLength }));
 }
 
 /**
