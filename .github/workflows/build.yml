@@ -48,7 +48,8 @@ jobs:
             runs-on: ubuntu-latest
           - platform: macos
             runs-on: macos-14
-          - ${{ inputs.include-windows && fromJSON('{"platform": "win", "runs-on": "windows-latest"}') || fromJSON('null') }}
+          ${{ inputs.include-windows && format('- platform: win
+            runs-on: windows-latest') || '' }}
     steps:
       - name: 'Checkout sources'
         uses: actions/checkout@v4
