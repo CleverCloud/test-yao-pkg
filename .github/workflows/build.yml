@@ -41,15 +41,19 @@ jobs:
     name: 'Build for ${{ matrix.platform }}'
     needs: bundle-cjs
     runs-on: ${{ matrix.runs-on }}
+    if: ${{ matrix.should-run }}
     strategy:
       matrix:
         include:
           - platform: linux
             runs-on: ubuntu-latest
+            should-run: true
           - platform: macos
             runs-on: macos-14
-          ${{ inputs.include-windows && format('- platform: win
-            runs-on: windows-latest') || '' }}
+            should-run: true
+          - platform: win
+            runs-on: windows-latest
+            should-run: ${{ inputs.include-windows }}
     steps:
       - name: 'Checkout sources'
         uses: actions/checkout@v4
