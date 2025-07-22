@@ -199,7 +199,7 @@ function getPreviewStatus (remotePreview, localPreview, os) {
  * @param {Array<Preview>} remotePreviews - Remote previews
  * @param {Array<Preview>} localPreviews - Local previews
  * @param {'linux'|'macos'|'win'} os - The operating system to focus on
- * @returns {Array} Array of objects with name and status
+ * @returns {Array} Array of objects with name, status, and preview data
  */
 function categorizePreviews (remotePreviews, localPreviews, os) {
   /** @type {Map<string, Preview>} */
@@ -214,16 +214,17 @@ function categorizePreviews (remotePreviews, localPreviews, os) {
     const remote = remoteMap.get(name);
     const local = localMap.get(name);
     const status = getPreviewStatus(remote, local, os);
-    // Only add entries that have a status (skip irrelevant cases)
-    results.push({ name, status });
+    // Use remote preview data if available, otherwise use local
+    const preview = remote || local;
+    results.push({ name, status, preview });
   }
 
   return results;
 }
 
 /**
- * Displays preview statuses in a simple table
- * @param {Array} previewStatuses - Array of objects with name and status
+ * Displays preview statuses using the same format as displayPreviews but with status at the end
+ * @param {Array} previewStatuses - Array of objects with name, status, and preview data
  */
 function displayPreviewStatuses (previewStatuses) {
   if (previewStatuses.length === 0) {
@@ -231,7 +232,38 @@ function displayPreviewStatuses (previewStatuses) {
     return;
   }
 
-  const table = previewStatuses.map(p => [p.name, p.status]);
+  const table = previewStatuses.map((p) => {
+    if (!p.preview) {
+      // If no preview data available, show minimal info
+      return [
+        styleText('yellow', p.name),
+        '', // commitId
+        '', // date
+        '', // time
+        '', // author
+        '', // links (empty)
+        styleText('cyan', p.status),
+      ];
+    }
+
+    const preview = p.preview;
+    const date = preview.updatedAt.substring(0, 10);
+    const dateObject = new Date(preview.updatedAt);
+    const time = dateObject.toLocaleTimeString();
+    const links = preview.urls.map((u) => {
+      return `${getEmoji(u.os)} ${createTerminalLink(u.url, u.os)}`;
+    });
+    return [
+      styleText('yellow', preview.name),
+      styleText('blue', preview.commitId.substring(0, 8)),
+      date,
+      time,
+      styleText('green', preview.author),
+      ...links,
+      styleText('cyan', p.status),
+    ];
+  });
+
   console.log(textTable(table, { stringLength }));
 }
 
