@@ -31,14 +31,14 @@ export class PreviewDisplay {
    * Initialize the display interface and handle preview updates
    */
   async init () {
-    const previewStatuses = this.#categorizePreviews(this.#remotePreviews, this.#localPreviews, this.#os);
+    const previewActions = this.#categorizePreviews(this.#remotePreviews, this.#localPreviews, this.#os);
 
-    this.#displayPreviews(previewStatuses);
+    this.#displayPreviews(previewActions);
 
-    for (const preview of previewStatuses) {
-      const status = preview.status ?? 'unknown';
+    for (const preview of previewActions) {
+      const action = preview.action ?? 'unknown';
 
-      switch (status) {
+      switch (action) {
         case 'up-to-date':
           // Do nothing
           break;
@@ -56,7 +56,7 @@ export class PreviewDisplay {
           // Skip this entry
           break;
         case 'unknown':
-          console.error(styleText('red', `Error: Unknown status for preview ${preview.name}`));
+          console.error(styleText('red', `Error: Unknown action for preview ${preview.name}`));
           break;
       }
     }
@@ -94,8 +94,8 @@ export class PreviewDisplay {
         return `${getEmoji(u.os)} ${createTerminalLink(u.url, u.os)}`;
       });
 
-      const status = p.status ?? 'unknown';
-      const isDeleted = status === 'delete';
+      const action = p.action ?? 'unknown';
+      const isDeleted = action === 'delete';
 
       const row = [
         styleText('yellow', p.name),
@@ -104,10 +104,10 @@ export class PreviewDisplay {
         time,
         styleText('green', p.author),
         ...links,
-        styleText('cyan', status),
+        styleText('cyan', action),
       ];
 
-      // Dim the entire row if status is 'delete'
+      // Dim the entire row if action is 'delete'
       return isDeleted ? row.map((cell) => styleText('dim', cell)) : row;
     });
 
@@ -135,7 +135,7 @@ export class PreviewDisplay {
    * @param {Array<Preview>} remotePreviews - Remote previews
    * @param {Array<Preview>} localPreviews - Local previews
    * @param {'linux'|'macos'|'win'} os - The operating system to focus on
-   * @returns {Array} Array of objects with name, status, and preview data
+   * @returns {Array} Array of objects with name, action, and preview data
    */
   #categorizePreviews (remotePreviews, localPreviews, os) {
     /** @type {Map<string, Preview>} */
@@ -149,22 +149,22 @@ export class PreviewDisplay {
     for (const name of allNames) {
       const remote = remoteMap.get(name);
       const local = localMap.get(name);
-      const status = this.#getPreviewStatus(remote, local, os);
+      const action = this.#getPreviewAction(remote, local, os);
       const preview = remote ?? local;
-      results.push({ ...preview, status });
+      results.push({ ...preview, action });
     }
 
     return results;
   }
 
   /**
-   * Determines the status of a preview for a specific OS
+   * Determines the action for a preview for a specific OS
    * @param {Preview|null} remotePreview - Remote preview
    * @param {Preview|null} localPreview - Local preview
    * @param {'linux'|'macos'|'win'} os - The operating system to focus on
    * @return {'up-to-date'|'update'|'download'|'delete'|'no-preview-for-os'|'ignore'}
    */
-  #getPreviewStatus (remotePreview, localPreview, os) {
+  #getPreviewAction (remotePreview, localPreview, os) {
     // No remote preview, local exists
     if (remotePreview == null && localPreview != null) {
       return 'delete';
@@ -203,16 +203,16 @@ export class PreviewDisplay {
   }
 
   /**
-   * Displays previews with statuses
-   * @param {Array} previewStatuses - Array of previews + a status field
+   * Displays previews with actions
+   * @param {Array} previewActions - Array of previews + an action field
    */
-  #displayPreviews (previewStatuses) {
-    if (previewStatuses.length === 0) {
+  #displayPreviews (previewActions) {
+    if (previewActions.length === 0) {
       console.log('No previews to display.');
       return;
     }
 
-    const table = previewStatuses.map((p) => {
+    const table = previewActions.map((p) => {
       const date = p.updatedAt.substring(0, 10);
       const dateObject = new Date(p.updatedAt);
       const time = dateObject.toLocaleTimeString();
@@ -220,8 +220,8 @@ export class PreviewDisplay {
         return `${getEmoji(u.os)} ${createTerminalLink(u.url, u.os)}`;
       });
 
-      const status = p.status ?? 'unknown';
-      const isDeleted = status === 'delete';
+      const action = p.action ?? 'unknown';
+      const isDeleted = action === 'delete';
 
       const row = [
         styleText('yellow', p.name),
@@ -230,10 +230,10 @@ export class PreviewDisplay {
         time,
         styleText('green', p.author),
         ...links,
-        styleText('cyan', status),
+        styleText('cyan', action),
       ];
 
-      // Dim the entire row if status is 'delete'
+      // Dim the entire row if action is 'delete'
       return isDeleted ? row.map((cell) => styleText('dim', cell)) : row;
     });
 
