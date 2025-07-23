@@ -1,6 +1,5 @@
 import { stripVTControlCharacters, styleText } from 'node:util';
 
-// TODO: CELL_PADDING and COLUMN_SEPARATOR constants are defined but not consistently used throughout the code
 
 // Table formatting constants
 const CELL_PADDING = 2;
@@ -49,7 +48,6 @@ export class TerminalTable {
    * @returns {void}
    */
   renderInit () {
-    // TODO: Use process.stdout.cursorTo() and process.stdout.clearLine() instead of raw ANSI codes
     // Hide cursor during table operations
     process.stdout.write('\x1b[?25l');
 
