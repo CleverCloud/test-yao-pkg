@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0](https://github.com/CleverCloud/test-yao-pkg/compare/1.3.0...1.4.0) (2025-07-23)
+
+
+### 🚀 Features
+
+* rework preview script ([7da16ea](https://github.com/CleverCloud/test-yao-pkg/commit/7da16eaaaf63ccdc7bc9630fe4dd5e51c6014286))
+
 ## [1.3.0](https://github.com/CleverCloud/test-yao-pkg/compare/1.2.0...1.3.0) (2025-07-23)
 
 
