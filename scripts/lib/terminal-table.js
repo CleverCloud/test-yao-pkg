@@ -65,14 +65,13 @@ export class TerminalTable {
     const separatorSpace = (this.#columnWidths.length - 1) * 1; // 1 space between cells from join
     const totalWidth = contentWidth + cellPadding + separatorSpace + 2; // +2 for left and right border chars
 
-    // TODO: replace with a new function called line(width, '-') the second param is ignored
-    console.log('╭' + '─'.repeat(totalWidth - 2) + '╮');
+    console.log('╭' + this.#line(totalWidth, '─') + '╮');
     console.log('│' + this.#formatRow(headers, this.#columnWidths, true) + '│');
-    console.log('├' + '─'.repeat(totalWidth - 2) + '┤');
+    console.log('├' + this.#line(totalWidth, '─') + '┤');
     for (const row of this.#rows) {
       console.log('│' + this.#formatRow(row, this.#columnWidths) + '│');
     }
-    console.log('╰' + '─'.repeat(totalWidth - 2) + '╯');
+    console.log('╰' + this.#line(totalWidth, '─') + '╯');
   }
 
   /**
@@ -223,6 +222,16 @@ export class TerminalTable {
       process.stderr.write(`Unhandled Rejection: ${reason}\n`);
       process.exit(1);
     });
+  }
+
+  /**
+   * Generates a horizontal line for table borders.
+   * @param {number} width - The total width including border characters
+   * @param {string} _ - Ignored parameter for code decoration/alignment
+   * @returns {string} - The horizontal line string
+   */
+  #line (width, _) {
+    return '─'.repeat(width - 2);
   }
 
   /**
