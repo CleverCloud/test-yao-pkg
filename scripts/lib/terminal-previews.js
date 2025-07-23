@@ -95,43 +95,58 @@ export class TerminalPreviews {
 
       if (remoteChecksum != null && localChecksum != null) {
         if (remoteChecksum === localChecksum) {
-          table.updateData(index, 6, 'Already up-to-date');
+          this.#keep(localPreview);
         }
         else {
-          table.updateData(index, 6, 'Updating…');
-          setTimeout(() => {
-            table.updateData(index, 6, 'Updated!');
-          }, 5000);
-          setTimeout(() => {}, 7000);
+          this.#updatePreview(table, index);
         }
       }
       else if (remoteChecksum && !localChecksum) {
         if (localPreview) {
-          table.updateData(index, 6, 'Updating…');
-          setTimeout(() => {
-            table.updateData(index, 6, 'Updated!');
-          }, 5000);
-          setTimeout(() => {}, 7000);
+          this.#updatePreview(table, index);
         }
         else {
-          table.updateData(index, 6, 'Downloading…');
-          setTimeout(() => {
-            table.updateData(index, 6, 'Downloaded!');
-          }, 5000);
-          setTimeout(() => {}, 7000);
+          this.#downloadPreview(table, index);
         }
       }
       else if (!remoteChecksum && localChecksum) {
-        table.updateData(index, 6, 'Deleting…');
-        setTimeout(() => {
-          table.updateData(index, 6, 'Deleted!');
-        }, 5000);
-        setTimeout(() => {}, 7000);
+        this.#deletePreview(table, index);
       }
       else {
         table.updateData(index, 6, 'Ignored');
       }
 
     });
+  }
+
+  #keep (table, index) {
+    table.updateData(index, 6, 'Already up-to-date');
+  }
+
+  #updatePreview (table, index) {
+    table.updateData(index, 6, 'Updating…');
+    setTimeout(() => {
+      table.updateData(index, 6, 'Updated!');
+    }, 5000);
+    setTimeout(() => {
+    }, 7000);
+  }
+
+  #downloadPreview (table, index) {
+    table.updateData(index, 6, 'Downloading…');
+    setTimeout(() => {
+      table.updateData(index, 6, 'Downloaded!');
+    }, 5000);
+    setTimeout(() => {
+    }, 7000);
+  }
+
+  #deletePreview (table, index) {
+    table.updateData(index, 6, 'Deleting…');
+    setTimeout(() => {
+      table.updateData(index, 6, 'Deleted!');
+    }, 5000);
+    setTimeout(() => {
+    }, 7000);
   }
 }
