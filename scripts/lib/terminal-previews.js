@@ -2,6 +2,7 @@ import { clearDirectory, createTerminalLink, exec, getEmoji } from './utils.js';
 import { TerminalTable } from './terminal-table.js';
 import fs from 'node:fs';
 import path from 'node:path';
+import { setTimeout } from 'node:timers/promises';
 
 /**
  * @typedef {import('./preview-client.types.d.ts').Manifest} Manifest
@@ -117,18 +118,24 @@ export class TerminalPreviews {
         return this.#deletePreview(index);
       }
 
-      return this.#table.updateData(index, 6, 'Ignored');
+      return this.#updatePreviewState(index, 'Ignored');
     }));
+
+    await setTimeout(1000);
+  }
+
+  #updatePreviewState (index, text) {
+    this.#table.updateData(index, 6, text);
   }
 
   #keep (index) {
-    this.#table.updateData(index, 6, 'OK!');
+    this.#updatePreviewState(index, 'OK!');
   }
 
   #updatePreview (index) {
-    this.#table.updateData(index, 6, 'Updating…');
+    this.#updatePreviewState(index, 'Updating…');
     setTimeout(() => {
-      this.#table.updateData(index, 6, 'Updated!');
+      this.#updatePreviewState(index, 'Updated!');
     }, 5000);
   }
 
@@ -138,11 +145,11 @@ export class TerminalPreviews {
     const previewUrl = remotePreview?.urls.find((u) => u.os === this.#os);
 
     if (!previewUrl) {
-      return this.#table.updateData(index, 6, 'Error: No URL found');
+      return this.#updatePreviewState(index, 'Error: No URL found');
     }
 
     try {
-      this.#table.updateData(index, 6, 'Downloading .tar.gz…');
+      this.#updatePreviewState(index, 'Downloading .tar.gz…');
 
       // Create tmp directory
       const tmpDir = `/tmp/previews-${previewName}`;
@@ -150,20 +157,21 @@ export class TerminalPreviews {
 
       // Download tar.gz
       const response = await fetch(previewUrl.url);
-      if (!response.ok) {
-        throw new Error(`Download failed: ${response.statusText}`);
+      if (!response.ok ||true) {
+        console.log('KO')
+        return this.#updatePreviewState(index, `Download failed: ${response.statusText}`);
       }
 
       const tarPath = path.join(tmpDir, 'binary.tar.gz');
       const arrayBuffer = await response.arrayBuffer();
       await fs.promises.writeFile(tarPath, Buffer.from(arrayBuffer));
 
-      this.#table.updateData(index, 6, 'Extracting .tar.gz…');
+      this.#updatePreviewState(index, 'Extracting .tar.gz…');
 
       // Extract tar.gz
       await exec(`tar -xzf binary.tar.gz`, { cwd: tmpDir });
 
-      this.#table.updateData(index, 6, 'Installing binary…');
+      this.#updatePreviewState(index, 'Installing binary…');
 
       // Create .preview-binaries directory
       await fs.promises.mkdir('.preview-binaries', { recursive: true });
@@ -179,15 +187,15 @@ export class TerminalPreviews {
         await fs.promises.chmod(destPath, 0o755);
       }
 
-      this.#table.updateData(index, 6, 'Cleaning…');
+      this.#updatePreviewState(index, 'Cleaning…');
 
       // Delete tmp directory
       await clearDirectory(tmpDir);
 
-      this.#table.updateData(index, 6, 'OK!');
+      this.#updatePreviewState(index, 'OK!');
     }
     catch (error) {
-      this.#table.updateData(index, 6, `Error: ${error.message}`);
+      this.#updatePreviewState(index, `Error: ${error.message}`);
     }
   }
 
@@ -195,19 +203,19 @@ export class TerminalPreviews {
     const previewName = this.#previewNames[index];
 
     try {
-      this.#table.updateData(index, 6, 'Deleting binary…');
+      this.#updatePreviewState(index, 'Deleting binary…');
 
       const binaryPath = `.preview-binaries/clever--${previewName}`;
       await fs.promises.unlink(binaryPath);
 
-      this.#table.updateData(index, 6, 'Deleted!');
+      this.#updatePreviewState(index, 'Deleted!');
     }
     catch (error) {
       if (error.code === 'ENOENT') {
-        this.#table.updateData(index, 6, 'Already deleted');
+        this.#updatePreviewState(index, 'Already deleted');
       }
       else {
-        this.#table.updateData(index, 6, `Error: ${error.message}`);
+        this.#updatePreviewState(index, `Error: ${error.message}`);
       }
     }
   }
