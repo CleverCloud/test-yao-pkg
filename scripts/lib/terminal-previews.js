@@ -20,6 +20,8 @@ export class TerminalPreviews {
   #previewNames;
   /** @type {string} */
   #os;
+  /** @type {TerminalTable} */
+  #table;
 
   /**
    * @param {Manifest} remoteManifest - Remote manifest containing preview information
@@ -78,11 +80,11 @@ export class TerminalPreviews {
       ['TIME'],
       ['AUTHOR', 'green'],
       ['DOWNLOAD LINKS', 'blue'],
-      ['STATE             '],
+      ['STATE                                    '],
     ];
 
-    const table = new TerminalTable(columns, rows);
-    table.renderInit();
+    this.#table = new TerminalTable(columns, rows);
+    this.#table.renderInit();
 
     this.#previewNames.forEach((previewName, index) => {
       const remotePreview = this.#remoteManifest.previews.find((p) => p.name === previewName);
@@ -95,58 +97,60 @@ export class TerminalPreviews {
 
       if (remoteChecksum != null && localChecksum != null) {
         if (remoteChecksum === localChecksum) {
-          this.#keep(localPreview);
+          this.#keep(index);
         }
         else {
-          this.#updatePreview(table, index);
+          this.#updatePreview(index);
         }
       }
       else if (remoteChecksum != null && localChecksum == null) {
         if (localPreview != null) {
-          this.#updatePreview(table, index);
+          this.#updatePreview(index);
         }
         else {
-          this.#downloadPreview(table, index);
+          this.#downloadPreview(index);
         }
       }
       else if (remoteChecksum == null && localChecksum != null) {
-        this.#deletePreview(table, index);
+        this.#deletePreview(index);
       }
       else {
-        table.updateData(index, 6, 'Ignored');
+        this.#table.updateData(index, 6, 'Ignored');
       }
 
     });
-  }
 
-  #keep (table, index) {
-    table.updateData(index, 6, 'Already up-to-date');
-  }
-
-  #updatePreview (table, index) {
-    table.updateData(index, 6, 'Updating…');
     setTimeout(() => {
-      table.updateData(index, 6, 'Updated!');
+    }, 15000);
+  }
+
+  #keep (index) {
+    this.#table.updateData(index, 6, 'OK!');
+  }
+
+  #updatePreview (index) {
+    this.#table.updateData(index, 6, 'Updating…');
+    setTimeout(() => {
+      this.#table.updateData(index, 6, 'Updated!');
     }, 5000);
-    setTimeout(() => {
-    }, 7000);
   }
 
-  #downloadPreview (table, index) {
-    table.updateData(index, 6, 'Downloading…');
-    setTimeout(() => {
-      table.updateData(index, 6, 'Downloaded!');
-    }, 5000);
-    setTimeout(() => {
-    }, 7000);
+  #downloadPreview (index) {
+    this.#table.updateData(index, 6, 'Downloading .tar.gz…');
+    // TODO download the tar.gz with fetch to `/tmp/previews-${previewName}`, use fetch
+    // TODO Create the tmp dir
+    this.#table.updateData(index, 6, 'Extracting .tar.gz…');
+    // TODO extract the tar.gz to /tmp/previews-${previewName}, use exec from utils
+    this.#table.updateData(index, 6, 'Installing binary…');
+    // TODO copy the binary to `.preview-binaries/clever--${previewName}`, use node.js fs
+    this.#table.updateData(index, 6, 'Cleaning…');
+    // TODO delete the tmp dir
+    this.#table.updateData(index, 6, 'OK!');
   }
 
-  #deletePreview (table, index) {
-    table.updateData(index, 6, 'Deleting…');
-    setTimeout(() => {
-      table.updateData(index, 6, 'Deleted!');
-    }, 5000);
-    setTimeout(() => {
-    }, 7000);
+  #deletePreview (index) {
+    this.#table.updateData(index, 6, 'Deleting binary…');
+    // TODO delete the binary and await, location is `.preview-binaries/clever--${previewName}`
+    this.#table.updateData(index, 6, 'Deleted!');
   }
 }
