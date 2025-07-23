@@ -44,21 +44,37 @@ export class TerminalPreviews {
 
   initDisplay () {
 
-    const table = this.#remoteManifest.previews.map((p) => {
-      const date = p.updatedAt.substring(0, 10);
-      const dateObject = new Date(p.updatedAt);
+    const table = this.#previewNames.map((previewName) => {
+      const remotePreview = this.#remoteManifest.previews.find(p => p.name === previewName);
+      const localPreview = this.#localManifest.previews.find(p => p.name === previewName);
+      
+      let location;
+      if (remotePreview && localPreview) {
+        location = 'both';
+      } else if (remotePreview) {
+        location = 'remote';
+      } else {
+        location = 'local';
+      }
+
+      // Use remote preview data if available, otherwise local
+      const preview = remotePreview || localPreview;
+      
+      const date = preview.updatedAt.substring(0, 10);
+      const dateObject = new Date(preview.updatedAt);
       const time = dateObject.toLocaleTimeString();
-      const links = p.urls.map((u) => {
+      const links = preview.urls.map((u) => {
         return `${getEmoji(u.os)} ${createTerminalLink(u.url, u.os)}`;
       });
 
       return [
-        styleText('yellow', formatBranchName(p.name)),
-        styleText('blue', p.commitId.substring(0, 8)),
+        styleText('yellow', formatBranchName(preview.name)),
+        styleText('blue', preview.commitId.substring(0, 8)),
         date,
         time,
-        styleText('green', p.author),
+        styleText('green', preview.author),
         ...links,
+        location,
       ];
     });
 
