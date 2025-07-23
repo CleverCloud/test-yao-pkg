@@ -18,14 +18,6 @@ import { PreviewDisplay } from './lib/preview-display.js';
 
 run(async () => {
 
-  const [bucket, accessKeyId, secretAccessKey] = readEnvVars(['CC_CLEVER_TOOLS_PREVIEWS_CELLAR_BUCKET', 'CC_CLEVER_TOOLS_PREVIEWS_CELLAR_KEY_ID', 'CC_CLEVER_TOOLS_PREVIEWS_CELLAR_SECRET_KEY']);
-
-  const previewClient = new PreviewClient({
-    bucket,
-    accessKeyId,
-    secretAccessKey,
-  });
-
   const [command, rawPreviewName] = process.argv.slice(2);
   if (command == null || command.length === 0) {
     throw new Error(getUsage(`Missing command`));
@@ -36,17 +28,31 @@ run(async () => {
 
   switch (command) {
     case 'list':
-      return listPreviews(previewClient);
+      return listPreviews();
     case 'update':
-      return updatePreviews(previewClient);
+      return updatePreviews();
     case 'build':
-      return buildPreview(previewClient, previewName, os);
+      return buildPreview(previewName, os);
     case 'pr-comment':
-      return getPreviewPrComment(previewClient, previewName);
-    case 'publish':
-      return publishPreview(previewClient, previewName, os);
-    case 'delete':
+      return getPreviewPrComment(previewName);
+    case 'publish': {
+      const [bucket, accessKeyId, secretAccessKey] = readEnvVars(['CC_CLEVER_TOOLS_PREVIEWS_CELLAR_BUCKET', 'CC_CLEVER_TOOLS_PREVIEWS_CELLAR_KEY_ID', 'CC_CLEVER_TOOLS_PREVIEWS_CELLAR_SECRET_KEY']);
+      const previewClient = new PreviewClient({
+        bucket,
+        accessKeyId,
+        secretAccessKey,
+      });
+      return publishPreview(previewClient, previewName);
+    }
+    case 'delete': {
+      const [bucket, accessKeyId, secretAccessKey] = readEnvVars(['CC_CLEVER_TOOLS_PREVIEWS_CELLAR_BUCKET', 'CC_CLEVER_TOOLS_PREVIEWS_CELLAR_KEY_ID', 'CC_CLEVER_TOOLS_PREVIEWS_CELLAR_SECRET_KEY']);
+      const previewClient = new PreviewClient({
+        bucket,
+        accessKeyId,
+        secretAccessKey,
+      });
       return deletePreview(previewClient, previewName);
+    }
   }
 
   throw new Error(getUsage(`Unknown command "${command}"`));
@@ -74,9 +80,8 @@ function getUsage (message) {
 /**
  * Lists all available previews in a formatted table.
  * Displays preview information including date, commit ID, name, author, and download links.
- * @param {PreviewClient} previewClient - The client instance for preview operations
  */
-async function listPreviews (previewClient) {
+async function listPreviews () {
   const previews = await PreviewClient.listPreviews();
 
   if (previews.length === 0) {
@@ -88,10 +93,9 @@ async function listPreviews (previewClient) {
 }
 
 /**
-
- * @param {PreviewClient} previewClient - The client instance for preview operations
+ * Updates previews display with local and remote preview information.
  */
-async function updatePreviews (previewClient) {
+async function updatePreviews () {
   const os = getOs();
   const remotePreviews = await PreviewClient.listPreviews();
   const localPreviews = await PreviewDisplay.getLocalPreviews();
@@ -102,11 +106,10 @@ async function updatePreviews (previewClient) {
 
 /**
  * Generates a markdown comment for GitHub PR with preview download links.
- * @param {PreviewClient} previewClient - The client instance for preview operations
  * @param {string} previewName - The name/version of the preview to get comment for
  * @throws {Error} When no preview is found for the given name
  */
-async function getPreviewPrComment (previewClient, previewName) {
+async function getPreviewPrComment (previewName) {
   const preview = await PreviewClient.getPreview(previewName);
 
   if (preview == null) {
@@ -136,11 +139,10 @@ async function getPreviewPrComment (previewClient, previewName) {
 /**
  * Builds a preview by bundling to single CJS, compiling binary, and creating an archive.
  * Clears the working directory before starting the build process.
- * @param {PreviewClient} previewClient - The client instance for preview operations
  * @param {string} previewName - The name/version of the preview to build
  * @param {string} os - The target operating system for the build
  */
-async function buildPreview (previewClient, previewName, os) {
+async function buildPreview (previewName, os) {
   const workingDirectory = `${BUILD_DIR}/${previewName}`;
 
   console.log(highlight`=> Clear ${workingDirectory}`);
