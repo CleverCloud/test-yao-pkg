@@ -113,8 +113,8 @@ export class TerminalTable {
       if (!isHeader && this.#columnStyles[i]) {
         content = styleText(this.#columnStyles[i], content);
       }
-      // TODO: replace with padding const computed with ' '.repeat
-      const paddedContent = content.padEnd(content.length + Math.max(0, widths[i] - visibleLength));
+      const padding = ' '.repeat(Math.max(0, widths[i] - visibleLength));
+      const paddedContent = content + padding;
       return ` ${paddedContent} `;
     });
     return cells.join(' ');
