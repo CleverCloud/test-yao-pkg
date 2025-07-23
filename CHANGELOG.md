@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/CleverCloud/test-yao-pkg/compare/1.0.0...1.1.0) (2025-07-23)
+
+
+### 🚀 Features
+
+* test release workflow with staged changes ([268e400](https://github.com/CleverCloud/test-yao-pkg/commit/268e400d54d035e19f2ac3c52ef5f365f49bbb60))
+
 ## 1.0.0 (2025-07-23)
 
 

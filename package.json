@@ -4,7 +4,7 @@
   "homepage": "https://github.com/CleverCloud/clever-tools",
   "author": "Clever Cloud <ci@clever-cloud.com>",
   "license": "Apache-2.0",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "type": "module",
   "main": "bin/clever.js",
   "bin": {
