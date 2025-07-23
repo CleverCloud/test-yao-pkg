@@ -261,6 +261,10 @@ async function getLocalManifest () {
   }
 }
 
+async function updateLocalManifest (newManifest) {
+
+}
+
 /**
  * Creates a default empty manifest structure.
  * @returns {Manifest}

@@ -90,17 +90,19 @@ export function highlight (strings, ...values) {
  * Executes a shell command asynchronously and logs the output.
  * Prints the command being executed and any stdout/stderr output.
  * @param {string} command - The shell command to execute
- * @param {{cwd?: string, env?: object}} [options] - Options object with cwd and env properties
+ * @param {{cwd?: string, env?: object, quiet?: boolean}} [options] - Options object with cwd, env, and quiet properties
  * @returns {Promise<void>}
  * @throws {Error} When the command fails
  */
 export function exec (command, options = {}) {
-  const { cwd, env } = options;
+  const { cwd, env, quiet = false } = options;
 
-  if (cwd != null) {
-    console.log(styleText('blue', '=> cd ' + cwd));
+  if (!quiet) {
+    if (cwd != null) {
+      console.log(styleText('blue', '=> cd ' + cwd));
+    }
+    console.log(styleText('blue', '=> ') + styleText('blue', command));
   }
-  console.log(styleText('blue', '=> ') + styleText('blue', command));
   return new Promise((resolve, reject) => {
     const execOptions = { cwd };
     if (env) {
@@ -108,8 +110,10 @@ export function exec (command, options = {}) {
     }
     const child = childProcess.exec(command, execOptions);
 
-    child.stdout.pipe(process.stdout);
-    child.stderr.pipe(process.stderr);
+    if (!quiet) {
+      child.stdout.pipe(process.stdout);
+      child.stderr.pipe(process.stderr);
+    }
 
     child.on('close', (code) => {
       if (code !== 0) {

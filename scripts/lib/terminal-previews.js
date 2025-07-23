@@ -2,7 +2,6 @@ import { clearDirectory, createTerminalLink, exec, getEmoji } from './utils.js';
 import { TerminalTable } from './terminal-table.js';
 import fs from 'node:fs';
 import path from 'node:path';
-import { setTimeout } from 'node:timers/promises';
 
 /**
  * @typedef {import('./preview-client.types.d.ts').Manifest} Manifest
@@ -83,7 +82,7 @@ export class TerminalPreviews {
       ['TIME'],
       ['AUTHOR', 'green'],
       ['DOWNLOAD LINKS', 'blue'],
-      ['STATE                                    '],
+      ['STATE'.padEnd(25, ' ')],
     ];
 
     this.#table = new TerminalTable(columns, rows);
@@ -123,26 +122,17 @@ export class TerminalPreviews {
 
       return this.#updatePreviewState(index, 'Ignored');
     }));
-
-    await setTimeout(1000);
-  }
-
-  #updatePreviewState (index, text, style) {
-    this.#table.updateData(index, 6, text, style);
   }
 
   #keep (index) {
-    this.#updatePreviewState(index, 'OK!');
+    this.#updatePreviewState(index, 'Up to date!', 'green');
   }
 
   #updatePreview (index) {
-    this.#updatePreviewState(index, 'Updating…');
-    setTimeout(() => {
-      this.#updatePreviewState(index, 'Updated!');
-    }, 5000);
+    return this.#downloadPreview(index, 'Updated!');
   }
 
-  async #downloadPreview (index) {
+  async #downloadPreview (index, doneMessage = 'Downloaded!') {
     const previewName = this.#previewNames[index];
     const remotePreview = this.#remoteManifest.previews.find((p) => p.name === previewName);
     const previewUrl = remotePreview?.urls.find((u) => u.os === this.#os);
@@ -151,39 +141,32 @@ export class TerminalPreviews {
       return this.#updatePreviewState(index, 'Error: No URL found', 'red');
     }
 
+    const tmpDir = `/tmp/previews-${previewName}`;
+
     try {
       this.#updatePreviewState(index, 'Downloading .tar.gz…', 'yellow');
-      const tmpDir = `/tmp/previews-${previewName}`;
       await fs.promises.mkdir(tmpDir, { recursive: true });
       const response = await fetch(previewUrl.url);
       if (!response.ok) {
         return this.#updatePreviewState(index, `Download failed: ${response.statusText}`, 'red');
       }
 
-      // TODO replace with simple template tag and /
       this.#updatePreviewState(index, 'Extracting .tar.gz…', 'yellow');
       const tarPath = path.join(tmpDir, 'binary.tar.gz');
       const arrayBuffer = await response.arrayBuffer();
       await fs.promises.writeFile(tarPath, Buffer.from(arrayBuffer));
-      // TODO pass a quiet: true boolean to the options so the exec does not log
-      await exec(`tar -xzf binary.tar.gz`, { cwd: tmpDir });
+      await exec(`tar -xzf binary.tar.gz`, { cwd: tmpDir, quiet: true });
 
       this.#updatePreviewState(index, 'Installing binary…', 'yellow');
-      const extractedFiles = await fs.promises.readdir(tmpDir);
-      const binaryFile = extractedFiles.find(file => file !== 'binary.tar.gz' && !file.endsWith('.tar.gz'));
-
-      if (binaryFile != null) {
-        // TODO replace with simple template tag and /
-        const sourcePath = path.join(tmpDir, binaryFile);
-        const destPath = `.preview-binaries/clever--${previewName}`;
-        await fs.promises.copyFile(sourcePath, destPath);
-        await fs.promises.chmod(destPath, 0o755);
-      }
+      const sourcePath = `${tmpDir}/clever`;
+      const destPath = `.preview-binaries/clever--${previewName}`;
+      await fs.promises.copyFile(sourcePath, destPath);
+      // TODO mac
 
       this.#updatePreviewState(index, 'Cleaning…', 'blue');
       await clearDirectory(tmpDir);
 
-      this.#updatePreviewState(index, 'OK!', 'green');
+      this.#updatePreviewState(index, doneMessage, 'green');
     }
     catch (error) {
       this.#updatePreviewState(index, `Error: ${error.message}`, 'red');
@@ -194,20 +177,21 @@ export class TerminalPreviews {
     const previewName = this.#previewNames[index];
 
     try {
-      this.#updatePreviewState(index, 'Deleting binary…');
-
+      this.#updatePreviewState(index, 'Deleting binary…', 'yellow');
       const binaryPath = `.preview-binaries/clever--${previewName}`;
       await fs.promises.unlink(binaryPath);
 
-      this.#updatePreviewState(index, 'Deleted!');
+      this.#updatePreviewState(index, 'Deleted!', 'green');
     }
     catch (error) {
       if (error.code === 'ENOENT') {
-        this.#updatePreviewState(index, 'Already deleted');
+        return this.#updatePreviewState(index, 'Already deleted!', 'green');
       }
-      else {
-        this.#updatePreviewState(index, `Error: ${error.message}`);
-      }
+      this.#updatePreviewState(index, `Error: ${error.message}`, 'red');
     }
+  }
+
+  #updatePreviewState (index, text, style) {
+    this.#table.updateData(index, 6, text, style);
   }
 }
