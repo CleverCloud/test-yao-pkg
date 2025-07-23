@@ -73,7 +73,7 @@ export class TerminalPreviews {
         date,
         time,
         preview.author,
-        links.join('  '),
+        links.join(' '),
         location,
       ];
     });

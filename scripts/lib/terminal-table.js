@@ -1,4 +1,4 @@
-import { styleText } from 'node:util';
+import { stripVTControlCharacters, styleText } from 'node:util';
 
 // Table formatting constants
 const CELL_PADDING = 2;
@@ -46,7 +46,10 @@ export class TerminalTable {
       return Math.max(headerLength, ...dataLengths);
     });
 
-    const totalWidth = columnWidths.reduce((sum, w) => sum + w + CELL_PADDING, CELL_PADDING) + (columnWidths.length - 1) * COLUMN_SEPARATOR;
+    const contentWidth = columnWidths.reduce((sum, w) => sum + w, 0);
+    const cellPadding = (columnWidths.length + 1) * CELL_PADDING;
+    const separatorSpace = (columnWidths.length - 1) * COLUMN_SEPARATOR;
+    const totalWidth = contentWidth + cellPadding + separatorSpace;
 
     const lines = [];
     lines.push('╭' + '─'.repeat(totalWidth - 2) + '╮');
@@ -79,14 +82,12 @@ export class TerminalTable {
   }
 
   /**
-   * Calculates the visible length of a string, stripping ANSI escape sequences.
-   * @param {string} str - The string to measure
+   * Calculates the visible length of a text, stripping ANSI escape sequences.
+   * @param {string} text - The text to measure
    * @returns {number} - The visible character count
    */
-  #getVisibleLength (str) {
-    if (!str) return 0;
-    // Remove ANSI escape sequences (including hyperlinks and color codes)
-    return str.replace(/\u001b\[[0-9;]*m|\u001b]8;;[^\u001b]*\u001b\\[^\u001b]*\u001b]8;;\u001b\\/g, '').length;
+  #getVisibleLength (text) {
+    return stripVTControlCharacters(text).length;
   }
 
 }
