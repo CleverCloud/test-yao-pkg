@@ -1,0 +1,37 @@
+{
+  "version": "1",
+  "previews": [
+    {
+      "name": "feature-three",
+      "urls": [
+        {
+          "os": "linux",
+          "url": "https://6mt2ilnafne8nzomvlg2.cellar-c2.services.clever-cloud.com/previews/feature-three/linux/clever-tools-feature-three_linux.tar.gz",
+          "checksum": {
+            "type": "sha256",
+            "value": "17f344c4aca9caba83142a8a02e46f12895bc11a9c55cc6f13dcea567b59be54"
+          }
+        }
+      ],
+      "updatedAt": "2025-07-22T20:44:43.877Z",
+      "commitId": "787b6e3c65c103de266aacdba43a63accb328bb0",
+      "author": "Hubert SABLONNIÈRE"
+    },
+    {
+      "name": "feature-four",
+      "urls": [
+        {
+          "os": "linux",
+          "url": "https://6mt2ilnafne8nzomvlg2.cellar-c2.services.clever-cloud.com/previews/feature-four/linux/clever-tools-feature-four_linux.tar.gz",
+          "checksum": {
+            "type": "sha256",
+            "value": "de446226ed1b27225dd0fef64c36a977e44d8b20271142eee865b4802c489a88"
+          }
+        }
+      ],
+      "updatedAt": "2025-07-22T21:17:49.454Z",
+      "commitId": "7ab708721fd29a892814922a9647bf9f487d55bc",
+      "author": "Hubert SABLONNIÈRE"
+    }
+  ]
+}

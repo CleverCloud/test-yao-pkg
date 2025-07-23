@@ -15,12 +15,31 @@ export class TerminalPreviews {
 
   /** @type {Manifest} */
   #remoteManifest;
+  /** @type {Manifest} */
+  #localManifest;
+  /** @type {Array<string>} */
+  #previewNames;
 
   /**
    * @param {Manifest} remoteManifest - Remote manifest containing preview information
+   * @param {Manifest} localManifest - Local manifest containing preview information
    */
-  constructor (remoteManifest) {
+  constructor (remoteManifest, localManifest) {
     this.#remoteManifest = remoteManifest;
+    this.#localManifest = localManifest;
+
+    this.#previewNames = [];
+    this.#remoteManifest.previews.forEach((p) => {
+      if (!this.#previewNames.includes(p.name)) {
+        this.#previewNames.push(p.name);
+      }
+    });
+    this.#localManifest.previews.forEach((p) => {
+      if (!this.#previewNames.includes(p.name)) {
+        this.#previewNames.push(p.name);
+      }
+    });
+    this.#previewNames.sort();
   }
 
   initDisplay () {

@@ -86,9 +86,9 @@ async function listPreviews () {
 async function updatePreviews () {
   const remoteManifest = await fetchManifest();
   const localManifest = await getLocalManifest();
-  const terminalPreviews = new TerminalPreviews(remoteManifest);
+
+  const terminalPreviews = new TerminalPreviews(remoteManifest, localManifest);
   terminalPreviews.initDisplay();
-  // TODO
 }
 
 /**
@@ -229,10 +229,7 @@ async function fetchManifest () {
     const response = await fetch(MANIFEST_URL);
     if (!response.ok) {
       if (response.status === 404) {
-        return {
-          version: '1',
-          previews: [],
-        };
+        return createDefaultManifest();
       }
       throw new Error(`Failed to fetch manifest: ${response.status} ${response.statusText}`);
     }
@@ -242,21 +239,36 @@ async function fetchManifest () {
     return manifest;
   }
   catch (e) {
-    if (e instanceof TypeError) {
-      return {
-        version: '1',
-        previews: [],
-      };
-    }
-    throw e;
+    return createDefaultManifest();
   }
 }
 
-// TODO implement this
+/**
+ * Retrieves the local preview manifest from the preview directory.
+ * Returns a default manifest if none exists.
+ * @returns {Promise<Manifest>}
+ */
 async function getLocalManifest () {
-  // local manifest is in ".preview-binaries/manifest.json" (should be a const)
-  // if local manifest cannot be found, renturn an empty manifest
-  // fetchManifest() already has an empty manifest, we should factorize this
+  try {
+    const manifestContent = fs.readFileSync(`.preview-binaries/manifest.json`, 'utf8');
+    /** @type {Manifest} */
+    const manifest = JSON.parse(manifestContent);
+    return manifest;
+  }
+  catch (e) {
+    return createDefaultManifest();
+  }
+}
+
+/**
+ * Creates a default empty manifest structure.
+ * @returns {Manifest}
+ */
+function createDefaultManifest () {
+  return {
+    version: '1',
+    previews: [],
+  };
 }
 
 /**
