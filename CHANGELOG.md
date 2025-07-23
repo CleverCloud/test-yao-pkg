@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.0](https://github.com/CleverCloud/test-yao-pkg/compare/1.2.0...1.3.0) (2025-07-23)
+
+
+### 🚀 Features
+
+* ignore release-please branches in preview workflow ([3d917bc](https://github.com/CleverCloud/test-yao-pkg/commit/3d917bcdaa400ceca7a54b79758969839fe921bc))
+
 ## [1.2.0](https://github.com/CleverCloud/test-yao-pkg/compare/1.1.0...1.2.0) (2025-07-23)
 
 
