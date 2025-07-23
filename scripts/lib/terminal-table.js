@@ -27,12 +27,12 @@ export class TerminalTable {
   /**
    * Creates a new TerminalTable instance.
    * @param {Array<[string, string?]>} columns - Array of [title, style] pairs for columns
-   * @param {Array<Array<string>>} initialData - Array of data rows
+   * @param {Array<Array<string>>} rows - Array of data rows
    */
-  constructor (columns, initialData) {
+  constructor (columns, rows) {
     this.#columnTitles = columns.map(([title]) => title);
     this.#columnStyles = columns.map(([_, style]) => style);
-    this.#rows = initialData;
+    this.#rows = rows;
     this.#tableStartLine = null;
     this.#tableHeight = 0;
   }
@@ -44,7 +44,7 @@ export class TerminalTable {
   renderInit () {
     // Hide cursor during table operations
     process.stdout.write('\x1b[?25l');
-    
+
     // Setup cleanup on exit
     this.#setupExitHandlers();
 
@@ -72,7 +72,7 @@ export class TerminalTable {
     lines.push('╰' + '─'.repeat(totalWidth - 2) + '╯');
 
     console.log(lines.join('\n'));
-    
+
     // Store the table height for future updates
     this.#tableHeight = lines.length;
   }
@@ -105,11 +105,12 @@ export class TerminalTable {
    * @returns {void}
    */
   updateData (rowIndex, columnIndex, newValue) {
-    if (rowIndex >= 0 && rowIndex < this.#rows.length &&
-        columnIndex >= 0 && columnIndex < this.#rows[rowIndex].length) {
-      this.#rows[rowIndex][columnIndex] = newValue;
-      this.#updateCell(rowIndex, columnIndex, newValue);
+    if (!(rowIndex >= 0 && rowIndex < this.#rows.length &&
+      columnIndex >= 0 && columnIndex < this.#rows[rowIndex].length)) {
+      return;
     }
+    this.#rows[rowIndex][columnIndex] = newValue;
+    this.#updateCell(rowIndex, columnIndex, newValue);
   }
 
   /**
@@ -130,12 +131,12 @@ export class TerminalTable {
     // Calculate the row position relative to table start
     // Table structure: top border (1) + header (1) + separator (1) + data rows
     const tableRowPosition = 3 + rowIndex; // 0-based data row + 3 for borders/header
-    
+
     // Calculate column position within the row
     // Each cell format: '│ content padding ' (from #formatRow)
     // Start after left border '│' + space (position 1-based)
     let columnPosition = 1; // Start at column 1 (1-based indexing)
-    
+
     for (let i = 0; i <= columnIndex; i++) {
       columnPosition += 1; // '│'
       columnPosition += 1; // space before content
@@ -155,15 +156,15 @@ export class TerminalTable {
 
     // Save current cursor position
     process.stdout.write('\x1b[s');
-    
+
     // Move cursor to the cell position (relative to current position)
     // Move up to the table row, then to the column position
     process.stdout.write(`\x1b[${this.#tableHeight - tableRowPosition}A`);
     process.stdout.write(`\x1b[${columnPosition}G`);
-    
+
     // Write the cell content
     process.stdout.write(cellContent);
-    
+
     // Restore cursor position
     process.stdout.write('\x1b[u');
   }
@@ -182,26 +183,26 @@ export class TerminalTable {
 
     // Handle normal exit
     process.on('exit', cleanup);
-    
+
     // Handle SIGINT (Ctrl+C)
     process.on('SIGINT', () => {
       cleanup();
       process.exit(130);
     });
-    
+
     // Handle SIGTERM
     process.on('SIGTERM', () => {
       cleanup();
       process.exit(143);
     });
-    
+
     // Handle uncaught exceptions
     process.on('uncaughtException', (err) => {
       cleanup();
       console.error('Uncaught Exception:', err);
       process.exit(1);
     });
-    
+
     // Handle unhandled promise rejections
     process.on('unhandledRejection', (reason, promise) => {
       cleanup();
