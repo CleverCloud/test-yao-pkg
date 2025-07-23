@@ -2,7 +2,7 @@ import { CellarClient } from './cellar-client.js';
 import fs from 'node:fs';
 import { getCurrentAuthor, getCurrentCommit } from './git.js';
 import { BUILD_DIR, getAssetParts, getAssetPath, PREVIEW_DIR } from './paths.js';
-import { getEmoji, getSha256, highlight } from './utils.js';
+import { formatBranchName, getEmoji, getSha256, highlight } from './utils.js';
 import dedent from 'dedent';
 
 /**
@@ -274,7 +274,7 @@ export class PreviewClient {
   #renderPreview (preview) {
     return dedent`
       <tr>
-        <td><code class="branch"><a href="https://github.com/CleverCloud/clever-tools/tree/${preview.name}">${preview.name}</a></code></td>
+        <td><code class="branch"><a href="https://github.com/CleverCloud/clever-tools/tree/${preview.name}">${formatBranchName(preview.name)}</a></code></td>
         <td><code class="commit" title="${preview.commitId}"><a href="https://github.com/CleverCloud/clever-tools/commit/${preview.commitId}">${preview.commitId.substring(0, 8)}</a></code></td>
         <td class="right"><cc-datetime-relative datetime="${preview.updatedAt}">${preview.updatedAt}</cc-datetime-relative></td>
         <td><span>${preview.author}</span></td>
