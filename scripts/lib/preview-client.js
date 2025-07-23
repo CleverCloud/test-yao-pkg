@@ -11,6 +11,7 @@ import dedent from 'dedent';
  * @typedef {import('./preview-client.types.js').PreviewUrl} PreviewUrl
  */
 
+const MANIFEST_URL = 'https://6mt2ilnafne8nzomvlg2.cellar-c2.services.clever-cloud.com/previews/manifest.json';
 const MANIFEST_PATH = `${PREVIEW_DIR}/manifest.json`;
 const LIST_INDEX_PATH = `${PREVIEW_DIR}/index.html`;
 
@@ -44,15 +45,25 @@ export class PreviewClient {
    * @returns {Promise<Manifest>}
    * @throws {Error} When there's an error other than missing manifest
    */
-  async getManifest () {
+  static async getManifest () {
     try {
-      const manifestJson = await this.#cellarClient.getObject(MANIFEST_PATH);
+      const response = await fetch(MANIFEST_URL);
+      if (!response.ok) {
+        if (response.status === 404) {
+          return {
+            version: '1',
+            previews: [],
+          };
+        }
+        throw new Error(`Failed to fetch manifest: ${response.status} ${response.statusText}`);
+      }
+      const manifestJson = await response.text();
       /** @type {Manifest} */
       const manifest = JSON.parse(manifestJson);
       return manifest;
     }
     catch (e) {
-      if (e.code === 'NoSuchKey') {
+      if (e instanceof TypeError) {
         return {
           version: '1',
           previews: [],
@@ -293,8 +304,8 @@ export class PreviewClient {
    * Lists all available previews.
    * @returns {Promise<Array<Preview>>}
    */
-  async listPreviews () {
-    const manifest = await this.getManifest();
+  static async listPreviews () {
+    const manifest = await PreviewClient.getManifest();
     return manifest.previews;
   }
 
@@ -303,8 +314,8 @@ export class PreviewClient {
    * @param {string} previewName - The name of the preview to retrieve
    * @returns {Promise<Preview|null>} The preview object or undefined if not found
    */
-  async getPreview (previewName) {
-    const previews = await this.listPreviews();
+  static async getPreview (previewName) {
+    const previews = await PreviewClient.listPreviews();
     const preview = previews.find((p) => p.name === previewName);
     return preview;
   }
@@ -338,7 +349,7 @@ export class PreviewClient {
       };
     }
 
-    const manifest = await this.getManifest();
+    const manifest = await PreviewClient.getManifest();
 
     /** @type {Preview} */
     const newPreview = {
@@ -371,7 +382,7 @@ export class PreviewClient {
    */
   async deletePreview (previewName) {
 
-    const manifest = await this.getManifest();
+    const manifest = await PreviewClient.getManifest();
     const preview = manifest.previews.find((p) => p.name === previewName);
     if (preview == null) {
       throw new Error(`Preview "${previewName}" does not exist!`);

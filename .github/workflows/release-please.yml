@@ -1,0 +1,19 @@
+name: 'release-please'
+
+on:
+  push:
+    branches:
+      - master
+      - 'hotfix/**'
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: google-github-actions/release-please-action@v3
+        with:
+          token: ${{ secrets.CI_TOKEN }}
+          release-type: node
+          include-v-in-tag: false
+          default-branch: ${{ github.ref_name }}
+          changelog-types: ${{ fromJson(file('.github/config/changelog-types.json')) }}

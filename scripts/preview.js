@@ -77,7 +77,7 @@ function getUsage (message) {
  * @param {PreviewClient} previewClient - The client instance for preview operations
  */
 async function listPreviews (previewClient) {
-  const previews = await previewClient.listPreviews();
+  const previews = await PreviewClient.listPreviews();
 
   if (previews.length === 0) {
     console.log('No previews right now.');
@@ -93,7 +93,7 @@ async function listPreviews (previewClient) {
  */
 async function updatePreviews (previewClient) {
   const os = getOs();
-  const remotePreviews = await previewClient.listPreviews();
+  const remotePreviews = await PreviewClient.listPreviews();
   const localPreviews = await PreviewDisplay.getLocalPreviews();
   const previewDisplay = new PreviewDisplay(remotePreviews, localPreviews, os);
   await previewDisplay.init();
@@ -107,7 +107,7 @@ async function updatePreviews (previewClient) {
  * @throws {Error} When no preview is found for the given name
  */
 async function getPreviewPrComment (previewClient, previewName) {
-  const preview = await previewClient.getPreview(previewName);
+  const preview = await PreviewClient.getPreview(previewName);
 
   if (preview == null) {
     throw new Error(highlight`No preview for ${previewName} could be found`);
