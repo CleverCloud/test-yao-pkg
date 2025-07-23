@@ -92,7 +92,6 @@ export class TerminalPreviews {
     table.renderInit();
 
     setInterval(() => {
-      // TODO implement udpateData so it replaces the value
       table.updateData(1, 6, Math.random().toString(36).slice(2, 6));
     }, 1000);
   }

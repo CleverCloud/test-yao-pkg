@@ -18,6 +18,12 @@ export class TerminalTable {
   /** @type {Array<Array<string>>} */
   #rows;
 
+  /** @type {number} */
+  #tableStartLine;
+
+  /** @type {number} */
+  #tableHeight;
+
   /**
    * Creates a new TerminalTable instance.
    * @param {Array<[string, string?]>} columns - Array of [title, style] pairs for columns
@@ -27,6 +33,8 @@ export class TerminalTable {
     this.#columnTitles = columns.map(([title]) => title);
     this.#columnStyles = columns.map(([_, style]) => style);
     this.#rows = initialData;
+    this.#tableStartLine = null;
+    this.#tableHeight = 0;
   }
 
   /**
@@ -59,6 +67,9 @@ export class TerminalTable {
     lines.push('╰' + '─'.repeat(totalWidth - 2) + '╯');
 
     console.log(lines.join('\n'));
+    
+    // Store the table height for future updates
+    this.#tableHeight = lines.length;
   }
 
   /**
@@ -79,6 +90,48 @@ export class TerminalTable {
       return ` ${content}${padding} `;
     });
     return '│' + cells.join(' ') + '│';
+  }
+
+  /**
+   * Updates a specific cell in the table data and refreshes only that cell.
+   * @param {number} rowIndex - The row index to update
+   * @param {number} columnIndex - The column index to update
+   * @param {string} newValue - The new value for the cell
+   * @returns {void}
+   */
+  updateData (rowIndex, columnIndex, newValue) {
+    if (rowIndex >= 0 && rowIndex < this.#rows.length &&
+        columnIndex >= 0 && columnIndex < this.#rows[rowIndex].length) {
+      this.#rows[rowIndex][columnIndex] = newValue;
+      this.#updateCell(rowIndex, columnIndex, newValue);
+    }
+  }
+
+  /**
+   * Updates a specific cell in the terminal display.
+   * @param {number} rowIndex - The row index to update
+   * @param {number} columnIndex - The column index to update
+   * @param {string} newValue - The new value for the cell
+   * @returns {void}
+   */
+  #updateCell (rowIndex, columnIndex, newValue) {
+    // Cursor should be positioned right after the table from renderInit
+    // Move cursor up to start of table, clear it, and re-render
+    process.stdout.write(`\x1b[${this.#tableHeight}A`);
+    
+    // Clear all table lines
+    for (let i = 0; i < this.#tableHeight; i++) {
+      process.stdout.write('\x1b[2K'); // Clear current line
+      if (i < this.#tableHeight - 1) {
+        process.stdout.write('\x1b[1B'); // Move down one line
+      }
+    }
+    
+    // Move cursor back to start
+    process.stdout.write(`\x1b[${this.#tableHeight - 1}A`);
+    
+    // Re-render the table
+    this.renderInit();
   }
 
   /**
