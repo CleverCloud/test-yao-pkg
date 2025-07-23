@@ -95,8 +95,15 @@ export class TerminalPreviews {
       table.updateData(1, 6, Math.random().toString(36).slice(2, 6));
     }, 1000);
 
+    let i = 0;
+
     setInterval(() => {
       table.updateData(0, 4, Math.random().toString(36).slice(2, 12));
     }, 800);
+
+    setInterval(() => {
+      i = (i + 1) % 100;
+      table.updateData(0, 6, i.toString());
+    }, 200);
   }
 }

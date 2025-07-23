@@ -94,9 +94,10 @@ export class TerminalTable {
     const columnWidths = this.#calculateColumnWidths();
 
     const contentWidth = columnWidths.reduce((sum, w) => sum + w, 0);
-    const cellPadding = columnWidths.length * CELL_PADDING * 2; // 2 spaces per cell (left + right)
-    const separatorSpace = (columnWidths.length - 1) * COLUMN_SEPARATOR;
-    const totalWidth = contentWidth + cellPadding + separatorSpace + 2; // +2 for border chars
+    // Each cell has format ` content ` (2 spaces per cell) and cells are joined with ' ' (1 space between cells)
+    const cellPadding = columnWidths.length * 2; // 2 spaces per cell (left + right padding)
+    const separatorSpace = (columnWidths.length - 1) * 1; // 1 space between cells from join
+    const totalWidth = contentWidth + cellPadding + separatorSpace + 2; // +2 for left and right border chars
 
     const lines = [];
     lines.push('╭' + '─'.repeat(totalWidth - 2) + '╮');
@@ -180,13 +181,15 @@ export class TerminalTable {
     const absoluteRowPosition = 3 + rowIndex;
 
     // Calculate column position within the row
-    // Row format: '│ content padding │ content padding │...'
+    // Row format from #formatRow: '│ content padding  content padding  content padding │'
+    // Each cell is ` ${content}${padding} ` and cells are joined with ' '
     let columnPosition = 2; // Start after '│ ' (1-based indexing)
     
     for (let i = 0; i < columnIndex; i++) {
       columnPosition += columnWidths[i]; // content width
-      columnPosition += 2; // space after content + space before next content
-      columnPosition += 1; // column separator '│' or ' '
+      columnPosition += 1; // space after content (from cell format)
+      columnPosition += 1; // space separator between cells (from join)
+      columnPosition += 1; // space before next content (from cell format)
     }
 
     // Format the new cell content with proper padding
