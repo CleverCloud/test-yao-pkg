@@ -158,7 +158,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: build-rpm
-          path: build/${{ github.ref_name }}
+          path: build
       - name: 'Publish .rpm to cellar'
         run: ./scripts/publish-cellar.js ${{ github.ref_name }} rpm
         env:
@@ -184,7 +184,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: build-deb
-          path: build/${{ github.ref_name }}
+          path: build
       - name: 'Publish .deb to cellar'
         run: ./scripts/publish-cellar.js ${{ github.ref_name }} deb
         env:
