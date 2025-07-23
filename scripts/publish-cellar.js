@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 
 import dedent from 'dedent';
-import { ReleaseClient } from './lib/release-client.js';
-import { readEnvVars, run } from './lib/utils.js';
+import { CellarClient } from './lib/cellar-client.js';
+import { getAssetPath } from './lib/paths.js';
+import { highlight, readEnvVars, run } from './lib/utils.js';
 
 run(async () => {
 
@@ -12,7 +13,7 @@ run(async () => {
     'CC_CLEVER_TOOLS_RELEASES_CELLAR_SECRET_KEY',
   ]);
 
-  const releaseClient = new ReleaseClient({
+  const cellarClient = new CellarClient({
     bucket,
     accessKeyId,
     secretAccessKey,
@@ -35,14 +36,23 @@ run(async () => {
     case 'archives':
       const osList = ['linux', 'macos', 'win'];
       for (const os of osList) {
-        await releaseClient.publishArchive(version, os);
+        const localPath = getAssetPath('archive', version, 'build', os);
+        const remotePath = getAssetPath('archive', version, 'release', os);
+        console.log(highlight`=> Upload ${localPath} to ${remotePath}`);
+        await cellarClient.upload(localPath, remotePath);
       }
       break;
     case 'rpm':
-      await releaseClient.publishRpm(version);
+      const localPath = getAssetPath('rpm', version, 'build');
+      const remotePath = getAssetPath('rpm', version, 'release');
+      console.log(highlight`=> Upload ${localPath} to ${remotePath}`);
+      await cellarClient.upload(localPath, remotePath);
       break;
     case 'deb':
-      await releaseClient.publishDeb(version);
+      const debLocalPath = getAssetPath('deb', version, 'build');
+      const debRemotePath = getAssetPath('deb', version, 'release');
+      console.log(highlight`=> Upload ${debLocalPath} to ${debRemotePath}`);
+      await cellarClient.upload(debLocalPath, debRemotePath);
       break;
   }
 });
