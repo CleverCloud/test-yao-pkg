@@ -29,10 +29,6 @@ run(async () => {
   switch (command) {
     case 'list':
       return listPreviews();
-    case 'update':
-      return updatePreviews();
-    case 'download':
-      return downloadPreview(previewName);
     case 'build':
       return buildPreview(previewName, os);
     case 'pr-comment':
@@ -58,7 +54,6 @@ function getUsage (message) {
     USAGE
       preview.js list
       preview.js update
-      preview.js download [preview-name]
       preview.js pr-comment [preview-name]
       preview.js build [preview-name]
       preview.js publish [preview-name]
@@ -79,39 +74,6 @@ async function listPreviews () {
   }
 
   PreviewDisplay.displayPreviews(previews);
-}
-
-/**
- * Updates previews display with local and remote preview information.
- */
-async function updatePreviews () {
-  const os = getOs();
-  console.log({os})
-  const remotePreviews = await PreviewClient.listPreviews();
-  const localPreviews = await PreviewDisplay.getLocalPreviews();
-  // const previewDisplay = new PreviewDisplay(remotePreviews, localPreviews, os);
-  // await previewDisplay.init();
-  // await previewDisplay.startUpdate();
-}
-
-/**
- * Downloads a preview archive to a computed target filename.
- * @param {string} previewName - The name/version of the preview to download
- */
-async function downloadPreview (previewName) {
-  const preview = await PreviewClient.getPreview(previewName);
-  if (preview == null) {
-    throw new Error(highlight`No preview for ${previewName} could be found`);
-  }
-
-  const os = getOs();
-  const previewUrl = preview.urls.find((p) => p.os === os);
-  if (previewUrl == null) {
-    throw new Error(highlight`No preview for ${previewName} for ${os}`);
-  }
-
-  const targetFilename = `.preview-binaries/clever--${previewName}`;
-  await PreviewClient.downloadPreview(previewName, previewUrl.url, targetFilename);
 }
 
 /**

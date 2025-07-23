@@ -2,7 +2,7 @@ import { CellarClient } from './cellar-client.js';
 import fs from 'node:fs';
 import { getCurrentAuthor, getCurrentCommit } from './git.js';
 import { BUILD_DIR, getAssetParts, getAssetPath, PREVIEW_DIR } from './paths.js';
-import { exec, formatBranchName, getEmoji, getSha256, highlight } from './utils.js';
+import { formatBranchName, getEmoji, getSha256, highlight } from './utils.js';
 import dedent from 'dedent';
 
 /**
@@ -372,43 +372,6 @@ export class PreviewClient {
     await this.updateManifest(manifest);
     console.log(highlight`=> Update HTML list index to ${LIST_INDEX_PATH}`);
     await this.#updateListIndex(manifest);
-  }
-
-  /**
-   * Downloads a preview archive to a target filename
-   * @param {string} previewName - The name of the preview to download
-   * @param {string} downloadUrl - The URL to download the preview archive from
-   * @param {string} targetFilename - The computed target filename to save the binary
-   * @throws {Error} When the preview doesn't exist or download fails
-   */
-  static async downloadPreview (previewName, downloadUrl, targetFilename) {
-
-    // Setup tmp dir
-    const tmpDir = `/tmp/preview-${previewName}`;
-    fs.mkdirSync(tmpDir, { recursive: true });
-
-    // Download archive
-    const tempArchivePath = `${tmpDir}/archive.tar.gz`;
-    console.log(highlight`=> Download ${downloadUrl} to ${tempArchivePath}`);
-    const response = await fetch(downloadUrl);
-    if (!response.ok) {
-      throw new Error(`Failed to download: ${response.status} ${response.statusText}`);
-    }
-    const buffer = await response.arrayBuffer();
-    fs.writeFileSync(tempArchivePath, new Uint8Array(buffer));
-
-    // Extract archive
-    console.log(highlight`=> Extract ${tempArchivePath} to ${tmpDir}`);
-    await exec(`tar -xzf ${tempArchivePath} -C ${tmpDir}`);
-
-    // Move extracted file to target
-    const extractedFile = `${tmpDir}/clever`;
-    console.log(highlight`=> Move ${extractedFile} to ${targetFilename}`);
-    fs.mkdirSync('.preview-binaries', { recursive: true });
-    fs.copyFileSync(extractedFile, targetFilename);
-
-    // Cleanup
-    fs.rmSync(tmpDir, { recursive: true, force: true });
   }
 
   /**
