@@ -4,6 +4,7 @@ import { TerminalTable } from './terminal-table.js';
 /**
  * @typedef {import('./preview-client.types.d.ts').Manifest} Manifest
  * @typedef {import('./preview-client.types.d.ts').Preview} Preview
+ * @typedef {import('./preview-client.types.d.ts').PreviewUrl} PreviewUrl
  */
 
 /**
@@ -17,14 +18,18 @@ export class TerminalPreviews {
   #localManifest;
   /** @type {Array<string>} */
   #previewNames;
+  /** @type {string} */
+  #os;
 
   /**
    * @param {Manifest} remoteManifest - Remote manifest containing preview information
    * @param {Manifest} localManifest - Local manifest containing preview information
+   * @param {string} os - The current OS
    */
-  constructor (remoteManifest, localManifest) {
+  constructor (remoteManifest, localManifest, os) {
     this.#remoteManifest = remoteManifest;
     this.#localManifest = localManifest;
+    this.#os = os;
 
     this.#previewNames = [];
     this.#remoteManifest.previews.forEach((p) => {
@@ -73,20 +78,60 @@ export class TerminalPreviews {
       ['TIME'],
       ['AUTHOR', 'green'],
       ['DOWNLOAD LINKS', 'blue'],
-      ['STATE          '],
+      ['STATE             '],
     ];
 
     const table = new TerminalTable(columns, rows);
     table.renderInit();
 
-    // TODO iterate over this.#previewNames
-    // TODO for each one, determine the action:
-    // - keep: remote and local exist and checksums for current OS match
-    // - update: remote and local exist but checksums for current OS don't match
-    // - download: local does not exist
-    // - delete: remote does not exist anymore
-    // TODO NOTES:
-    // - you will need to get the os from the constructor to a private field
-    // - call table.update(index of the iteration, 6, action)
+    this.#previewNames.forEach((previewName, index) => {
+      const remotePreview = this.#remoteManifest.previews.find((p) => p.name === previewName);
+      const localPreview = this.#localManifest.previews.find((p) => p.name === previewName);
+
+      /** @type {string|null} */
+      const remoteChecksum = remotePreview?.urls.find((u) => u.os === this.#os)?.checksum.value;
+      /** @type {string|null} */
+      const localChecksum = localPreview?.urls.find((u) => u.os === this.#os)?.checksum.value;
+
+      if (remoteChecksum != null && localChecksum != null) {
+        if (remoteChecksum === localChecksum) {
+          table.updateData(index, 6, 'Already up-to-date');
+        }
+        else {
+          table.updateData(index, 6, 'Updating…');
+          setTimeout(() => {
+            table.updateData(index, 6, 'Updated!');
+          }, 5000);
+          setTimeout(() => {}, 7000);
+        }
+      }
+      else if (remoteChecksum && !localChecksum) {
+        if (localPreview) {
+          table.updateData(index, 6, 'Updating…');
+          setTimeout(() => {
+            table.updateData(index, 6, 'Updated!');
+          }, 5000);
+          setTimeout(() => {}, 7000);
+        }
+        else {
+          table.updateData(index, 6, 'Downloading…');
+          setTimeout(() => {
+            table.updateData(index, 6, 'Downloaded!');
+          }, 5000);
+          setTimeout(() => {}, 7000);
+        }
+      }
+      else if (!remoteChecksum && localChecksum) {
+        table.updateData(index, 6, 'Deleting…');
+        setTimeout(() => {
+          table.updateData(index, 6, 'Deleted!');
+        }, 5000);
+        setTimeout(() => {}, 7000);
+      }
+      else {
+        table.updateData(index, 6, 'Ignored');
+      }
+
+    });
   }
 }
