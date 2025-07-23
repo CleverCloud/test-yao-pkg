@@ -15,11 +15,11 @@ export class TerminalTable {
   /** @type {Array<string?>} */
   #columnStyles;
 
-  /** @type {Array<Array<string>>} */
-  #rows;
-
   /** @type {Array<number>} */
   #columnWidths;
+
+  /** @type {Array<Array<string>>} */
+  #rows;
 
   /** @type {number} */
   #tableHeight;
@@ -40,14 +40,13 @@ export class TerminalTable {
     if (!Array.isArray(rows)) {
       throw new Error('Rows must be an array');
     }
-    
+
     this.#columnTitles = columns.map(([title]) => title);
     this.#columnStyles = columns.map(([, style]) => style);
     this.#rows = rows;
-    this.#columnWidths = null;
     this.#tableHeight = 0;
     this.#visibleLengthCache = new Map();
-    
+
     // Validate that all rows have the correct number of columns
     const expectedColumns = columns.length;
     rows.forEach((row, index) => {
@@ -55,24 +54,6 @@ export class TerminalTable {
         throw new Error(`Row ${index} has ${row?.length || 0} columns, expected ${expectedColumns}`);
       }
     });
-  }
-
-  /**
-   * Calculates and caches column widths based on content.
-   * @returns {Array<number>} Array of column widths
-   */
-  #calculateColumnWidths () {
-    if (this.#columnWidths) {
-      return this.#columnWidths;
-    }
-    
-    this.#columnWidths = this.#columnTitles.map((title, i) => {
-      const headerLength = this.#getVisibleLength(title);
-      const dataLengths = this.#rows.map((row) => this.#getVisibleLength(row[i] || ''));
-      return Math.max(headerLength, ...dataLengths);
-    });
-    
-    return this.#columnWidths;
   }
 
   /**
@@ -114,6 +95,57 @@ export class TerminalTable {
   }
 
   /**
+   * Updates a specific cell in the table data and refreshes only that cell.
+   * @param {number} rowIndex - The row index to update
+   * @param {number} columnIndex - The column index to update
+   * @param {string} newValue - The new value for the cell
+   * @returns {void}
+   */
+  updateData (rowIndex, columnIndex, newValue) {
+    // Validate indices
+    if (rowIndex < 0 || rowIndex >= this.#rows.length ||
+      columnIndex < 0 || columnIndex >= this.#columnTitles.length) {
+      return;
+    }
+
+    // Check if content change might affect column width
+    const oldValue = this.#rows[rowIndex][columnIndex] || '';
+    const oldLength = this.#getVisibleLength(oldValue);
+    const newLength = this.#getVisibleLength(newValue || '');
+    const currentWidth = this.#columnWidths?.[columnIndex] || 0;
+
+    // If new content is longer than current column width, invalidate caches
+    if (newLength > currentWidth) {
+      this.#columnWidths = null;
+      // Clear visible length cache to prevent memory leaks from old values
+      if (this.#visibleLengthCache.size > 1000) {
+        this.#visibleLengthCache.clear();
+      }
+    }
+
+    this.#rows[rowIndex][columnIndex] = newValue;
+    this.#updateCell(rowIndex, columnIndex, newValue);
+  }
+
+  /**
+   * Calculates and caches column widths based on content.
+   * @returns {Array<number>} Array of column widths
+   */
+  #calculateColumnWidths () {
+    if (this.#columnWidths) {
+      return this.#columnWidths;
+    }
+
+    this.#columnWidths = this.#columnTitles.map((title, i) => {
+      const headerLength = this.#getVisibleLength(title);
+      const dataLengths = this.#rows.map((row) => this.#getVisibleLength(row[i] || ''));
+      return Math.max(headerLength, ...dataLengths);
+    });
+
+    return this.#columnWidths;
+  }
+
+  /**
    * Formats a table row with proper padding and borders.
    * @param {Array<string>} row - The row data
    * @param {Array<number>} widths - Column widths
@@ -134,39 +166,6 @@ export class TerminalTable {
   }
 
   /**
-   * Updates a specific cell in the table data and refreshes only that cell.
-   * @param {number} rowIndex - The row index to update
-   * @param {number} columnIndex - The column index to update
-   * @param {string} newValue - The new value for the cell
-   * @returns {void}
-   */
-  updateData (rowIndex, columnIndex, newValue) {
-    // Validate indices
-    if (rowIndex < 0 || rowIndex >= this.#rows.length ||
-        columnIndex < 0 || columnIndex >= this.#columnTitles.length) {
-      return;
-    }
-    
-    // Check if content change might affect column width
-    const oldValue = this.#rows[rowIndex][columnIndex] || '';
-    const oldLength = this.#getVisibleLength(oldValue);
-    const newLength = this.#getVisibleLength(newValue || '');
-    const currentWidth = this.#columnWidths?.[columnIndex] || 0;
-    
-    // If new content is longer than current column width, invalidate caches
-    if (newLength > currentWidth) {
-      this.#columnWidths = null;
-      // Clear visible length cache to prevent memory leaks from old values
-      if (this.#visibleLengthCache.size > 1000) {
-        this.#visibleLengthCache.clear();
-      }
-    }
-    
-    this.#rows[rowIndex][columnIndex] = newValue;
-    this.#updateCell(rowIndex, columnIndex, newValue);
-  }
-
-  /**
    * Updates a specific cell in the terminal display.
    * @param {number} rowIndex - The row index to update
    * @param {number} columnIndex - The column index to update
@@ -181,15 +180,16 @@ export class TerminalTable {
     const absoluteRowPosition = 3 + rowIndex;
 
     // Calculate column position within the row
-    // Row format from #formatRow: '│ content padding  content padding  content padding │'
+    // Row format from #formatRow: '│ content1padding1  content2padding2  content3padding3 │'
     // Each cell is ` ${content}${padding} ` and cells are joined with ' '
-    let columnPosition = 2; // Start after '│ ' (1-based indexing)
-    
+    // Between cells: trailing_space + join_space + leading_space = 3 spaces total
+    let columnPosition = 2; // Start after '│ ' (position where first cell content starts)
+
     for (let i = 0; i < columnIndex; i++) {
-      columnPosition += columnWidths[i]; // content width
-      columnPosition += 1; // space after content (from cell format)
-      columnPosition += 1; // space separator between cells (from join)
-      columnPosition += 1; // space before next content (from cell format)
+      columnPosition += columnWidths[i]; // content width of previous cell
+      columnPosition += 1; // trailing space from previous cell ` content `
+      columnPosition += 1; // join space from cells.join(' ')
+      columnPosition += 1; // leading space from current cell ` content `
     }
 
     // Format the new cell content with proper padding
@@ -212,9 +212,9 @@ export class TerminalTable {
     } else if (linesToMoveUp < 0) {
       process.stdout.write(`\x1b[${Math.abs(linesToMoveUp)}B`);
     }
-    
-    // Move to the specific column position
-    process.stdout.write(`\x1b[${columnPosition}G`);
+
+    // Move to the specific column position (ANSI uses 1-based indexing)
+    process.stdout.write(`\x1b[${columnPosition + 1}G`);
 
     // Write the cell content
     process.stdout.write(cellContent);
@@ -273,11 +273,11 @@ export class TerminalTable {
    */
   #getVisibleLength (text) {
     if (!text) return 0;
-    
+
     if (this.#visibleLengthCache.has(text)) {
       return this.#visibleLengthCache.get(text);
     }
-    
+
     const length = stripVTControlCharacters(text).length;
     this.#visibleLengthCache.set(text, length);
     return length;
