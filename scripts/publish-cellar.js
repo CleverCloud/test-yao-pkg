@@ -6,9 +6,14 @@ import { readEnvVars, run } from './lib/utils.js';
 
 run(async () => {
 
-  const [accessKeyId, secretAccessKey] = readEnvVars(['CC_CLEVER_TOOLS_RELEASES_CELLAR_KEY_ID', 'CC_CLEVER_TOOLS_RELEASES_CELLAR_SECRET_KEY']);
+  const [bucket, accessKeyId, secretAccessKey] = readEnvVars([
+    'CC_CLEVER_TOOLS_RELEASES_CELLAR_BUCKET',
+    'CC_CLEVER_TOOLS_RELEASES_CELLAR_KEY_ID',
+    'CC_CLEVER_TOOLS_RELEASES_CELLAR_SECRET_KEY',
+  ]);
 
   const releaseClient = new ReleaseClient({
+    bucket,
     accessKeyId,
     secretAccessKey,
   });
