@@ -15,6 +15,18 @@ export function getVersion (rawVersion) {
 }
 
 /**
+ * Formats a branch name for display, truncating release-please branches.
+ * @param {string} branchName - The branch name to format
+ * @returns {string}
+ */
+export function formatBranchName (branchName) {
+  if (branchName.startsWith('release-please--branches')) {
+    return 'release-please…';
+  }
+  return branchName;
+}
+
+/**
  * Gets the current operating system in a normalized format.
  * Maps Node.js platform() values to simplified OS names.
  * @returns {'linux'|'macos'|'win'}

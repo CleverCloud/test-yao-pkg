@@ -3,7 +3,7 @@ import textTable from 'text-table';
 import stringLength from 'string-length';
 import fs from 'node:fs';
 import path from 'node:path';
-import { createTerminalLink, exec, getEmoji, getOs } from './utils.js';
+import { createTerminalLink, exec, formatBranchName, getEmoji, getOs } from './utils.js';
 
 /**
  * @typedef {import('./preview-client.types.d.ts').Preview} Preview
@@ -96,7 +96,7 @@ export class PreviewDisplay {
       const isDeleted = action === 'delete';
 
       const row = [
-        styleText('yellow', p.name),
+        styleText('yellow', formatBranchName(p.name)),
         styleText('blue', p.commitId.substring(0, 8)),
         date,
         time,
@@ -222,7 +222,7 @@ export class PreviewDisplay {
       const isDeleted = action === 'delete';
 
       const row = [
-        styleText('yellow', p.name),
+        styleText('yellow', formatBranchName(p.name)),
         styleText('blue', p.commitId.substring(0, 8)),
         date,
         time,
