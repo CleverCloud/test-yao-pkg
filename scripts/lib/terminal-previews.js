@@ -66,7 +66,6 @@ export class TerminalPreviews {
       ];
     });
 
-    // TODO add emojis before column name
     const columns = [
       ['NAME', 'yellow'],
       ['COMMIT ID', 'blue'],
@@ -79,5 +78,15 @@ export class TerminalPreviews {
 
     const table = new TerminalTable(columns, rows);
     table.renderInit();
+
+    // TODO iterate over this.#previewNames
+    // TODO for each one, determine the action:
+    // - keep: remote and local exist and checksums for current OS match
+    // - update: remote and local exist but checksums for current OS don't match
+    // - download: local does not exist
+    // - delete: remote does not exist anymore
+    // TODO NOTES:
+    // - you will need to get the os from the constructor to a private field
+    // - call table.update(index of the iteration, 6, action)
   }
 }
