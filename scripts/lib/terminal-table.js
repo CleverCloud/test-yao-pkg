@@ -33,27 +33,11 @@ export class TerminalTable {
    * @param {Array<Array<string>>} rows - Array of data rows
    */
   constructor (columns, rows) {
-    // Validate input
-    if (!Array.isArray(columns) || columns.length === 0) {
-      throw new Error('Columns array cannot be empty');
-    }
-    if (!Array.isArray(rows)) {
-      throw new Error('Rows must be an array');
-    }
-
     this.#columnTitles = columns.map(([title]) => title);
     this.#columnStyles = columns.map(([, style]) => style);
     this.#rows = rows;
     this.#tableHeight = 0;
     this.#visibleLengthCache = new Map();
-
-    // Validate that all rows have the correct number of columns
-    const expectedColumns = columns.length;
-    rows.forEach((row, index) => {
-      if (!Array.isArray(row) || row.length !== expectedColumns) {
-        throw new Error(`Row ${index} has ${row?.length || 0} columns, expected ${expectedColumns}`);
-      }
-    });
   }
 
   /**
@@ -80,18 +64,17 @@ export class TerminalTable {
     const separatorSpace = (columnWidths.length - 1) * 1; // 1 space between cells from join
     const totalWidth = contentWidth + cellPadding + separatorSpace + 2; // +2 for left and right border chars
 
-    const lines = [];
-    lines.push('╭' + '─'.repeat(totalWidth - 2) + '╮');
-    lines.push(this.#formatRow(headers, columnWidths, true));
-    lines.push('├' + '─'.repeat(totalWidth - 2) + '┤');
-    this.#rows.forEach(row => lines.push(this.#formatRow(row, columnWidths)));
-    lines.push('╰' + '─'.repeat(totalWidth - 2) + '╯');
+    // Write table directly to stdout
+    process.stdout.write('╭' + '─'.repeat(totalWidth - 2) + '╮\n');
+    process.stdout.write(this.#formatRow(headers, columnWidths, true) + '\n');
+    process.stdout.write('├' + '─'.repeat(totalWidth - 2) + '┤\n');
+    for (const row of this.#rows) {
+      process.stdout.write(this.#formatRow(row, columnWidths) + '\n');
+    }
+    process.stdout.write('╰' + '─'.repeat(totalWidth - 2) + '╯\n');
 
-    // Use process.stdout.write for consistency
-    process.stdout.write(lines.join('\n') + '\n');
-
-    // Store the table height and current cursor position for future updates
-    this.#tableHeight = lines.length;
+    // Table height is always header + rows + borders
+    this.#tableHeight = this.#rows.length + 3;
   }
 
   /**
@@ -209,7 +192,8 @@ export class TerminalTable {
     const linesToMoveUp = this.#tableHeight - absoluteRowPosition;
     if (linesToMoveUp > 0) {
       process.stdout.write(`\x1b[${linesToMoveUp}A`);
-    } else if (linesToMoveUp < 0) {
+    }
+    else if (linesToMoveUp < 0) {
       process.stdout.write(`\x1b[${Math.abs(linesToMoveUp)}B`);
     }
 
@@ -272,7 +256,9 @@ export class TerminalTable {
    * @returns {number} - The visible character count
    */
   #getVisibleLength (text) {
-    if (!text) return 0;
+    if (!text) {
+      return 0;
+    }
 
     if (this.#visibleLengthCache.has(text)) {
       return this.#visibleLengthCache.get(text);
