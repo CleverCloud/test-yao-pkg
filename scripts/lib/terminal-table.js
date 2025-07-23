@@ -128,7 +128,6 @@ export class TerminalTable {
    * @returns {void}
    */
   #updateCell (rowIndex, columnIndex, newValue) {
-    // TODO: Use process.stdout.cursorTo() and process.stdout.moveCursor() instead of raw ANSI escape codes
     const columnWidths = this.#columnWidths;
 
     // Calculate the absolute row position in the table
@@ -157,27 +156,22 @@ export class TerminalTable {
     const padding = ' '.repeat(Math.max(0, columnWidths[columnIndex] - visibleLength));
     const cellContent = `${content}${padding}`;
 
-    // TODO: Replace raw ANSI codes with process.stdout methods for better maintainability
-    // Save current cursor position
+    // Save current cursor position (no Node.js equivalent)
     process.stdout.write('\x1b[s');
 
     // Move cursor to the specific cell position
-    // Move up by the number of lines from current position to the target row
     const linesToMoveUp = this.#tableHeight - absoluteRowPosition;
-    if (linesToMoveUp > 0) {
-      process.stdout.write(`\x1b[${linesToMoveUp}A`);
-    }
-    else if (linesToMoveUp < 0) {
-      process.stdout.write(`\x1b[${Math.abs(linesToMoveUp)}B`);
+    if (linesToMoveUp !== 0) {
+      process.stdout.moveCursor(0, -linesToMoveUp);
     }
 
-    // Move to the specific column position (ANSI uses 1-based indexing)
-    process.stdout.write(`\x1b[${columnPosition + 1}G`);
+    // Move to the specific column position
+    process.stdout.cursorTo(columnPosition);
 
     // Write the cell content
     process.stdout.write(cellContent);
 
-    // Restore cursor position
+    // Restore cursor position (no Node.js equivalent)
     process.stdout.write('\x1b[u');
   }
 
