@@ -59,9 +59,8 @@ function getUsage (message) {
 
     USAGE
       preview.js list
-      preview.js update
-      preview.js pr-comment [preview-name]
       preview.js build [preview-name]
+      preview.js pr-comment [preview-name]
       preview.js publish [preview-name]
       preview.js delete [preview-name]
   `;
@@ -81,6 +80,23 @@ async function listPreviews () {
   }
 
   PreviewDisplay.displayPreviews(previews);
+}
+
+/**
+ * Builds a preview by bundling to single CJS, compiling binary, and creating an archive.
+ * Clears the working directory before starting the build process.
+ * @param {string} previewName - The name/version of the preview to build
+ * @param {string} os - The target operating system for the build
+ */
+async function buildPreview (previewName, os) {
+  const workingDirectory = `${BUILD_DIR}/${previewName}`;
+
+  console.log(highlight`=> Clear ${workingDirectory}`);
+  await clearDirectory(workingDirectory);
+
+  await bundleToSingleCjs(previewName, os);
+  await buildBinary(previewName, os);
+  await createArchive(previewName, os);
 }
 
 /**
@@ -116,37 +132,11 @@ async function getPreviewPrComment (previewName) {
 }
 
 /**
- * Builds a preview by bundling to single CJS, compiling binary, and creating an archive.
- * Clears the working directory before starting the build process.
- * @param {string} previewName - The name/version of the preview to build
- * @param {string} os - The target operating system for the build
- */
-async function buildPreview (previewName, os) {
-  const workingDirectory = `${BUILD_DIR}/${previewName}`;
-
-  console.log(highlight`=> Clear ${workingDirectory}`);
-  await clearDirectory(workingDirectory);
-
-  await bundleToSingleCjs(previewName, os);
-  await buildBinary(previewName, os);
-  await createArchive(previewName, os);
-}
-
-/**
  * Publishes a built preview to the preview storage.
  * @param {string} previewName - The name/version of the preview to publish
  */
 async function publishPreview (previewName) {
-  const [bucket, accessKeyId, secretAccessKey] = readEnvVars([
-    'CC_CLEVER_TOOLS_PREVIEWS_CELLAR_BUCKET',
-    'CC_CLEVER_TOOLS_PREVIEWS_CELLAR_KEY_ID',
-    'CC_CLEVER_TOOLS_PREVIEWS_CELLAR_SECRET_KEY',
-  ]);
-  const cellarClient = new CellarClient({
-    bucket,
-    accessKeyId,
-    secretAccessKey,
-  });
+  const cellarClient = createCellarClient();
 
   const osList = fs.readdirSync(`${BUILD_DIR}/${previewName}`, { withFileTypes: true })
     .filter((dirent) => dirent.isDirectory())
@@ -199,16 +189,7 @@ async function publishPreview (previewName) {
  * @param {string} previewName - The name/version of the preview to delete
  */
 async function deletePreview (previewName) {
-  const [bucket, accessKeyId, secretAccessKey] = readEnvVars([
-    'CC_CLEVER_TOOLS_PREVIEWS_CELLAR_BUCKET',
-    'CC_CLEVER_TOOLS_PREVIEWS_CELLAR_KEY_ID',
-    'CC_CLEVER_TOOLS_PREVIEWS_CELLAR_SECRET_KEY',
-  ]);
-  const cellarClient = new CellarClient({
-    bucket,
-    accessKeyId,
-    secretAccessKey,
-  });
+  const cellarClient = createCellarClient();
 
   const manifest = await fetchManifest();
   const preview = manifest.previews.find((p) => p.name === previewName);
@@ -282,4 +263,21 @@ async function updateManifest (cellarClient, manifest) {
 async function updateListIndex (cellarClient, manifest) {
   const htmlPreview = new HtmlPreview(manifest);
   return cellarClient.putObject(htmlPreview.render(), LIST_INDEX_PATH);
+}
+
+/**
+ * Creates and configures a Cellar client instance.
+ * @returns {CellarClient} Configured cellar client
+ */
+function createCellarClient () {
+  const [bucket, accessKeyId, secretAccessKey] = readEnvVars([
+    'CC_CLEVER_TOOLS_PREVIEWS_CELLAR_BUCKET',
+    'CC_CLEVER_TOOLS_PREVIEWS_CELLAR_KEY_ID',
+    'CC_CLEVER_TOOLS_PREVIEWS_CELLAR_SECRET_KEY',
+  ]);
+  return new CellarClient({
+    bucket,
+    accessKeyId,
+    secretAccessKey,
+  });
 }
