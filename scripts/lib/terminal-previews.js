@@ -91,6 +91,9 @@ export class TerminalPreviews {
   }
 
   async updatePreviews () {
+
+    await fs.promises.mkdir('.preview-binaries', { recursive: true });
+
     await Promise.all(this.#previewNames.map((previewName, index) => {
       const remotePreview = this.#remoteManifest.previews.find((p) => p.name === previewName);
       const localPreview = this.#localManifest.previews.find((p) => p.name === previewName);
@@ -150,52 +153,40 @@ export class TerminalPreviews {
 
     try {
       this.#updatePreviewState(index, 'Downloading .tar.gz…', 'yellow');
-
-      // Create tmp directory
       const tmpDir = `/tmp/previews-${previewName}`;
       await fs.promises.mkdir(tmpDir, { recursive: true });
-
-      // Download tar.gz
       const response = await fetch(previewUrl.url);
       if (!response.ok) {
         return this.#updatePreviewState(index, `Download failed: ${response.statusText}`, 'red');
       }
 
       // TODO replace with simple template tag and /
+      this.#updatePreviewState(index, 'Extracting .tar.gz…', 'yellow');
       const tarPath = path.join(tmpDir, 'binary.tar.gz');
       const arrayBuffer = await response.arrayBuffer();
       await fs.promises.writeFile(tarPath, Buffer.from(arrayBuffer));
-
-      this.#updatePreviewState(index, 'Extracting .tar.gz…');
-
-      // Extract tar.gz
+      // TODO pass a quiet: true boolean to the options so the exec does not log
       await exec(`tar -xzf binary.tar.gz`, { cwd: tmpDir });
 
-      this.#updatePreviewState(index, 'Installing binary…');
-
-      // Create .preview-binaries directory
-      await fs.promises.mkdir('.preview-binaries', { recursive: true });
-
-      // Find and copy the binary
+      this.#updatePreviewState(index, 'Installing binary…', 'yellow');
       const extractedFiles = await fs.promises.readdir(tmpDir);
       const binaryFile = extractedFiles.find(file => file !== 'binary.tar.gz' && !file.endsWith('.tar.gz'));
 
-      if (binaryFile) {
+      if (binaryFile != null) {
+        // TODO replace with simple template tag and /
         const sourcePath = path.join(tmpDir, binaryFile);
         const destPath = `.preview-binaries/clever--${previewName}`;
         await fs.promises.copyFile(sourcePath, destPath);
         await fs.promises.chmod(destPath, 0o755);
       }
 
-      this.#updatePreviewState(index, 'Cleaning…');
-
-      // Delete tmp directory
+      this.#updatePreviewState(index, 'Cleaning…', 'blue');
       await clearDirectory(tmpDir);
 
-      this.#updatePreviewState(index, 'OK!');
+      this.#updatePreviewState(index, 'OK!', 'green');
     }
     catch (error) {
-      this.#updatePreviewState(index, `Error: ${error.message}`);
+      this.#updatePreviewState(index, `Error: ${error.message}`, 'red');
     }
   }
 
