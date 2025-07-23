@@ -87,9 +87,9 @@ async function listPreviews () {
 async function updatePreviews () {
   const remoteManifest = await fetchManifest();
   const localManifest = await getLocalManifest();
-
   const terminalPreviews = new TerminalPreviews(remoteManifest, localManifest, getOs());
   terminalPreviews.initDisplay();
+  await terminalPreviews.updatePreviews();
 }
 
 /**

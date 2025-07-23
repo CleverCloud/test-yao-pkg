@@ -1,5 +1,7 @@
-import { createTerminalLink, getEmoji } from './utils.js';
+import { clearDirectory, createTerminalLink, exec, getEmoji } from './utils.js';
 import { TerminalTable } from './terminal-table.js';
+import fs from 'node:fs';
+import path from 'node:path';
 
 /**
  * @typedef {import('./preview-client.types.d.ts').Manifest} Manifest
@@ -85,8 +87,10 @@ export class TerminalPreviews {
 
     this.#table = new TerminalTable(columns, rows);
     this.#table.renderInit();
+  }
 
-    this.#previewNames.forEach((previewName, index) => {
+  async updatePreviews () {
+    await Promise.all(this.#previewNames.map((previewName, index) => {
       const remotePreview = this.#remoteManifest.previews.find((p) => p.name === previewName);
       const localPreview = this.#localManifest.previews.find((p) => p.name === previewName);
 
@@ -97,31 +101,24 @@ export class TerminalPreviews {
 
       if (remoteChecksum != null && localChecksum != null) {
         if (remoteChecksum === localChecksum) {
-          this.#keep(index);
+          return this.#keep(index);
         }
-        else {
-          this.#updatePreview(index);
-        }
+        return this.#updatePreview(index);
       }
-      else if (remoteChecksum != null && localChecksum == null) {
+
+      if (remoteChecksum != null && localChecksum == null) {
         if (localPreview != null) {
-          this.#updatePreview(index);
+          return this.#updatePreview(index);
         }
-        else {
-          this.#downloadPreview(index);
-        }
-      }
-      else if (remoteChecksum == null && localChecksum != null) {
-        this.#deletePreview(index);
-      }
-      else {
-        this.#table.updateData(index, 6, 'Ignored');
+        return this.#downloadPreview(index);
       }
 
-    });
+      if (remoteChecksum == null && localChecksum != null) {
+        return this.#deletePreview(index);
+      }
 
-    setTimeout(() => {
-    }, 15000);
+      return this.#table.updateData(index, 6, 'Ignored');
+    }));
   }
 
   #keep (index) {
@@ -135,22 +132,83 @@ export class TerminalPreviews {
     }, 5000);
   }
 
-  #downloadPreview (index) {
-    this.#table.updateData(index, 6, 'Downloading .tar.gz…');
-    // TODO download the tar.gz with fetch to `/tmp/previews-${previewName}`, use fetch
-    // TODO Create the tmp dir
-    this.#table.updateData(index, 6, 'Extracting .tar.gz…');
-    // TODO extract the tar.gz to /tmp/previews-${previewName}, use exec from utils
-    this.#table.updateData(index, 6, 'Installing binary…');
-    // TODO copy the binary to `.preview-binaries/clever--${previewName}`, use node.js fs
-    this.#table.updateData(index, 6, 'Cleaning…');
-    // TODO delete the tmp dir
-    this.#table.updateData(index, 6, 'OK!');
+  async #downloadPreview (index) {
+    const previewName = this.#previewNames[index];
+    const remotePreview = this.#remoteManifest.previews.find((p) => p.name === previewName);
+    const previewUrl = remotePreview?.urls.find((u) => u.os === this.#os);
+
+    if (!previewUrl) {
+      return this.#table.updateData(index, 6, 'Error: No URL found');
+    }
+
+    try {
+      this.#table.updateData(index, 6, 'Downloading .tar.gz…');
+
+      // Create tmp directory
+      const tmpDir = `/tmp/previews-${previewName}`;
+      await fs.promises.mkdir(tmpDir, { recursive: true });
+
+      // Download tar.gz
+      const response = await fetch(previewUrl.url);
+      if (!response.ok) {
+        throw new Error(`Download failed: ${response.statusText}`);
+      }
+
+      const tarPath = path.join(tmpDir, 'binary.tar.gz');
+      const arrayBuffer = await response.arrayBuffer();
+      await fs.promises.writeFile(tarPath, Buffer.from(arrayBuffer));
+
+      this.#table.updateData(index, 6, 'Extracting .tar.gz…');
+
+      // Extract tar.gz
+      await exec(`tar -xzf binary.tar.gz`, { cwd: tmpDir });
+
+      this.#table.updateData(index, 6, 'Installing binary…');
+
+      // Create .preview-binaries directory
+      await fs.promises.mkdir('.preview-binaries', { recursive: true });
+
+      // Find and copy the binary
+      const extractedFiles = await fs.promises.readdir(tmpDir);
+      const binaryFile = extractedFiles.find(file => file !== 'binary.tar.gz' && !file.endsWith('.tar.gz'));
+
+      if (binaryFile) {
+        const sourcePath = path.join(tmpDir, binaryFile);
+        const destPath = `.preview-binaries/clever--${previewName}`;
+        await fs.promises.copyFile(sourcePath, destPath);
+        await fs.promises.chmod(destPath, 0o755);
+      }
+
+      this.#table.updateData(index, 6, 'Cleaning…');
+
+      // Delete tmp directory
+      await clearDirectory(tmpDir);
+
+      this.#table.updateData(index, 6, 'OK!');
+    }
+    catch (error) {
+      this.#table.updateData(index, 6, `Error: ${error.message}`);
+    }
   }
 
-  #deletePreview (index) {
-    this.#table.updateData(index, 6, 'Deleting binary…');
-    // TODO delete the binary and await, location is `.preview-binaries/clever--${previewName}`
-    this.#table.updateData(index, 6, 'Deleted!');
+  async #deletePreview (index) {
+    const previewName = this.#previewNames[index];
+
+    try {
+      this.#table.updateData(index, 6, 'Deleting binary…');
+
+      const binaryPath = `.preview-binaries/clever--${previewName}`;
+      await fs.promises.unlink(binaryPath);
+
+      this.#table.updateData(index, 6, 'Deleted!');
+    }
+    catch (error) {
+      if (error.code === 'ENOENT') {
+        this.#table.updateData(index, 6, 'Already deleted');
+      }
+      else {
+        this.#table.updateData(index, 6, `Error: ${error.message}`);
+      }
+    }
   }
 }
