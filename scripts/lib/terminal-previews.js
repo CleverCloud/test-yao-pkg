@@ -1,4 +1,4 @@
-import { createTerminalLink, formatBranchName, getEmoji } from './utils.js';
+import { createTerminalLink, getEmoji } from './utils.js';
 import { TerminalTable } from './terminal-table.js';
 
 /**
@@ -42,24 +42,12 @@ export class TerminalPreviews {
 
   initDisplay () {
 
-    const data = this.#previewNames.map((previewName) => {
-      const remotePreview = this.#remoteManifest.previews.find(p => p.name === previewName);
-      const localPreview = this.#localManifest.previews.find(p => p.name === previewName);
-
-      let location;
-      if (remotePreview && localPreview) {
-        location = 'both';
-      }
-      else if (remotePreview) {
-        location = 'remote';
-      }
-      else {
-        location = 'local';
-      }
+    const rows = this.#previewNames.map((previewName) => {
+      const remotePreview = this.#remoteManifest.previews.find((p) => p.name === previewName);
+      const localPreview = this.#localManifest.previews.find((p) => p.name === previewName);
 
       // Use remote preview data if available, otherwise local
-      const preview = remotePreview || localPreview;
-
+      const preview = remotePreview ?? localPreview;
       const date = preview.updatedAt.substring(0, 10);
       const dateObject = new Date(preview.updatedAt);
       const time = dateObject.toLocaleTimeString();
@@ -68,16 +56,17 @@ export class TerminalPreviews {
       });
 
       return [
-        formatBranchName(preview.name),
+        preview.name,
         preview.commitId.substring(0, 8),
         date,
         time,
         preview.author,
         links.join(' '),
-        location,
+        '',
       ];
     });
 
+    // TODO add emojis before column name
     const columns = [
       ['NAME', 'yellow'],
       ['COMMIT ID', 'blue'],
@@ -85,25 +74,10 @@ export class TerminalPreviews {
       ['TIME'],
       ['AUTHOR', 'green'],
       ['DOWNLOAD LINKS', 'blue'],
-      ['LOCATION'],
+      ['STATE          '],
     ];
 
-    const table = new TerminalTable(columns, data);
+    const table = new TerminalTable(columns, rows);
     table.renderInit();
-
-    setInterval(() => {
-      table.updateData(1, 6, Math.random().toString(36).slice(2));
-    }, 1000);
-
-    let i = 0;
-
-    setInterval(() => {
-      table.updateData(0, 4, Math.random().toString(36).slice(2, 12));
-    }, 800);
-
-    setInterval(() => {
-      i = (i + 1) % 100;
-      table.updateData(0, 6, i.toString());
-    }, 200);
   }
 }
