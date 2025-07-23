@@ -35,28 +35,27 @@ run(async () => {
       return buildPreview(previewName, os);
     case 'pr-comment':
       return getPreviewPrComment(previewName);
-    case 'publish': {
-      const [bucket, accessKeyId, secretAccessKey] = readEnvVars(['CC_CLEVER_TOOLS_PREVIEWS_CELLAR_BUCKET', 'CC_CLEVER_TOOLS_PREVIEWS_CELLAR_KEY_ID', 'CC_CLEVER_TOOLS_PREVIEWS_CELLAR_SECRET_KEY']);
-      const previewClient = new PreviewClient({
-        bucket,
-        accessKeyId,
-        secretAccessKey,
-      });
-      return publishPreview(previewClient, previewName);
-    }
-    case 'delete': {
-      const [bucket, accessKeyId, secretAccessKey] = readEnvVars(['CC_CLEVER_TOOLS_PREVIEWS_CELLAR_BUCKET', 'CC_CLEVER_TOOLS_PREVIEWS_CELLAR_KEY_ID', 'CC_CLEVER_TOOLS_PREVIEWS_CELLAR_SECRET_KEY']);
-      const previewClient = new PreviewClient({
-        bucket,
-        accessKeyId,
-        secretAccessKey,
-      });
-      return deletePreview(previewClient, previewName);
-    }
+    case 'publish':
+      return publishPreview(createPreviewClient(), previewName);
+    case 'delete':
+      return deletePreview(createPreviewClient(), previewName);
   }
 
   throw new Error(getUsage(`Unknown command "${command}"`));
 });
+
+/**
+ * Creates a PreviewClient instance with environment variables.
+ * @returns {PreviewClient}
+ */
+function createPreviewClient() {
+  const [bucket, accessKeyId, secretAccessKey] = readEnvVars([
+    'CC_CLEVER_TOOLS_PREVIEWS_CELLAR_BUCKET', 
+    'CC_CLEVER_TOOLS_PREVIEWS_CELLAR_KEY_ID', 
+    'CC_CLEVER_TOOLS_PREVIEWS_CELLAR_SECRET_KEY'
+  ]);
+  return new PreviewClient({ bucket, accessKeyId, secretAccessKey });
+}
 
 /**
  * Generates a usage message for the CLI tool.
