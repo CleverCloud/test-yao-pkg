@@ -163,36 +163,6 @@ export class TerminalTable {
   }
 
   /**
-   * Sets up exit handlers to restore cursor and terminal state.
-   * @returns {void}
-   */
-  #setupExitHandlers () {
-    process.on('exit', () => this.#exit());
-    process.on('SIGINT', () => this.#exit(130));
-    process.on('SIGTERM', () => this.#exit(143));
-    process.on('uncaughtException', (e) => this.#exit(1, `Uncaught Exception: ${e.message}`));
-    process.on('unhandledRejection', (reason) => this.#exit(1, `Unhandled Rejection: ${reason}`));
-  }
-
-  /**
-   * Exits the process after cleaning up terminal state.
-   * @param {number} code - Exit code
-   * @param {string} error - Optional error message
-   * @returns {void}
-   */
-  #exit (code, error) {
-    // Clear the ^C characters and show cursor
-    process.stdout.cursorTo(0);
-    process.stdout.clearLine(0);
-    process.stdout.write(ANSI.SHOW_CURSOR);
-    process.stdout.write(ANSI.RESET_STYLES);
-    if (error != null) {
-      console.error(error);
-    }
-    process.exit(code);
-  }
-
-  /**
    * Calculates the visible length of a string by stripping VT control characters.
    * @param {string} text - The text to measure
    * @returns {number} - The visible character count
@@ -219,6 +189,36 @@ export class TerminalTable {
 
     const stripped = stripVTControlCharacters(text);
     return stripped.substring(0, maxWidth - 1) + '…';
+  }
+
+  /**
+   * Sets up exit handlers to restore cursor and terminal state.
+   * @returns {void}
+   */
+  #setupExitHandlers () {
+    process.on('exit', () => this.#cleanExit());
+    process.on('SIGINT', () => this.#cleanExit(130));
+    process.on('SIGTERM', () => this.#cleanExit(143));
+    process.on('uncaughtException', (e) => this.#cleanExit(1, `Uncaught Exception: ${e.message}`));
+    process.on('unhandledRejection', (reason) => this.#cleanExit(1, `Unhandled Rejection: ${reason}`));
+  }
+
+  /**
+   * Exits the process after cleaning up terminal state.
+   * @param {number} code - Exit code
+   * @param {string} error - Optional error message
+   * @returns {void}
+   */
+  #cleanExit (code, error) {
+    // Clear the ^C characters and show cursor
+    process.stdout.cursorTo(0);
+    process.stdout.clearLine(0);
+    process.stdout.write(ANSI.SHOW_CURSOR);
+    process.stdout.write(ANSI.RESET_STYLES);
+    if (error != null) {
+      console.error(error);
+    }
+    process.exit(code);
   }
 
 }
