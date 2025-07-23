@@ -124,8 +124,8 @@ export class TerminalPreviews {
     await setTimeout(1000);
   }
 
-  #updatePreviewState (index, text) {
-    this.#table.updateData(index, 6, text);
+  #updatePreviewState (index, text, style) {
+    this.#table.updateData(index, 6, text, style);
   }
 
   #keep (index) {
@@ -145,11 +145,11 @@ export class TerminalPreviews {
     const previewUrl = remotePreview?.urls.find((u) => u.os === this.#os);
 
     if (!previewUrl) {
-      return this.#updatePreviewState(index, 'Error: No URL found');
+      return this.#updatePreviewState(index, 'Error: No URL found', 'red');
     }
 
     try {
-      this.#updatePreviewState(index, 'Downloading .tar.gz…');
+      this.#updatePreviewState(index, 'Downloading .tar.gz…', 'yellow');
 
       // Create tmp directory
       const tmpDir = `/tmp/previews-${previewName}`;
@@ -157,11 +157,11 @@ export class TerminalPreviews {
 
       // Download tar.gz
       const response = await fetch(previewUrl.url);
-      if (!response.ok ||true) {
-        console.log('KO')
-        return this.#updatePreviewState(index, `Download failed: ${response.statusText}`);
+      if (!response.ok) {
+        return this.#updatePreviewState(index, `Download failed: ${response.statusText}`, 'red');
       }
 
+      // TODO replace with simple template tag and /
       const tarPath = path.join(tmpDir, 'binary.tar.gz');
       const arrayBuffer = await response.arrayBuffer();
       await fs.promises.writeFile(tarPath, Buffer.from(arrayBuffer));

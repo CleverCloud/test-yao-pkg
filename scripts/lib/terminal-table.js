@@ -80,9 +80,10 @@ export class TerminalTable {
    * @param {number} rowIndex - The row index to update
    * @param {number} columnIndex - The column index to update
    * @param {string} newValue - The new value for the cell
+   * @param {string?} style - Optional style to apply to the cell
    * @returns {void}
    */
-  updateData (rowIndex, columnIndex, newValue) {
+  updateData (rowIndex, columnIndex, newValue, style) {
     // Check if content change might affect column width
     // Truncate the content if longer than initial column width
     const currentWidth = this.#columnWidths?.[columnIndex] || 0;
@@ -91,7 +92,7 @@ export class TerminalTable {
       : newValue || '';
 
     this.#rows[rowIndex][columnIndex] = truncatedValue;
-    this.#updateCell(rowIndex, columnIndex, truncatedValue);
+    this.#updateCell(rowIndex, columnIndex, truncatedValue, style);
   }
 
   /**
@@ -121,9 +122,10 @@ export class TerminalTable {
    * @param {number} rowIndex - The row index to update
    * @param {number} columnIndex - The column index to update
    * @param {string} newValue - The new value for the cell
+   * @param {string?} style - Optional style to apply to the cell
    * @returns {void}
    */
-  #updateCell (rowIndex, columnIndex, newValue) {
+  #updateCell (rowIndex, columnIndex, newValue, style) {
     // Calculate the absolute row position in the table
     // Table structure: top border (1) + header (1) + separator (1) + data rows (0-based)
     const absoluteRowPosition = 1 + 1 + 1 + +rowIndex;
@@ -144,8 +146,9 @@ export class TerminalTable {
     // Format the new cell content with proper padding
     let content = newValue || '';
     const visibleLength = this.#getVisibleLength(content);
-    if (this.#columnStyles[columnIndex]) {
-      content = styleText(this.#columnStyles[columnIndex], content);
+    const cellStyle = style || this.#columnStyles[columnIndex];
+    if (cellStyle) {
+      content = styleText(cellStyle, content);
     }
     const padding = ' '.repeat(Math.max(0, (this.#columnWidths)[columnIndex] - visibleLength));
     const cellContent = `${content}${padding}`;
