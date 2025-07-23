@@ -89,7 +89,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   update-github-release:
-    name: 'Update GitHub release with all artifacts'
+    name: 'Update GitHub release'
     runs-on: ubuntu-latest
     needs: [ build, build-rpm, build-deb ]
     steps:
@@ -101,7 +101,7 @@ jobs:
           pattern: build-*
           path: build
           merge-multiple: true
-      - name: 'TODO debug'
+      - name: 'Upload artifacts to GitHub release'
         run: |
           gh release upload "${{ github.ref_name }}" build/${{ github.ref_name }}/linux/clever-tools-${{ github.ref_name }}_linux.tar.gz
           gh release upload "${{ github.ref_name }}" build/${{ github.ref_name }}/macos/clever-tools-${{ github.ref_name }}_macos.tar.gz
@@ -144,7 +144,6 @@ jobs:
     name: 'Publish .rpm to cellar'
     needs: build-rpm
     runs-on: ubuntu-latest
-    if: false
     steps:
       - name: 'Checkout sources'
         uses: actions/checkout@v4
@@ -171,7 +170,6 @@ jobs:
     name: 'Publish .deb to cellar'
     needs: build-deb
     runs-on: ubuntu-latest
-    if: false
     steps:
       - name: 'Checkout sources'
         uses: actions/checkout@v4
@@ -198,7 +196,6 @@ jobs:
     name: 'Publish to AUR'
     needs: publish-cellar-archives
     runs-on: ubuntu-latest
-    if: false
     steps:
       - name: 'Checkout sources'
         uses: actions/checkout@v4
@@ -227,7 +224,6 @@ jobs:
     name: 'Publish to Homebrew'
     needs: publish-cellar-archives
     runs-on: ubuntu-latest
-    if: false
     steps:
       - name: 'Checkout sources'
         uses: actions/checkout@v4
@@ -256,7 +252,6 @@ jobs:
     name: 'Publish to Docker Hub'
     needs: publish-cellar-archives
     runs-on: ubuntu-latest
-    if: false
     steps:
       - name: 'Checkout sources'
         uses: actions/checkout@v4
@@ -283,7 +278,6 @@ jobs:
     name: 'Publish to exherbo'
     needs: publish-cellar-archives
     runs-on: ubuntu-latest
-    if: false
     steps:
       - name: 'Checkout sources'
         uses: actions/checkout@v4
@@ -307,7 +301,6 @@ jobs:
     name: 'Publish .rpm to Nexus'
     needs: build-rpm
     runs-on: ubuntu-latest
-    if: false
     steps:
       - name: 'Checkout sources'
         uses: actions/checkout@v4
@@ -333,7 +326,6 @@ jobs:
     name: 'Publish .deb to Nexus'
     needs: build-deb
     runs-on: ubuntu-latest
-    if: false
     steps:
       - name: 'Checkout sources'
         uses: actions/checkout@v4
