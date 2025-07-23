@@ -101,15 +101,15 @@ export class TerminalPreviews {
           this.#updatePreview(table, index);
         }
       }
-      else if (remoteChecksum && !localChecksum) {
-        if (localPreview) {
+      else if (remoteChecksum != null && localChecksum == null) {
+        if (localPreview != null) {
           this.#updatePreview(table, index);
         }
         else {
           this.#downloadPreview(table, index);
         }
       }
-      else if (!remoteChecksum && localChecksum) {
+      else if (remoteChecksum == null && localChecksum != null) {
         this.#deletePreview(table, index);
       }
       else {
