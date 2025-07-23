@@ -3,6 +3,7 @@ import childProcess from 'node:child_process';
 import fs from 'node:fs';
 import { platform } from 'node:os';
 import crypto from 'node:crypto';
+import stringLength from 'string-length';
 
 /**
  * Sanitizes a version string by replacing forward slashes with hyphens.
@@ -77,7 +78,7 @@ export function getSha256 (inputPath) {
  * @returns {string}
  */
 export function createTerminalLink (url, text = url) {
-  return `\u001b]8;;${url}\u001b\\${styleText('blue', text)}\u001b]8;;\u001b\\`;
+  return styleText('blue', `\u001b]8;;${url}\u001b\\${text}\u001b]8;;\u001b\\`);
 }
 
 /**
@@ -108,7 +109,7 @@ export function highlight (strings, ...values) {
  */
 export function exec (command, options = {}) {
   const { cwd, env } = options;
-  
+
   if (cwd != null) {
     console.log(styleText('blue', '=> cd ' + cwd));
   }

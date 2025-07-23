@@ -1,6 +1,4 @@
 import { styleText } from 'node:util';
-import textTable from 'text-table';
-import stringLength from 'string-length';
 import { createTerminalLink, formatBranchName, getEmoji } from './utils.js';
 
 /**
@@ -44,22 +42,24 @@ export class TerminalPreviews {
 
   initDisplay () {
 
-    const table = this.#previewNames.map((previewName) => {
+    const data = this.#previewNames.map((previewName) => {
       const remotePreview = this.#remoteManifest.previews.find(p => p.name === previewName);
       const localPreview = this.#localManifest.previews.find(p => p.name === previewName);
-      
+
       let location;
       if (remotePreview && localPreview) {
         location = 'both';
-      } else if (remotePreview) {
+      }
+      else if (remotePreview) {
         location = 'remote';
-      } else {
+      }
+      else {
         location = 'local';
       }
 
       // Use remote preview data if available, otherwise local
       const preview = remotePreview || localPreview;
-      
+
       const date = preview.updatedAt.substring(0, 10);
       const dateObject = new Date(preview.updatedAt);
       const time = dateObject.toLocaleTimeString();
@@ -73,11 +73,32 @@ export class TerminalPreviews {
         date,
         time,
         styleText('green', preview.author),
-        ...links,
+        links.join('  '),
         location,
       ];
     });
 
-    console.log(textTable(table, { stringLength }));
+    const headers = [
+      styleText('yellow', 'NAME'),
+      styleText('blue', 'COMMIT ID'),
+      'DATE',
+      'TIME',
+      styleText('green', 'AUTHOR'),
+      styleText('blue', 'DOWNLOAD LINKS'),
+      'LOCATION',
+    ];
+
+    // const bigtext = textTable(headers, data);
+    // console.log(`╭${'─'.repeat(bigtext.split('\n')[0].length)}╮`);
+    // // │ >   Type your message or @path/to/file                                                                                          │
+    // // ╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+    // console.log(bigtext);
+    console.log(textTable(headers, data));
   }
+}
+
+// TODO implement a function that returns a terminal block with rounded corners
+// each column of the table should be aligned
+function textTable (headers, data) {
+
 }
