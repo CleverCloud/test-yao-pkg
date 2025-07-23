@@ -180,12 +180,12 @@ export class TerminalTable {
    * @returns {void}
    */
   #setupExitHandlers () {
-    // TODO: Use process.stdout.clearLine() and process.stdout.cursorTo() instead of raw ANSI codes
     const cleanup = () => {
       // Clear the ^C characters and show cursor
-      process.stdout.write('\r\x1b[K'); // Clear current line
-      process.stdout.write('\x1b[?25h'); // Show cursor
-      process.stdout.write('\x1b[0m');   // Reset all styles
+      process.stdout.cursorTo(0);        // Move to start of line
+      process.stdout.clearLine(0);       // Clear from cursor to end
+      process.stdout.write('\x1b[?25h'); // Show cursor (no Node.js equivalent)
+      process.stdout.write('\x1b[0m');   // Reset all styles (no Node.js equivalent)
     };
 
     // Handle normal exit
