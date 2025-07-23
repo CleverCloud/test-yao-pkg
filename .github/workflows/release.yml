@@ -90,6 +90,43 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
+  update-github-release:
+    runs-on: ubuntu-latest
+    needs: [ build, build-rpm, build-deb ]
+    steps:
+      - name: 'Download build-linux artifact'
+        uses: actions/download-artifact@v4
+        with:
+          name: build-linux
+          path: build
+      - name: 'Download build-macos artifact'
+        uses: actions/download-artifact@v4
+        with:
+          name: build-macos
+          path: build
+      - name: 'Download build-win artifact'
+        uses: actions/download-artifact@v4
+        with:
+          name: build-win
+          path: build
+      - name: 'Download .rpm artifact'
+        uses: actions/download-artifact@v4
+        with:
+          name: build-rpm
+          path: build
+      - name: 'Download .deb artifact'
+        uses: actions/download-artifact@v4
+        with:
+          name: build-deb
+          path: build
+      - name: 'Upload artifacts to GitHub Release'
+        run: tree
+  #      run: |
+  #        gh release upload "${{ github.ref_name }}" $(find build/${{ github.ref_name }}/archive -maxdepth 1 -type f -name "*$VERSION*" -print)
+  #        gh release upload "${{ github.ref_name }}" $(find build/${{ github.ref_name }}/bundle -maxdepth 1 -type f -print)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   publish-cellar-archives:
     name: 'Publish archives to cellar'
     needs: build
@@ -106,6 +143,20 @@ jobs:
       - name: 'Install Node.js dependencies'
         run: npm ci
       - name: 'Download build-linux artifact'
+        uses: actions/download-artifact@v4
+        with:
+          name: build-linux
+          path: build
+      - name: 'Download build-macos artifact'
+        uses: actions/download-artifact@v4
+        with:
+          name: build-macos
+          path: build
+      - name: 'Download build-win artifact'
+        uses: actions/download-artifact@v4
+        with:
+          name: build-win
+          path: build- name: 'Download build-linux artifact'
         uses: actions/download-artifact@v4
         with:
           name: build-linux
