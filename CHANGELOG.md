@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/CleverCloud/test-yao-pkg/compare/1.1.0...1.2.0) (2025-07-23)
+
+
+### 🚀 Features
+
+* format release-please branch names in preview display ([1c59124](https://github.com/CleverCloud/test-yao-pkg/commit/1c59124371940cad3a5962e57d2151c3c22a967b))
+
 ## [1.1.0](https://github.com/CleverCloud/test-yao-pkg/compare/1.0.0...1.1.0) (2025-07-23)
 
 
