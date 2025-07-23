@@ -24,9 +24,6 @@ export class TerminalTable {
   /** @type {number} */
   #tableHeight;
 
-  /** @type {Map<string, number>} */
-  #visibleLengthCache;
-
   /**
    * Creates a new TerminalTable instance.
    * @param {Array<[string, string?]>} columns - Array of [title, style] pairs for columns
@@ -35,9 +32,14 @@ export class TerminalTable {
   constructor (columns, rows) {
     this.#columnTitles = columns.map(([title]) => title);
     this.#columnStyles = columns.map(([, style]) => style);
+    this.#columnWidths = this.#columnTitles.map((title, i) => {
+      const headerLength = this.#getVisibleLength(title);
+      const dataLengths = rows.map((row) => this.#getVisibleLength(row[i] || ''));
+      return Math.max(headerLength, ...dataLengths);
+    });
     this.#rows = rows;
-    this.#tableHeight = 0;
-    this.#visibleLengthCache = new Map();
+    // Table height is always header + rows + borders
+    this.#tableHeight = this.#rows.length + 1 + 3;
   }
 
   /**
@@ -56,7 +58,7 @@ export class TerminalTable {
       return style ? styleText(style, title) : title;
     });
 
-    const columnWidths = this.#calculateColumnWidths();
+    const columnWidths = this.#columnWidths;
 
     const contentWidth = columnWidths.reduce((sum, w) => sum + w, 0);
     // Each cell has format ` content ` (2 spaces per cell) and cells are joined with ' ' (1 space between cells)
@@ -64,17 +66,14 @@ export class TerminalTable {
     const separatorSpace = (columnWidths.length - 1) * 1; // 1 space between cells from join
     const totalWidth = contentWidth + cellPadding + separatorSpace + 2; // +2 for left and right border chars
 
-    // Write table directly to stdout
-    process.stdout.write('╭' + '─'.repeat(totalWidth - 2) + '╮\n');
-    process.stdout.write(this.#formatRow(headers, columnWidths, true) + '\n');
-    process.stdout.write('├' + '─'.repeat(totalWidth - 2) + '┤\n');
+    // Write table directly
+    console.log('╭' + '─'.repeat(totalWidth - 2) + '╮');
+    console.log('│' + this.#formatRow(headers, columnWidths, true) + '│');
+    console.log('├' + '─'.repeat(totalWidth - 2) + '┤');
     for (const row of this.#rows) {
-      process.stdout.write(this.#formatRow(row, columnWidths) + '\n');
+      console.log('│' + this.#formatRow(row, columnWidths) + '│');
     }
-    process.stdout.write('╰' + '─'.repeat(totalWidth - 2) + '╯\n');
-
-    // Table height is always header + rows + borders
-    this.#tableHeight = this.#rows.length + 3;
+    console.log('╰' + '─'.repeat(totalWidth - 2) + '╯');
   }
 
   /**
@@ -92,40 +91,14 @@ export class TerminalTable {
     }
 
     // Check if content change might affect column width
-    const oldValue = this.#rows[rowIndex][columnIndex] || '';
-    const oldLength = this.#getVisibleLength(oldValue);
-    const newLength = this.#getVisibleLength(newValue || '');
+    // Truncate the content if longer than initial column width
     const currentWidth = this.#columnWidths?.[columnIndex] || 0;
+    const truncatedValue = this.#getVisibleLength(newValue || '') > currentWidth 
+      ? this.#truncateToWidth(newValue || '', currentWidth)
+      : newValue || '';
 
-    // If new content is longer than current column width, invalidate caches
-    if (newLength > currentWidth) {
-      this.#columnWidths = null;
-      // Clear visible length cache to prevent memory leaks from old values
-      if (this.#visibleLengthCache.size > 1000) {
-        this.#visibleLengthCache.clear();
-      }
-    }
-
-    this.#rows[rowIndex][columnIndex] = newValue;
-    this.#updateCell(rowIndex, columnIndex, newValue);
-  }
-
-  /**
-   * Calculates and caches column widths based on content.
-   * @returns {Array<number>} Array of column widths
-   */
-  #calculateColumnWidths () {
-    if (this.#columnWidths) {
-      return this.#columnWidths;
-    }
-
-    this.#columnWidths = this.#columnTitles.map((title, i) => {
-      const headerLength = this.#getVisibleLength(title);
-      const dataLengths = this.#rows.map((row) => this.#getVisibleLength(row[i] || ''));
-      return Math.max(headerLength, ...dataLengths);
-    });
-
-    return this.#columnWidths;
+    this.#rows[rowIndex][columnIndex] = truncatedValue;
+    this.#updateCell(rowIndex, columnIndex, truncatedValue);
   }
 
   /**
@@ -142,10 +115,11 @@ export class TerminalTable {
       if (!isHeader && this.#columnStyles[i]) {
         content = styleText(this.#columnStyles[i], content);
       }
-      const padding = ' '.repeat(Math.max(0, widths[i] - visibleLength));
-      return ` ${content}${padding} `;
+      // Use padEnd for cleaner padding
+      const paddedContent = content.padEnd(content.length + Math.max(0, widths[i] - visibleLength));
+      return ` ${paddedContent} `;
     });
-    return '│' + cells.join(' ') + '│';
+    return cells.join(' ');
   }
 
   /**
@@ -156,11 +130,11 @@ export class TerminalTable {
    * @returns {void}
    */
   #updateCell (rowIndex, columnIndex, newValue) {
-    const columnWidths = this.#calculateColumnWidths();
+    const columnWidths = this.#columnWidths;
 
     // Calculate the absolute row position in the table
     // Table structure: top border (1) + header (1) + separator (1) + data rows (0-based)
-    const absoluteRowPosition = 3 + rowIndex;
+    const absoluteRowPosition = 1 + 1 + 1 + +rowIndex;
 
     // Calculate column position within the row
     // Row format from #formatRow: '│ content1padding1  content2padding2  content3padding3 │'
@@ -250,23 +224,29 @@ export class TerminalTable {
   }
 
   /**
-   * Calculates the visible length of a text, stripping ANSI escape sequences.
-   * Uses caching to improve performance for repeated calculations.
+   * Calculates the visible length of a string by stripping VT control characters.
    * @param {string} text - The text to measure
    * @returns {number} - The visible character count
    */
   #getVisibleLength (text) {
-    if (!text) {
-      return 0;
-    }
+    return stripVTControlCharacters(text).length;
+  }
 
-    if (this.#visibleLengthCache.has(text)) {
-      return this.#visibleLengthCache.get(text);
-    }
-
-    const length = stripVTControlCharacters(text).length;
-    this.#visibleLengthCache.set(text, length);
-    return length;
+  /**
+   * Truncates text to fit within a specified visible width.
+   * @param {string} text - The text to truncate
+   * @param {number} maxWidth - The maximum visible width
+   * @returns {string} - The truncated text
+   */
+  #truncateToWidth (text, maxWidth) {
+    if (maxWidth <= 0) return '';
+    
+    const visibleLength = this.#getVisibleLength(text);
+    if (visibleLength <= maxWidth) return text;
+    
+    // Simple truncation - could be enhanced to handle ANSI codes properly
+    const stripped = stripVTControlCharacters(text);
+    return stripped.substring(0, maxWidth - 1) + '…';
   }
 
 }

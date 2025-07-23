@@ -92,7 +92,7 @@ export class TerminalPreviews {
     table.renderInit();
 
     setInterval(() => {
-      table.updateData(1, 6, Math.random().toString(36).slice(2, 6));
+      table.updateData(1, 6, Math.random().toString(36).slice(2));
     }, 1000);
 
     let i = 0;
