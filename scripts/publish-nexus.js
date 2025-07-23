@@ -20,11 +20,17 @@ run(async () => {
     throw new Error(getUsage('Invalid packager, must be either "rpm" or "deb"'));
   }
 
-  const [nexusUser, nexusPassword, rpmRepository, debRepository] = readEnvVars(['NEXUS_USER', 'NEXUS_PASSWORD', 'NEXUS_RPM_REPOSITORY', 'NEXUS_DEB_REPOSITORY']);
+  const [nexusUser, nexusPassword] = readEnvVars(['NEXUS_USER', 'NEXUS_PASSWORD']);
 
-  const url = packager === 'rpm'
-    ? `${NEXUS_SERVER_URL}/repository/${rpmRepository}/clever-tools-${version}.rpm`
-    : `${NEXUS_SERVER_URL}/repository/${debRepository}/`;
+  let url;
+  if (packager === 'rpm') {
+    const [rpmRepository]  = readEnvVars(['NEXUS_RPM_REPOSITORY']);
+    url = `${NEXUS_SERVER_URL}/repository/${rpmRepository}/clever-tools-${version}.rpm`;
+  }
+  else {
+    const [debRepository]  = readEnvVars(['NEXUS_RPM_REPOSITORY']);
+    url = `${NEXUS_SERVER_URL}/repository/${debRepository}/`;
+  }
   const method = packager === 'rpm' ? 'PUT' : 'POST';
 
   const authorization = `Basic ${Buffer.from(`${nexusUser}:${nexusPassword}`).toString('base64')}`;

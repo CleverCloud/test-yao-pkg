@@ -315,7 +315,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: build-rpm
-          path: build/${{ github.ref_name }}
+          path: build
       - name: 'Publish .rpm to Nexus Repository'
         run: ./scripts/publish-nexus.js ${{ github.ref_name }} rpm
         env:
@@ -340,7 +340,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: build-deb
-          path: build/${{ github.ref_name }}
+          path: build
       - name: 'Publish .deb to Nexus Repository'
         run: ./scripts/publish-nexus.js ${{ github.ref_name }} deb
         env:
