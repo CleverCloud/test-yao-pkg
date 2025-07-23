@@ -8,9 +8,9 @@ import { buildBinary } from './lib/build-binary.js';
 import { createArchive } from './lib/create-archive.js';
 import dedent from 'dedent';
 import { BUILD_DIR, getAssetParts, getAssetPath, PREVIEW_DIR } from './lib/paths.js';
-import { PreviewDisplay } from './lib/preview-display.js';
+import { TerminalPreviews } from './lib/terminal-previews.js';
 import fs from 'node:fs';
-import { HtmlPreview } from './lib/html-preview.js';
+import { HtmlPreviews } from './lib/html-previews.js';
 
 /**
  * @typedef {import('./lib/preview-client.types.js').Manifest} Manifest
@@ -71,15 +71,9 @@ function getUsage (message) {
  * Displays preview information including date, commit ID, name, author, and download links.
  */
 async function listPreviews () {
-  const manifest = await fetchManifest();
-  const previews = manifest.previews;
-
-  if (previews.length === 0) {
-    console.log('No previews right now.');
-    return;
-  }
-
-  PreviewDisplay.displayPreviews(previews);
+  const remoteManifest = await fetchManifest();
+  const terminalPreviews = new TerminalPreviews(remoteManifest);
+  terminalPreviews.initDisplay();
 }
 
 /**
@@ -261,8 +255,8 @@ async function updateManifest (cellarClient, manifest) {
  * @param {Manifest} manifest - The manifest containing preview data
  */
 async function updateListIndex (cellarClient, manifest) {
-  const htmlPreview = new HtmlPreview(manifest);
-  return cellarClient.putObject(htmlPreview.render(), LIST_INDEX_PATH);
+  const htmlPreviews = new HtmlPreviews(manifest);
+  return cellarClient.putObject(htmlPreviews.render(), LIST_INDEX_PATH);
 }
 
 /**

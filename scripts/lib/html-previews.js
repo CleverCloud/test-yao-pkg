@@ -6,7 +6,7 @@
 import dedent from 'dedent';
 import { formatBranchName, getEmoji } from './utils.js';
 
-export class HtmlPreview {
+export class HtmlPreviews {
   #manifest;
 
   /**
