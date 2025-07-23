@@ -41,8 +41,8 @@ export class TerminalTable {
     });
 
     const columnWidths = this.#columnTitles.map((title, i) => {
-      const headerLength = title.length;
-      const dataLengths = this.#rows.map((row) => row[i].length);
+      const headerLength = this.#getVisibleLength(title);
+      const dataLengths = this.#rows.map((row) => this.#getVisibleLength(row[i]));
       return Math.max(headerLength, ...dataLengths);
     });
 
@@ -68,7 +68,7 @@ export class TerminalTable {
   #formatRow (row, widths, isHeader = false) {
     const cells = row.map((cell, i) => {
       let content = cell || '';
-      const visibleLength = content.length;
+      const visibleLength = this.#getVisibleLength(content);
       if (!isHeader && this.#columnStyles[i]) {
         content = styleText(this.#columnStyles[i], content);
       }
@@ -76,6 +76,17 @@ export class TerminalTable {
       return ` ${content}${padding} `;
     });
     return '│' + cells.join(' ') + '│';
+  }
+
+  /**
+   * Calculates the visible length of a string, stripping ANSI escape sequences.
+   * @param {string} str - The string to measure
+   * @returns {number} - The visible character count
+   */
+  #getVisibleLength (str) {
+    if (!str) return 0;
+    // Remove ANSI escape sequences (including hyperlinks and color codes)
+    return str.replace(/\u001b\[[0-9;]*m|\u001b]8;;[^\u001b]*\u001b\\[^\u001b]*\u001b]8;;\u001b\\/g, '').length;
   }
 
 }
