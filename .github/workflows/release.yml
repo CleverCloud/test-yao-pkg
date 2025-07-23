@@ -31,7 +31,7 @@ jobs:
           name: build-linux
           path: build
       - name: 'Build .rpm with nfpm'
-        run: ./scripts/nfpm.js ${{ github.ref_name }} rpm
+        run: ./scripts/package-nfpm.js ${{ github.ref_name }} rpm
         env:
           RPM_GPG_PRIVATE_KEY: ${{ secrets.RPM_GPG_PRIVATE_KEY }}
           RPM_GPG_PASSPHRASE: ${{ secrets.RPM_GPG_PASSPHRASE }}
@@ -62,7 +62,7 @@ jobs:
           name: build-linux
           path: build
       - name: 'Build .deb with nfpm'
-        run: ./scripts/nfpm.js ${{ github.ref_name }} deb
+        run: ./scripts/package-nfpm.js ${{ github.ref_name }} deb
       - name: 'Upload .deb artifact'
         uses: actions/upload-artifact@v4
         with:
@@ -89,6 +89,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   update-github-release:
+    name: 'Update GitHub release with all artifacts'
     runs-on: ubuntu-latest
     needs: [ build, build-rpm, build-deb ]
     steps:
