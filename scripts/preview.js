@@ -35,6 +35,8 @@ run(async () => {
   switch (command) {
     case 'list':
       return listPreviews();
+    case 'update':
+      return updatePreviews();
     case 'build':
       return buildPreview(previewName, os);
     case 'pr-comment':
@@ -59,6 +61,7 @@ function getUsage (message) {
 
     USAGE
       preview.js list
+      preview.js update
       preview.js build [preview-name]
       preview.js pr-comment [preview-name]
       preview.js publish [preview-name]
@@ -74,6 +77,18 @@ async function listPreviews () {
   const remoteManifest = await fetchManifest();
   const terminalPreviews = new TerminalPreviews(remoteManifest);
   terminalPreviews.initDisplay();
+}
+
+/**
+ * Updates the local previews (download/update/delete...) and display progress.
+ * Displays information including date, commit ID, name, author, and download links.
+ */
+async function updatePreviews () {
+  const remoteManifest = await fetchManifest();
+  const localManifest = await getLocalManifest();
+  const terminalPreviews = new TerminalPreviews(remoteManifest);
+  terminalPreviews.initDisplay();
+  // TODO
 }
 
 /**
@@ -235,6 +250,13 @@ async function fetchManifest () {
     }
     throw e;
   }
+}
+
+// TODO implement this
+async function getLocalManifest () {
+  // local manifest is in ".preview-binaries/manifest.json" (should be a const)
+  // if local manifest cannot be found, renturn an empty manifest
+  // fetchManifest() already has an empty manifest, we should factorize this
 }
 
 /**
