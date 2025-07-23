@@ -1,4 +1,5 @@
-import { createTerminalLink, formatBranchName, getEmoji, textTable } from './utils.js';
+import { createTerminalLink, formatBranchName, getEmoji } from './utils.js';
+import { TerminalTable } from './terminal-table.js';
 
 /**
  * @typedef {import('./preview-client.types.d.ts').Manifest} Manifest
@@ -87,6 +88,7 @@ export class TerminalPreviews {
       ['LOCATION'],
     ];
 
-    console.log(textTable(data, columns));
+    const table = new TerminalTable(columns, data);
+    table.renderInit();
   }
 }
