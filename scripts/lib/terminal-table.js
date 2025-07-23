@@ -18,11 +18,14 @@ export class TerminalTable {
   /** @type {Array<Array<string>>} */
   #rows;
 
-  /** @type {number} */
-  #tableStartLine;
+  /** @type {Array<number>} */
+  #columnWidths;
 
   /** @type {number} */
   #tableHeight;
+
+  /** @type {Map<string, number>} */
+  #visibleLengthCache;
 
   /**
    * Creates a new TerminalTable instance.
@@ -30,11 +33,46 @@ export class TerminalTable {
    * @param {Array<Array<string>>} rows - Array of data rows
    */
   constructor (columns, rows) {
+    // Validate input
+    if (!Array.isArray(columns) || columns.length === 0) {
+      throw new Error('Columns array cannot be empty');
+    }
+    if (!Array.isArray(rows)) {
+      throw new Error('Rows must be an array');
+    }
+    
     this.#columnTitles = columns.map(([title]) => title);
-    this.#columnStyles = columns.map(([_, style]) => style);
+    this.#columnStyles = columns.map(([, style]) => style);
     this.#rows = rows;
-    this.#tableStartLine = null;
+    this.#columnWidths = null;
     this.#tableHeight = 0;
+    this.#visibleLengthCache = new Map();
+    
+    // Validate that all rows have the correct number of columns
+    const expectedColumns = columns.length;
+    rows.forEach((row, index) => {
+      if (!Array.isArray(row) || row.length !== expectedColumns) {
+        throw new Error(`Row ${index} has ${row?.length || 0} columns, expected ${expectedColumns}`);
+      }
+    });
+  }
+
+  /**
+   * Calculates and caches column widths based on content.
+   * @returns {Array<number>} Array of column widths
+   */
+  #calculateColumnWidths () {
+    if (this.#columnWidths) {
+      return this.#columnWidths;
+    }
+    
+    this.#columnWidths = this.#columnTitles.map((title, i) => {
+      const headerLength = this.#getVisibleLength(title);
+      const dataLengths = this.#rows.map((row) => this.#getVisibleLength(row[i] || ''));
+      return Math.max(headerLength, ...dataLengths);
+    });
+    
+    return this.#columnWidths;
   }
 
   /**
@@ -53,16 +91,12 @@ export class TerminalTable {
       return style ? styleText(style, title) : title;
     });
 
-    const columnWidths = this.#columnTitles.map((title, i) => {
-      const headerLength = this.#getVisibleLength(title);
-      const dataLengths = this.#rows.map((row) => this.#getVisibleLength(row[i]));
-      return Math.max(headerLength, ...dataLengths);
-    });
+    const columnWidths = this.#calculateColumnWidths();
 
     const contentWidth = columnWidths.reduce((sum, w) => sum + w, 0);
-    const cellPadding = (columnWidths.length + 1) * CELL_PADDING;
+    const cellPadding = columnWidths.length * CELL_PADDING * 2; // 2 spaces per cell (left + right)
     const separatorSpace = (columnWidths.length - 1) * COLUMN_SEPARATOR;
-    const totalWidth = contentWidth + cellPadding + separatorSpace;
+    const totalWidth = contentWidth + cellPadding + separatorSpace + 2; // +2 for border chars
 
     const lines = [];
     lines.push('╭' + '─'.repeat(totalWidth - 2) + '╮');
@@ -71,9 +105,10 @@ export class TerminalTable {
     this.#rows.forEach(row => lines.push(this.#formatRow(row, columnWidths)));
     lines.push('╰' + '─'.repeat(totalWidth - 2) + '╯');
 
-    console.log(lines.join('\n'));
+    // Use process.stdout.write for consistency
+    process.stdout.write(lines.join('\n') + '\n');
 
-    // Store the table height for future updates
+    // Store the table height and current cursor position for future updates
     this.#tableHeight = lines.length;
   }
 
@@ -105,10 +140,27 @@ export class TerminalTable {
    * @returns {void}
    */
   updateData (rowIndex, columnIndex, newValue) {
-    if (!(rowIndex >= 0 && rowIndex < this.#rows.length &&
-      columnIndex >= 0 && columnIndex < this.#rows[rowIndex].length)) {
+    // Validate indices
+    if (rowIndex < 0 || rowIndex >= this.#rows.length ||
+        columnIndex < 0 || columnIndex >= this.#columnTitles.length) {
       return;
     }
+    
+    // Check if content change might affect column width
+    const oldValue = this.#rows[rowIndex][columnIndex] || '';
+    const oldLength = this.#getVisibleLength(oldValue);
+    const newLength = this.#getVisibleLength(newValue || '');
+    const currentWidth = this.#columnWidths?.[columnIndex] || 0;
+    
+    // If new content is longer than current column width, invalidate caches
+    if (newLength > currentWidth) {
+      this.#columnWidths = null;
+      // Clear visible length cache to prevent memory leaks from old values
+      if (this.#visibleLengthCache.size > 1000) {
+        this.#visibleLengthCache.clear();
+      }
+    }
+    
     this.#rows[rowIndex][columnIndex] = newValue;
     this.#updateCell(rowIndex, columnIndex, newValue);
   }
@@ -121,28 +173,20 @@ export class TerminalTable {
    * @returns {void}
    */
   #updateCell (rowIndex, columnIndex, newValue) {
-    // Calculate column widths
-    const columnWidths = this.#columnTitles.map((title, i) => {
-      const headerLength = this.#getVisibleLength(title);
-      const dataLengths = this.#rows.map((row) => this.#getVisibleLength(row[i]));
-      return Math.max(headerLength, ...dataLengths);
-    });
+    const columnWidths = this.#calculateColumnWidths();
 
-    // Calculate the row position relative to table start
-    // Table structure: top border (1) + header (1) + separator (1) + data rows
-    const tableRowPosition = 3 + rowIndex; // 0-based data row + 3 for borders/header
+    // Calculate the absolute row position in the table
+    // Table structure: top border (1) + header (1) + separator (1) + data rows (0-based)
+    const absoluteRowPosition = 3 + rowIndex;
 
     // Calculate column position within the row
-    // Each cell format: '│ content padding ' (from #formatRow)
-    // Start after left border '│' + space (position 1-based)
-    let columnPosition = 1; // Start at column 1 (1-based indexing)
-
-    for (let i = 0; i <= columnIndex; i++) {
-      columnPosition += 1; // '│'
-      columnPosition += 1; // space before content
-      if (i === columnIndex) break; // We're at our target cell content start
+    // Row format: '│ content padding │ content padding │...'
+    let columnPosition = 2; // Start after '│ ' (1-based indexing)
+    
+    for (let i = 0; i < columnIndex; i++) {
       columnPosition += columnWidths[i]; // content width
-      columnPosition += 1; // space after content
+      columnPosition += 2; // space after content + space before next content
+      columnPosition += 1; // column separator '│' or ' '
     }
 
     // Format the new cell content with proper padding
@@ -157,9 +201,16 @@ export class TerminalTable {
     // Save current cursor position
     process.stdout.write('\x1b[s');
 
-    // Move cursor to the cell position (relative to current position)
-    // Move up to the table row, then to the column position
-    process.stdout.write(`\x1b[${this.#tableHeight - tableRowPosition}A`);
+    // Move cursor to the specific cell position
+    // Move up by the number of lines from current position to the target row
+    const linesToMoveUp = this.#tableHeight - absoluteRowPosition;
+    if (linesToMoveUp > 0) {
+      process.stdout.write(`\x1b[${linesToMoveUp}A`);
+    } else if (linesToMoveUp < 0) {
+      process.stdout.write(`\x1b[${Math.abs(linesToMoveUp)}B`);
+    }
+    
+    // Move to the specific column position
     process.stdout.write(`\x1b[${columnPosition}G`);
 
     // Write the cell content
@@ -199,25 +250,34 @@ export class TerminalTable {
     // Handle uncaught exceptions
     process.on('uncaughtException', (err) => {
       cleanup();
-      console.error('Uncaught Exception:', err);
+      process.stderr.write(`Uncaught Exception: ${err.message}\n`);
       process.exit(1);
     });
 
     // Handle unhandled promise rejections
-    process.on('unhandledRejection', (reason, promise) => {
+    process.on('unhandledRejection', (reason) => {
       cleanup();
-      console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+      process.stderr.write(`Unhandled Rejection: ${reason}\n`);
       process.exit(1);
     });
   }
 
   /**
    * Calculates the visible length of a text, stripping ANSI escape sequences.
+   * Uses caching to improve performance for repeated calculations.
    * @param {string} text - The text to measure
    * @returns {number} - The visible character count
    */
   #getVisibleLength (text) {
-    return stripVTControlCharacters(text).length;
+    if (!text) return 0;
+    
+    if (this.#visibleLengthCache.has(text)) {
+      return this.#visibleLengthCache.get(text);
+    }
+    
+    const length = stripVTControlCharacters(text).length;
+    this.#visibleLengthCache.set(text, length);
+    return length;
   }
 
 }
