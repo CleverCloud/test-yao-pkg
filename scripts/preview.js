@@ -36,26 +36,13 @@ run(async () => {
     case 'pr-comment':
       return getPreviewPrComment(previewName);
     case 'publish':
-      return publishPreview(createPreviewClient(), previewName);
+      return publishPreview(previewName);
     case 'delete':
-      return deletePreview(createPreviewClient(), previewName);
+      return deletePreview(previewName);
   }
 
   throw new Error(getUsage(`Unknown command "${command}"`));
 });
-
-/**
- * Creates a PreviewClient instance with environment variables.
- * @returns {PreviewClient}
- */
-function createPreviewClient() {
-  const [bucket, accessKeyId, secretAccessKey] = readEnvVars([
-    'CC_CLEVER_TOOLS_PREVIEWS_CELLAR_BUCKET', 
-    'CC_CLEVER_TOOLS_PREVIEWS_CELLAR_KEY_ID', 
-    'CC_CLEVER_TOOLS_PREVIEWS_CELLAR_SECRET_KEY'
-  ]);
-  return new PreviewClient({ bucket, accessKeyId, secretAccessKey });
-}
 
 /**
  * Generates a usage message for the CLI tool.
@@ -154,18 +141,31 @@ async function buildPreview (previewName, os) {
 
 /**
  * Publishes a built preview to the preview storage.
- * @param {PreviewClient} previewClient - The client instance for preview operations
  * @param {string} previewName - The name/version of the preview to publish
  */
-async function publishPreview (previewClient, previewName) {
+async function publishPreview (previewName) {
+  const previewClient = createPreviewClient();
   await previewClient.publishPreview(previewName);
 }
 
 /**
  * Deletes a preview from the preview storage.
- * @param {PreviewClient} previewClient - The client instance for preview operations
  * @param {string} previewName - The name/version of the preview to delete
  */
-async function deletePreview (previewClient, previewName) {
+async function deletePreview (previewName) {
+  const previewClient = createPreviewClient();
   await previewClient.deletePreview(previewName);
+}
+
+/**
+ * Creates a PreviewClient instance with environment variables.
+ * @returns {PreviewClient}
+ */
+function createPreviewClient () {
+  const [bucket, accessKeyId, secretAccessKey] = readEnvVars([
+    'CC_CLEVER_TOOLS_PREVIEWS_CELLAR_BUCKET',
+    'CC_CLEVER_TOOLS_PREVIEWS_CELLAR_KEY_ID',
+    'CC_CLEVER_TOOLS_PREVIEWS_CELLAR_SECRET_KEY',
+  ]);
+  return new PreviewClient({ bucket, accessKeyId, secretAccessKey });
 }
