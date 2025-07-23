@@ -1,5 +1,7 @@
 import { stripVTControlCharacters, styleText } from 'node:util';
 
+// TODO: CELL_PADDING and COLUMN_SEPARATOR constants are defined but not consistently used throughout the code
+
 // Table formatting constants
 const CELL_PADDING = 2;
 const COLUMN_SEPARATOR = 1;
@@ -47,6 +49,7 @@ export class TerminalTable {
    * @returns {void}
    */
   renderInit () {
+    // TODO: Use process.stdout.cursorTo() and process.stdout.clearLine() instead of raw ANSI codes
     // Hide cursor during table operations
     process.stdout.write('\x1b[?25l');
 
@@ -58,20 +61,18 @@ export class TerminalTable {
       return style ? styleText(style, title) : title;
     });
 
-    const columnWidths = this.#columnWidths;
-
-    const contentWidth = columnWidths.reduce((sum, w) => sum + w, 0);
+    const contentWidth = this.#columnWidths.reduce((sum, w) => sum + w, 0);
     // Each cell has format ` content ` (2 spaces per cell) and cells are joined with ' ' (1 space between cells)
-    const cellPadding = columnWidths.length * 2; // 2 spaces per cell (left + right padding)
-    const separatorSpace = (columnWidths.length - 1) * 1; // 1 space between cells from join
+    const cellPadding = this.#columnWidths.length * 2; // 2 spaces per cell (left + right padding)
+    const separatorSpace = (this.#columnWidths.length - 1) * 1; // 1 space between cells from join
     const totalWidth = contentWidth + cellPadding + separatorSpace + 2; // +2 for left and right border chars
 
-    // Write table directly
+    // TODO: replace with a new function called line(width, '-') the second param is ignored
     console.log('╭' + '─'.repeat(totalWidth - 2) + '╮');
-    console.log('│' + this.#formatRow(headers, columnWidths, true) + '│');
+    console.log('│' + this.#formatRow(headers, this.#columnWidths, true) + '│');
     console.log('├' + '─'.repeat(totalWidth - 2) + '┤');
     for (const row of this.#rows) {
-      console.log('│' + this.#formatRow(row, columnWidths) + '│');
+      console.log('│' + this.#formatRow(row, this.#columnWidths) + '│');
     }
     console.log('╰' + '─'.repeat(totalWidth - 2) + '╯');
   }
@@ -93,7 +94,7 @@ export class TerminalTable {
     // Check if content change might affect column width
     // Truncate the content if longer than initial column width
     const currentWidth = this.#columnWidths?.[columnIndex] || 0;
-    const truncatedValue = this.#getVisibleLength(newValue || '') > currentWidth 
+    const truncatedValue = this.#getVisibleLength(newValue || '') > currentWidth
       ? this.#truncateToWidth(newValue || '', currentWidth)
       : newValue || '';
 
@@ -115,7 +116,7 @@ export class TerminalTable {
       if (!isHeader && this.#columnStyles[i]) {
         content = styleText(this.#columnStyles[i], content);
       }
-      // Use padEnd for cleaner padding
+      // TODO: replace with padding const computed with ' '.repeat
       const paddedContent = content.padEnd(content.length + Math.max(0, widths[i] - visibleLength));
       return ` ${paddedContent} `;
     });
@@ -130,6 +131,7 @@ export class TerminalTable {
    * @returns {void}
    */
   #updateCell (rowIndex, columnIndex, newValue) {
+    // TODO: Use process.stdout.cursorTo() and process.stdout.moveCursor() instead of raw ANSI escape codes
     const columnWidths = this.#columnWidths;
 
     // Calculate the absolute row position in the table
@@ -158,6 +160,7 @@ export class TerminalTable {
     const padding = ' '.repeat(Math.max(0, columnWidths[columnIndex] - visibleLength));
     const cellContent = `${content}${padding}`;
 
+    // TODO: Replace raw ANSI codes with process.stdout methods for better maintainability
     // Save current cursor position
     process.stdout.write('\x1b[s');
 
@@ -186,6 +189,7 @@ export class TerminalTable {
    * @returns {void}
    */
   #setupExitHandlers () {
+    // TODO: Use process.stdout.clearLine() and process.stdout.cursorTo() instead of raw ANSI codes
     const cleanup = () => {
       // Clear the ^C characters and show cursor
       process.stdout.write('\r\x1b[K'); // Clear current line
@@ -239,11 +243,12 @@ export class TerminalTable {
    * @returns {string} - The truncated text
    */
   #truncateToWidth (text, maxWidth) {
+    // LATER: Consider using Intl.Segmenter for proper grapheme cluster handling
     if (maxWidth <= 0) return '';
-    
+
     const visibleLength = this.#getVisibleLength(text);
     if (visibleLength <= maxWidth) return text;
-    
+
     // Simple truncation - could be enhanced to handle ANSI codes properly
     const stripped = stripVTControlCharacters(text);
     return stripped.substring(0, maxWidth - 1) + '…';
