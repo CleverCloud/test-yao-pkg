@@ -94,5 +94,9 @@ export class TerminalPreviews {
     setInterval(() => {
       table.updateData(1, 6, Math.random().toString(36).slice(2, 6));
     }, 1000);
+
+    setInterval(() => {
+      table.updateData(0, 4, Math.random().toString(36).slice(2, 12));
+    }, 800);
   }
 }

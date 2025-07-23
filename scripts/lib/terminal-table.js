@@ -115,23 +115,52 @@ export class TerminalTable {
    * @returns {void}
    */
   #updateCell (rowIndex, columnIndex, newValue) {
-    // Cursor should be positioned right after the table from renderInit
-    // Move cursor up to start of table, clear it, and re-render
-    process.stdout.write(`\x1b[${this.#tableHeight}A`);
+    // Calculate column widths
+    const columnWidths = this.#columnTitles.map((title, i) => {
+      const headerLength = this.#getVisibleLength(title);
+      const dataLengths = this.#rows.map((row) => this.#getVisibleLength(row[i]));
+      return Math.max(headerLength, ...dataLengths);
+    });
+
+    // Calculate the row position relative to table start
+    // Table structure: top border (1) + header (1) + separator (1) + data rows
+    const tableRowPosition = 3 + rowIndex; // 0-based data row + 3 for borders/header
     
-    // Clear all table lines
-    for (let i = 0; i < this.#tableHeight; i++) {
-      process.stdout.write('\x1b[2K'); // Clear current line
-      if (i < this.#tableHeight - 1) {
-        process.stdout.write('\x1b[1B'); // Move down one line
-      }
+    // Calculate column position within the row
+    // Each cell format: '│ content padding ' (from #formatRow)
+    // Start after left border '│' + space (position 1-based)
+    let columnPosition = 1; // Start at column 1 (1-based indexing)
+    
+    for (let i = 0; i <= columnIndex; i++) {
+      columnPosition += 1; // '│'
+      columnPosition += 1; // space before content
+      if (i === columnIndex) break; // We're at our target cell content start
+      columnPosition += columnWidths[i]; // content width
+      columnPosition += 1; // space after content
     }
+
+    // Format the new cell content with proper padding
+    let content = newValue || '';
+    const visibleLength = this.#getVisibleLength(content);
+    if (this.#columnStyles[columnIndex]) {
+      content = styleText(this.#columnStyles[columnIndex], content);
+    }
+    const padding = ' '.repeat(Math.max(0, columnWidths[columnIndex] - visibleLength));
+    const cellContent = `${content}${padding}`;
+
+    // Save current cursor position
+    process.stdout.write('\x1b[s');
     
-    // Move cursor back to start
-    process.stdout.write(`\x1b[${this.#tableHeight - 1}A`);
+    // Move cursor to the cell position (relative to current position)
+    // Move up to the table row, then to the column position
+    process.stdout.write(`\x1b[${this.#tableHeight - tableRowPosition}A`);
+    process.stdout.write(`\x1b[${columnPosition}G`);
     
-    // Re-render the table
-    this.renderInit();
+    // Write the cell content
+    process.stdout.write(cellContent);
+    
+    // Restore cursor position
+    process.stdout.write('\x1b[u');
   }
 
   /**
