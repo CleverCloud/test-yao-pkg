@@ -112,7 +112,6 @@ jobs:
     name: 'Publish archives to cellar'
     needs: build
     runs-on: ubuntu-latest
-    if: false
     steps:
       - name: 'Checkout sources'
         uses: actions/checkout@v4
