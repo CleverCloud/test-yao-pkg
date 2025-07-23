@@ -39,7 +39,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: build-rpm
-          path: build/${{ github.ref_name }}/clever-tools-${{ github.ref_name }}.rpm
+          path: build
           retention-days: 1
 
   build-deb:
@@ -67,7 +67,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: build-deb
-          path: build/${{ github.ref_name }}/clever-tools-${{ github.ref_name }}.deb
+          path: build
           retention-days: 1
 
   publish-npm:
@@ -100,12 +100,14 @@ jobs:
           path: build
           merge-multiple: true
       - name: 'TODO debug'
-        run: tree
-  #      run: |
-  #        gh release upload "${{ github.ref_name }}" $(find build/${{ github.ref_name }}/archive -maxdepth 1 -type f -name "*$VERSION*" -print)
-  #        gh release upload "${{ github.ref_name }}" $(find build/${{ github.ref_name }}/bundle -maxdepth 1 -type f -print)
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload "${{ github.ref_name }}" build/${{ github.ref_name }}/linux/clever-tools-${{ github.ref_name }}_linux.tar.gz
+          gh release upload "${{ github.ref_name }}" build/${{ github.ref_name }}/macos/clever-tools-${{ github.ref_name }}_macos.tar.gz
+          gh release upload "${{ github.ref_name }}" build/${{ github.ref_name }}/win/clever-tools-${{ github.ref_name }}_win.zip
+          gh release upload "${{ github.ref_name }}" build/${{ github.ref_name }}/clever-tools-${{ github.ref_name }}.deb
+          gh release upload "${{ github.ref_name }}" build/${{ github.ref_name }}/clever-tools-${{ github.ref_name }}.rpm
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   publish-cellar-archives:
     name: 'Publish archives to cellar'
