@@ -1,4 +1,4 @@
-name: 'release-please'
+name: 'Create/update release PR'
 
 on:
   push:
@@ -25,3 +25,4 @@ jobs:
           include-v-in-tag: false
           default-branch: ${{ github.ref_name }}
           changelog-types: ${{ steps.read-changelog-types.outputs.content }}
+
