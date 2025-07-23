@@ -6,12 +6,8 @@ const ANSI = {
   SHOW_CURSOR: '\x1b[?25h',
   SAVE_CURSOR: '\x1b[s',
   RESTORE_CURSOR: '\x1b[u',
-  RESET_STYLES: '\x1b[0m'
+  RESET_STYLES: '\x1b[0m',
 };
-
-// Table formatting constants
-const CELL_PADDING = 2;
-const COLUMN_SEPARATOR = 1;
 
 /**
  * A terminal table renderer with rounded corners and column alignment.
@@ -56,7 +52,6 @@ export class TerminalTable {
    * @returns {void}
    */
   renderInit () {
-    // Hide cursor during table operations
     process.stdout.write(ANSI.HIDE_CURSOR);
 
     // Setup cleanup on exit
@@ -73,13 +68,11 @@ export class TerminalTable {
     const separatorSpace = (this.#columnWidths.length - 1) * 1; // 1 space between cells from join
     const totalWidth = contentWidth + cellPadding + separatorSpace + 2; // +2 for left and right border chars
 
-    console.log('╭' + this.#line(totalWidth, '─') + '╮');
+    console.log('╭' + '─'.repeat(totalWidth - 2) + '╮');
     console.log('│' + this.#formatRow(headers, this.#columnWidths, true) + '│');
-    console.log('├' + this.#line(totalWidth, '─') + '┤');
-    for (const row of this.#rows) {
-      console.log('│' + this.#formatRow(row, this.#columnWidths) + '│');
-    }
-    console.log('╰' + this.#line(totalWidth, '─') + '╯');
+    console.log('├' + '─'.repeat(totalWidth - 2) + '┤');
+    this.#rows.forEach((r) => console.log('│' + this.#formatRow(r, this.#columnWidths) + '│'));
+    console.log('╰' + '─'.repeat(totalWidth - 2) + '╯');
   }
 
   /**
@@ -90,12 +83,6 @@ export class TerminalTable {
    * @returns {void}
    */
   updateData (rowIndex, columnIndex, newValue) {
-    // Validate indices
-    if (rowIndex < 0 || rowIndex >= this.#rows.length ||
-      columnIndex < 0 || columnIndex >= this.#columnTitles.length) {
-      return;
-    }
-
     // Check if content change might affect column width
     // Truncate the content if longer than initial column width
     const currentWidth = this.#columnWidths?.[columnIndex] || 0;
@@ -115,17 +102,18 @@ export class TerminalTable {
    * @returns {string} - Formatted row string
    */
   #formatRow (row, widths, isHeader = false) {
-    const cells = row.map((cell, i) => {
-      let content = cell || '';
-      const visibleLength = this.#getVisibleLength(content);
-      if (!isHeader && this.#columnStyles[i]) {
-        content = styleText(this.#columnStyles[i], content);
-      }
-      const padding = ' '.repeat(Math.max(0, widths[i] - visibleLength));
-      const paddedContent = content + padding;
-      return ` ${paddedContent} `;
-    });
-    return cells.join(' ');
+    return row
+      .map((cell, i) => {
+        let content = cell || '';
+        const visibleLength = this.#getVisibleLength(content);
+        if (!isHeader && this.#columnStyles[i]) {
+          content = styleText(this.#columnStyles[i], content);
+        }
+        const padding = ' '.repeat(Math.max(0, widths[i] - visibleLength));
+        const paddedContent = content + padding;
+        return ` ${paddedContent} `;
+      })
+      .join(' ');
   }
 
   /**
@@ -136,8 +124,6 @@ export class TerminalTable {
    * @returns {void}
    */
   #updateCell (rowIndex, columnIndex, newValue) {
-    const columnWidths = this.#columnWidths;
-
     // Calculate the absolute row position in the table
     // Table structure: top border (1) + header (1) + separator (1) + data rows (0-based)
     const absoluteRowPosition = 1 + 1 + 1 + +rowIndex;
@@ -149,7 +135,7 @@ export class TerminalTable {
     let columnPosition = 2; // Start after '│ ' (position where first cell content starts)
 
     for (let i = 0; i < columnIndex; i++) {
-      columnPosition += columnWidths[i]; // content width of previous cell
+      columnPosition += this.#columnWidths[i]; // content width of previous cell
       columnPosition += 1; // trailing space from previous cell ` content `
       columnPosition += 1; // join space from cells.join(' ')
       columnPosition += 1; // leading space from current cell ` content `
@@ -161,25 +147,18 @@ export class TerminalTable {
     if (this.#columnStyles[columnIndex]) {
       content = styleText(this.#columnStyles[columnIndex], content);
     }
-    const padding = ' '.repeat(Math.max(0, columnWidths[columnIndex] - visibleLength));
+    const padding = ' '.repeat(Math.max(0, (this.#columnWidths)[columnIndex] - visibleLength));
     const cellContent = `${content}${padding}`;
 
-    // Save current cursor position (no Node.js equivalent)
     process.stdout.write(ANSI.SAVE_CURSOR);
 
-    // Move cursor to the specific cell position
     const linesToMoveUp = this.#tableHeight - absoluteRowPosition;
     if (linesToMoveUp !== 0) {
       process.stdout.moveCursor(0, -linesToMoveUp);
     }
 
-    // Move to the specific column position
     process.stdout.cursorTo(columnPosition);
-
-    // Write the cell content
     process.stdout.write(cellContent);
-
-    // Restore cursor position (no Node.js equivalent)
     process.stdout.write(ANSI.RESTORE_CURSOR);
   }
 
@@ -188,52 +167,29 @@ export class TerminalTable {
    * @returns {void}
    */
   #setupExitHandlers () {
-    const cleanup = () => {
-      // Clear the ^C characters and show cursor
-      process.stdout.cursorTo(0);        // Move to start of line
-      process.stdout.clearLine(0);       // Clear from cursor to end
-      process.stdout.write(ANSI.SHOW_CURSOR); // Show cursor (no Node.js equivalent)
-      process.stdout.write(ANSI.RESET_STYLES);   // Reset all styles (no Node.js equivalent)
-    };
-
-    // Handle normal exit
-    process.on('exit', cleanup);
-
-    // Handle SIGINT (Ctrl+C)
-    process.on('SIGINT', () => {
-      cleanup();
-      process.exit(130);
-    });
-
-    // Handle SIGTERM
-    process.on('SIGTERM', () => {
-      cleanup();
-      process.exit(143);
-    });
-
-    // Handle uncaught exceptions
-    process.on('uncaughtException', (err) => {
-      cleanup();
-      process.stderr.write(`Uncaught Exception: ${err.message}\n`);
-      process.exit(1);
-    });
-
-    // Handle unhandled promise rejections
-    process.on('unhandledRejection', (reason) => {
-      cleanup();
-      process.stderr.write(`Unhandled Rejection: ${reason}\n`);
-      process.exit(1);
-    });
+    process.on('exit', () => this.#exit());
+    process.on('SIGINT', () => this.#exit(130));
+    process.on('SIGTERM', () => this.#exit(143));
+    process.on('uncaughtException', (e) => this.#exit(1, `Uncaught Exception: ${e.message}`));
+    process.on('unhandledRejection', (reason) => this.#exit(1, `Unhandled Rejection: ${reason}`));
   }
 
   /**
-   * Generates a horizontal line for table borders.
-   * @param {number} width - The total width including border characters
-   * @param {string} _ - Ignored parameter for code decoration/alignment
-   * @returns {string} - The horizontal line string
+   * Exits the process after cleaning up terminal state.
+   * @param {number} code - Exit code
+   * @param {string} error - Optional error message
+   * @returns {void}
    */
-  #line (width, _) {
-    return '─'.repeat(width - 2);
+  #exit (code, error) {
+    // Clear the ^C characters and show cursor
+    process.stdout.cursorTo(0);
+    process.stdout.clearLine(0);
+    process.stdout.write(ANSI.SHOW_CURSOR);
+    process.stdout.write(ANSI.RESET_STYLES);
+    if (error != null) {
+      console.error(error);
+    }
+    process.exit(code);
   }
 
   /**
@@ -252,16 +208,17 @@ export class TerminalTable {
    * @returns {string} - The truncated text
    */
   #truncateToWidth (text, maxWidth) {
-    // LATER: Consider using Intl.Segmenter for proper grapheme cluster handling
-    if (maxWidth <= 0) return '';
+    if (maxWidth <= 0) {
+      return '';
+    }
 
     const visibleLength = this.#getVisibleLength(text);
-    if (visibleLength <= maxWidth) return text;
+    if (visibleLength <= maxWidth) {
+      return text;
+    }
 
-    // Simple truncation - could be enhanced to handle ANSI codes properly
     const stripped = stripVTControlCharacters(text);
     return stripped.substring(0, maxWidth - 1) + '…';
   }
 
 }
-
