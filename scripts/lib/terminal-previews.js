@@ -1,5 +1,4 @@
-import { styleText } from 'node:util';
-import { createTerminalLink, formatBranchName, getEmoji } from './utils.js';
+import { createTerminalLink, formatBranchName, getEmoji, textTable } from './utils.js';
 
 /**
  * @typedef {import('./preview-client.types.d.ts').Manifest} Manifest
@@ -68,71 +67,26 @@ export class TerminalPreviews {
       });
 
       return [
-        styleText('yellow', formatBranchName(preview.name)),
-        styleText('blue', preview.commitId.substring(0, 8)),
+        formatBranchName(preview.name),
+        preview.commitId.substring(0, 8),
         date,
         time,
-        styleText('green', preview.author),
+        preview.author,
         links.join('  '),
         location,
       ];
     });
 
-    const headers = [
-      styleText('yellow', 'NAME'),
-      styleText('blue', 'COMMIT ID'),
-      'DATE',
-      'TIME',
-      styleText('green', 'AUTHOR'),
-      styleText('blue', 'DOWNLOAD LINKS'),
-      'LOCATION',
+    const columns = [
+      ['NAME', 'yellow'],
+      ['COMMIT ID', 'blue'],
+      ['DATE'],
+      ['TIME'],
+      ['AUTHOR', 'green'],
+      ['DOWNLOAD LINKS', 'blue'],
+      ['LOCATION'],
     ];
 
-    // const bigtext = textTable(headers, data);
-    // console.log(`╭${'─'.repeat(bigtext.split('\n')[0].length)}╮`);
-    // // │ >   Type your message or @path/to/file                                                                                          │
-    // // ╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-    // console.log(bigtext);
-    console.log(textTable(headers, data));
+    console.log(textTable(data, columns));
   }
-}
-
-function textTable (headers, data) {
-  if (!headers.length || !data.length) return '';
-  
-  // Calculate column widths by finding the max length in each column
-  const columnWidths = headers.map((header, i) => {
-    const headerLength = stripAnsi(header).length;
-    const maxDataLength = Math.max(...data.map(row => stripAnsi(row[i] || '').length));
-    return Math.max(headerLength, maxDataLength);
-  });
-  
-  // Format a row with proper padding
-  const formatRow = (row, widths) => {
-    const cells = row.map((cell, i) => {
-      const content = cell || '';
-      const visibleLength = stripAnsi(content).length;
-      const padding = ' '.repeat(Math.max(0, widths[i] - visibleLength));
-      return ` ${content}${padding} `;
-    });
-    return '│' + cells.join('') + '│';
-  };
-  
-  // Calculate total width for top/bottom borders
-  const totalWidth = columnWidths.reduce((sum, w) => sum + w + 2, 2);
-  
-  // Build the table
-  const lines = [];
-  lines.push('╭' + '─'.repeat(totalWidth - 2) + '╮');
-  lines.push(formatRow(headers, columnWidths));
-  lines.push('├' + '─'.repeat(totalWidth - 2) + '┤');
-  data.forEach(row => lines.push(formatRow(row, columnWidths)));
-  lines.push('╰' + '─'.repeat(totalWidth - 2) + '╯');
-  
-  return lines.join('\n');
-}
-
-// Helper function to strip ANSI escape codes for length calculation
-function stripAnsi(str) {
-  return str.replace(/\u001b\[[0-9;]*m/g, '').replace(/\u001b]8;;[^\u001b]*\u001b\\([^\u001b]*)\u001b]8;;\u001b\\/g, '$1');
 }

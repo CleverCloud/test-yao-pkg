@@ -3,7 +3,6 @@ import childProcess from 'node:child_process';
 import fs from 'node:fs';
 import { platform } from 'node:os';
 import crypto from 'node:crypto';
-import stringLength from 'string-length';
 
 /**
  * Sanitizes a version string by replacing forward slashes with hyphens.
@@ -196,4 +195,65 @@ export function run (fn) {
     console.error(`${styleText(['red', 'bold'], 'ERROR:')} ${e.message}`);
     process.exit(1);
   });
+}
+
+/**
+ * Creates a terminal table with rounded corners and column alignment.
+ * @param {Array<Array<string>>} data - Array of data rows
+ * @param {Array<[string, string?]>} columns - Array of [title, style] pairs for columns
+ * @returns {string}
+ */
+export function textTable (data, columns) {
+  if (!columns.length || !data.length) {
+    return '';
+  }
+
+  // Extract headers with styling
+  const headers = columns.map(col => {
+    const [title, style] = col;
+    return style ? styleText(style, title) : title;
+  });
+
+  // Calculate column widths by finding the max length in each column
+  const columnWidths = columns.map((col, i) => {
+    const headerLength = col[0].length;
+    const maxDataLength = Math.max(...data.map(row => stripAnsi(row[i] || '').length));
+    return Math.max(headerLength, maxDataLength);
+  });
+
+  // Format a row with proper padding
+  const formatRow = (row, widths, isHeader = false) => {
+    const cells = row.map((cell, i) => {
+      let content = cell || '';
+      if (!isHeader && columns[i][1]) {
+        content = styleText(columns[i][1], content);
+      }
+      const visibleLength = stripAnsi(content).length;
+      const padding = ' '.repeat(Math.max(0, widths[i] - visibleLength));
+      return ` ${content}${padding} `;
+    });
+    return '│' + cells.join(' ') + '│';
+  };
+
+  // Calculate total width for top/bottom borders
+  const totalWidth = columnWidths.reduce((sum, w) => sum + w + 2, 2) + (columnWidths.length - 1) * 1;
+
+  // Build the table
+  const lines = [];
+  lines.push('╭' + '─'.repeat(totalWidth - 2) + '╮');
+  lines.push(formatRow(headers, columnWidths, true));
+  lines.push('├' + '─'.repeat(totalWidth - 2) + '┤');
+  data.forEach(row => lines.push(formatRow(row, columnWidths)));
+  lines.push('╰' + '─'.repeat(totalWidth - 2) + '╯');
+
+  return lines.join('\n');
+}
+
+/**
+ * Strips ANSI escape codes from a string.
+ * @param {string} str - The string potentially containing ANSI codes
+ * @return {string} - The string with ANSI codes removed
+ */
+function stripAnsi (str) {
+  return str.replace(/\u001b\[[0-9;]*m/g, '').replace(/\u001b]8;;[^\u001b]*\u001b\\([^\u001b]*)\u001b]8;;\u001b\\/g, '$1');
 }
