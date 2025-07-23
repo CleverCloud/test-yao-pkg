@@ -42,6 +42,11 @@ export class TerminalTable {
    * @returns {void}
    */
   renderInit () {
+    // Hide cursor during table operations
+    process.stdout.write('\x1b[?25l');
+    
+    // Setup cleanup on exit
+    this.#setupExitHandlers();
 
     const headers = this.#columnTitles.map((title, i) => {
       const style = this.#columnStyles[i];
@@ -161,6 +166,48 @@ export class TerminalTable {
     
     // Restore cursor position
     process.stdout.write('\x1b[u');
+  }
+
+  /**
+   * Sets up exit handlers to restore cursor and terminal state.
+   * @returns {void}
+   */
+  #setupExitHandlers () {
+    const cleanup = () => {
+      // Clear the ^C characters and show cursor
+      process.stdout.write('\r\x1b[K'); // Clear current line
+      process.stdout.write('\x1b[?25h'); // Show cursor
+      process.stdout.write('\x1b[0m');   // Reset all styles
+    };
+
+    // Handle normal exit
+    process.on('exit', cleanup);
+    
+    // Handle SIGINT (Ctrl+C)
+    process.on('SIGINT', () => {
+      cleanup();
+      process.exit(130);
+    });
+    
+    // Handle SIGTERM
+    process.on('SIGTERM', () => {
+      cleanup();
+      process.exit(143);
+    });
+    
+    // Handle uncaught exceptions
+    process.on('uncaughtException', (err) => {
+      cleanup();
+      console.error('Uncaught Exception:', err);
+      process.exit(1);
+    });
+    
+    // Handle unhandled promise rejections
+    process.on('unhandledRejection', (reason, promise) => {
+      cleanup();
+      console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+      process.exit(1);
+    });
   }
 
   /**
