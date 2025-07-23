@@ -1,5 +1,13 @@
 import { stripVTControlCharacters, styleText } from 'node:util';
 
+// ANSI escape sequences
+const ANSI = {
+  HIDE_CURSOR: '\x1b[?25l',
+  SHOW_CURSOR: '\x1b[?25h',
+  SAVE_CURSOR: '\x1b[s',
+  RESTORE_CURSOR: '\x1b[u',
+  RESET_STYLES: '\x1b[0m'
+};
 
 // Table formatting constants
 const CELL_PADDING = 2;
@@ -49,7 +57,7 @@ export class TerminalTable {
    */
   renderInit () {
     // Hide cursor during table operations
-    process.stdout.write('\x1b[?25l');
+    process.stdout.write(ANSI.HIDE_CURSOR);
 
     // Setup cleanup on exit
     this.#setupExitHandlers();
@@ -157,7 +165,7 @@ export class TerminalTable {
     const cellContent = `${content}${padding}`;
 
     // Save current cursor position (no Node.js equivalent)
-    process.stdout.write('\x1b[s');
+    process.stdout.write(ANSI.SAVE_CURSOR);
 
     // Move cursor to the specific cell position
     const linesToMoveUp = this.#tableHeight - absoluteRowPosition;
@@ -172,7 +180,7 @@ export class TerminalTable {
     process.stdout.write(cellContent);
 
     // Restore cursor position (no Node.js equivalent)
-    process.stdout.write('\x1b[u');
+    process.stdout.write(ANSI.RESTORE_CURSOR);
   }
 
   /**
@@ -184,8 +192,8 @@ export class TerminalTable {
       // Clear the ^C characters and show cursor
       process.stdout.cursorTo(0);        // Move to start of line
       process.stdout.clearLine(0);       // Clear from cursor to end
-      process.stdout.write('\x1b[?25h'); // Show cursor (no Node.js equivalent)
-      process.stdout.write('\x1b[0m');   // Reset all styles (no Node.js equivalent)
+      process.stdout.write(ANSI.SHOW_CURSOR); // Show cursor (no Node.js equivalent)
+      process.stdout.write(ANSI.RESET_STYLES);   // Reset all styles (no Node.js equivalent)
     };
 
     // Handle normal exit
