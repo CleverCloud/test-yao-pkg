@@ -15,7 +15,6 @@ jobs:
     name: 'Build .rpm'
     needs: build
     runs-on: ubuntu-latest
-    if: false
     steps:
       - name: 'Checkout sources'
         uses: actions/checkout@v4
@@ -47,7 +46,6 @@ jobs:
     name: 'Build .deb'
     needs: build
     runs-on: ubuntu-latest
-    if: false
     steps:
       - name: 'Checkout sources'
         uses: actions/checkout@v4
