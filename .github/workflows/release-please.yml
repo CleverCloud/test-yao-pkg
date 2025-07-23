@@ -10,10 +10,13 @@ jobs:
   release-please:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+      - id: read-changelog-types
+        run: echo "content=$(cat .github/config/changelog-types.json | jq -c .)" >> $GITHUB_OUTPUT
       - uses: google-github-actions/release-please-action@v3
         with:
           token: ${{ secrets.CI_TOKEN }}
           release-type: node
           include-v-in-tag: false
           default-branch: ${{ github.ref_name }}
-          changelog-types: ${{ fromJson(file('.github/config/changelog-types.json')) }}
+          changelog-types: ${{ steps.read-changelog-types.outputs.content }}
