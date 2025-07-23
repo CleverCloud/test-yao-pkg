@@ -28,7 +28,7 @@ run(async () => {
     url = `${NEXUS_SERVER_URL}/repository/${rpmRepository}/clever-tools-${version}.rpm`;
   }
   else {
-    const [debRepository]  = readEnvVars(['NEXUS_RPM_REPOSITORY']);
+    const [debRepository]  = readEnvVars(['NEXUS_DEB_REPOSITORY']);
     url = `${NEXUS_SERVER_URL}/repository/${debRepository}/`;
   }
   const method = packager === 'rpm' ? 'PUT' : 'POST';

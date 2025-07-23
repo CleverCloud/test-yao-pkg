@@ -349,7 +349,7 @@ jobs:
           NEXUS_DEB_REPOSITORY: ${{ vars.NEXUS_DEB_REPOSITORY }}
 
   publish-winget:
-    name: 'Publish .deb to Nexus'
+    name: 'Publish to Winget'
     needs: publish-cellar-archives
     runs-on: windows-latest
     if: false
