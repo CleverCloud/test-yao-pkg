@@ -31,7 +31,7 @@ export async function fetchWithProgress (url, onProgress) {
 
     // Display progress
     if (totalBytes) {
-      const percentage = Math.round((downloadedBytes / totalBytes) * 100);
+      const percentage = Math.round((downloadedBytes / totalBytes) * 100).toString().padStart(3, ' ');
       onProgress(`Downloading… ${percentage}%`);
     }
     else {
