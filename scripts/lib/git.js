@@ -40,6 +40,7 @@ export async function getCurrentAuthor () {
  * @param {string} gitUrl - The URL of the git repository
  * @param {string} author - The author of the commit in the format "Name <email>"
  * @param {string} version - The version to commit
+ * @param {string} [message] - Optional commit message, defaults to "Update to {version}"
  * @return {Promise<void>}
  */
 export async function commitAndPush (gitPath, gitUrl, author, version, message) {

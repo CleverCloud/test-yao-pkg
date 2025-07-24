@@ -1,5 +1,18 @@
 #!/usr/bin/env node
 
+/**
+ * CLI script to publish a new version to Arch User Repository (AUR).
+ * 
+ * This script updates the PKGBUILD file for the AUR package with new version
+ * information, calculates the SHA256 hash of the Linux archive, and commits
+ * the changes to the AUR repository.
+ * 
+ * @usage node publish-aur.js <version>
+ * @param {string} version - Version string (e.g., "1.2.3")
+ * @throws {Error} When version argument is missing
+ * @requires AUR_GIT_URL - Environment variable for AUR repository URL
+ */
+
 import pkg from '../package.json' with { type: 'json' };
 import { applyTemplates } from './lib/templates.js';
 import { commitAndPush } from './lib/git.js';

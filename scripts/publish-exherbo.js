@@ -1,5 +1,18 @@
 #!/usr/bin/env node
 
+/**
+ * CLI script to publish a new version to Exherbo Linux package repository.
+ * 
+ * This script creates a new exheres package file for the specified version
+ * and commits it to the Exherbo package repository. Exherbo uses versioned
+ * package files with the pattern packagename-version.exheres-0.
+ * 
+ * @usage node publish-exherbo.js <version>
+ * @param {string} version - Version string (e.g., "1.2.3")
+ * @throws {Error} When version argument is missing
+ * @requires EXHERBO_GIT_URL - Environment variable for Exherbo repository URL
+ */
+
 import pkg from '../package.json' with { type: 'json' };
 import { applyOneTemplate } from './lib/templates.js';
 import { highlight, readEnvVars, run } from './lib/utils.js';
