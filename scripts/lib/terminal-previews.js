@@ -2,6 +2,7 @@ import { clearDirectory, createTerminalLink, exec, getEmoji } from './utils.js';
 import { TerminalTable } from './terminal-table.js';
 import fs from 'node:fs';
 import path from 'node:path';
+import { fetchWithProgress } from './fetch-with-progress.js';
 
 /**
  * @typedef {import('./preview-client.types.d.ts').Manifest} Manifest
@@ -146,15 +147,18 @@ export class TerminalPreviews {
     try {
       this.#updatePreviewState(index, 'Downloading .tar.gz…', 'yellow');
       await fs.promises.mkdir(tmpDir, { recursive: true });
-      const response = await fetch(previewUrl.url);
-      if (!response.ok) {
-        return this.#updatePreviewState(index, `Download failed: ${response.statusText}`, 'red');
+      const [downloadBuffer, downloadError] = await fetchWithProgress(previewUrl.url, (message) => {
+        return this.#updatePreviewState(index, message, 'yellow');
+      })
+        .then((result) => [result])
+        .catch((err) => [null, err]);
+      if (downloadError != null) {
+        return this.#updatePreviewState(index, downloadError.message, 'red');
       }
 
       this.#updatePreviewState(index, 'Extracting .tar.gz…', 'yellow');
       const tarPath = path.join(tmpDir, 'binary.tar.gz');
-      const arrayBuffer = await response.arrayBuffer();
-      await fs.promises.writeFile(tarPath, Buffer.from(arrayBuffer));
+      await fs.promises.writeFile(tarPath, downloadBuffer);
       await exec(`tar -xzf binary.tar.gz`, { cwd: tmpDir, quiet: true });
 
       this.#updatePreviewState(index, 'Installing binary…', 'yellow');
