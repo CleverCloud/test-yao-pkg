@@ -203,8 +203,8 @@ export class TerminalPreviews {
   }
 
   #updatePreviewState (preview, text, style) {
-    // TODO the index is always the last column, we can delete #previewNames
     const index = this.#previewNames.indexOf(preview.name);
+    // TODO the stateColumnIndex is always the last column index, we can delete #stateColumnIndex
     this.#table.updateData(index, this.#stateColumnIndex, text, style);
   }
 
