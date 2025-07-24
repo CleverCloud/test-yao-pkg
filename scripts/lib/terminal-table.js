@@ -9,6 +9,8 @@ const ANSI = {
   RESET_STYLES: '\x1b[0m',
 };
 
+const EMPTY_MESSAGE = 'No previews right now';
+
 /**
  * A terminal table renderer with rounded corners and column alignment.
  * Displays tabular data with configurable column styling and formatting.
@@ -72,6 +74,9 @@ export class TerminalTable {
     console.log('│' + this.#formatRow(headers, this.#columnWidths, true) + '│');
     console.log('├' + '─'.repeat(totalWidth - 2) + '┤');
     this.#rows.forEach((r) => console.log('│' + this.#formatRow(r, this.#columnWidths) + '│'));
+    if (this.#rows.length === 0) {
+      console.log('│ ' + styleText('italic', EMPTY_MESSAGE) + ' '.repeat(totalWidth - EMPTY_MESSAGE.length - 3) + '│');
+    }
     console.log('╰' + '─'.repeat(totalWidth - 2) + '╯');
   }
 

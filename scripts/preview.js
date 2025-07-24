@@ -77,7 +77,7 @@ async function listPreviews () {
   const remoteManifest = await fetchManifest();
   const localManifest = createDefaultManifest();
   const terminalPreviews = new TerminalPreviews(remoteManifest, localManifest, getOs());
-  terminalPreviews.initDisplay();
+  terminalPreviews.initDisplay({ withState: true });
 }
 
 /**
@@ -88,8 +88,9 @@ async function updatePreviews () {
   const remoteManifest = await fetchManifest();
   const localManifest = await getLocalManifest();
   const terminalPreviews = new TerminalPreviews(remoteManifest, localManifest, getOs());
-  terminalPreviews.initDisplay();
+  terminalPreviews.initDisplay({ withState: true });
   await terminalPreviews.updatePreviews();
+  await updateLocalManifest(remoteManifest);
 }
 
 /**
@@ -261,8 +262,14 @@ async function getLocalManifest () {
   }
 }
 
+/**
+ * Updates the local manifest file with a new manifest.
+ * @param {Manifest} newManifest
+ * @return {Promise<void>}
+ */
 async function updateLocalManifest (newManifest) {
-
+  const manifestJson = JSON.stringify(newManifest, null, '  ');
+  fs.writeFileSync(`.preview-binaries/manifest.json`, manifestJson, 'utf8');
 }
 
 /**
