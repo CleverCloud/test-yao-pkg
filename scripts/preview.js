@@ -36,6 +36,9 @@ run(async () => {
     case 'list':
       return listPreviews();
     case 'update':
+      if (os === 'win') {
+        throw new Error('The "update" command is not yet available on Windows');
+      }
       return updatePreviews();
     case 'build':
       return buildPreview(previewName, os);
