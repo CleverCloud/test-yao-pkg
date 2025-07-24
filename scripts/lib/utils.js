@@ -184,7 +184,12 @@ export function readEnvVars (variableNames) {
  */
 export function run (fn) {
   fn().catch((e) => {
-    console.error(`${styleText(['red', 'bold'], 'ERROR:')} ${e.message}`);
+    if (e instanceof SyntaxError || e instanceof TypeError) {
+      console.error(e);
+    }
+    else {
+      console.error(`${styleText(['red', 'bold'], 'ERROR:')} ${e.message}`);
+    }
     process.exit(1);
   });
 }
