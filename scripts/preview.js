@@ -77,7 +77,7 @@ async function listPreviews () {
   const remoteManifest = await fetchManifest();
   const localManifest = createDefaultManifest();
   const terminalPreviews = new TerminalPreviews(remoteManifest, localManifest, getOs());
-  terminalPreviews.initDisplay({ withState: true });
+  terminalPreviews.initDisplay();
 }
 
 /**
@@ -88,7 +88,7 @@ async function updatePreviews () {
   const remoteManifest = await fetchManifest();
   const localManifest = await getLocalManifest();
   const terminalPreviews = new TerminalPreviews(remoteManifest, localManifest, getOs());
-  terminalPreviews.initDisplay({ withState: true });
+  terminalPreviews.initDisplay();
   await terminalPreviews.updatePreviews();
   await updateLocalManifest(remoteManifest);
 }

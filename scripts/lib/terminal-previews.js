@@ -49,8 +49,10 @@ export class TerminalPreviews {
     this.#previewNames.sort();
   }
 
+  /**
+   * Initializes the display of previews in the terminal.
+   */
   initDisplay () {
-
     const rows = this.#previewNames.map((previewName) => {
       const remotePreview = this.#remoteManifest.previews.find((p) => p.name === previewName);
       const localPreview = this.#localManifest.previews.find((p) => p.name === previewName);
@@ -82,7 +84,7 @@ export class TerminalPreviews {
       ['TIME'],
       ['AUTHOR', 'green'],
       ['DOWNLOAD LINKS', 'blue'],
-      ['STATE'.padEnd(25, ' ')],
+      ['STATE'.padEnd(22, ' ')],
     ];
 
     this.#table = new TerminalTable(columns, rows);
@@ -90,9 +92,7 @@ export class TerminalPreviews {
   }
 
   async updatePreviews () {
-
     await fs.promises.mkdir('.preview-binaries', { recursive: true });
-
     await Promise.all(this.#previewNames.map((previewName, index) => {
       const remotePreview = this.#remoteManifest.previews.find((p) => p.name === previewName);
       const localPreview = this.#localManifest.previews.find((p) => p.name === previewName);
@@ -161,7 +161,10 @@ export class TerminalPreviews {
       const sourcePath = `${tmpDir}/clever`;
       const destPath = `.preview-binaries/clever--${previewName}`;
       await fs.promises.copyFile(sourcePath, destPath);
-      // TODO mac
+      if (this.#os === 'macos') {
+        this.#updatePreviewState(index, 'Trusting binary…', 'yellow');
+        await exec(`xattr -d com.apple.quarantine ${destPath}`, { quiet: true });
+      }
 
       this.#updatePreviewState(index, 'Cleaning…', 'blue');
       await clearDirectory(tmpDir);
