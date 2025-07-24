@@ -12,7 +12,8 @@ const ANSI = {
 const EMPTY_MESSAGE = 'No previews right now';
 
 /**
- * A terminal table renderer with rounded corners and column alignment.
+ * A terminal table renderer with rounded borders and column alignment.
+ * Provides dynamic cell updates and proper terminal state management.
  * Displays tabular data with configurable column styling and formatting.
  */
 export class TerminalTable {
@@ -50,7 +51,7 @@ export class TerminalTable {
   }
 
   /**
-   * Renders the table to stdout with rounded borders and proper alignment.
+   * Renders the initial table to stdout with rounded borders and proper alignment.
    * @returns {void}
    */
   renderInit () {
@@ -200,7 +201,8 @@ export class TerminalTable {
   }
 
   /**
-   * Sets up exit handlers to restore cursor and terminal state.
+   * Sets up process exit handlers to restore cursor and terminal state on exit.
+   * Handles normal exit, SIGINT, SIGTERM, uncaught exceptions, and unhandled rejections.
    * @returns {void}
    */
   #setupExitHandlers () {
@@ -212,9 +214,9 @@ export class TerminalTable {
   }
 
   /**
-   * Exits the process after cleaning up terminal state.
-   * @param {number} code - Exit code
-   * @param {string} error - Optional error message
+   * Performs clean exit by restoring cursor visibility and clearing styles.
+   * @param {number} [code] - Exit code (defaults to 0)
+   * @param {string} [error] - Optional error message to display
    * @returns {void}
    */
   #cleanExit (code, error) {

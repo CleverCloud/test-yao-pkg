@@ -97,6 +97,10 @@ export class TerminalPreviews {
     this.#table.renderInit();
   }
 
+  /**
+   * Updates all previews by downloading, updating, or deleting them based on manifest differences
+   * @returns {Promise<void>}
+   */
   async updatePreviews () {
     await fs.promises.mkdir('.preview-binaries', { recursive: true });
     await Promise.all(this.#previewNames.map((previewName, index) => {
@@ -130,14 +134,29 @@ export class TerminalPreviews {
     }));
   }
 
+  /**
+   * Marks a preview as up to date
+   * @param {Preview} preview - The preview to mark as up to date
+   */
   #keep (preview) {
     this.#updatePreviewState(preview, 'Up to date!', 'green');
   }
 
+  /**
+   * Updates an existing preview by downloading the new version
+   * @param {Preview} preview - The preview to update
+   * @returns {Promise<void>}
+   */
   #updatePreview (preview) {
     return this.#downloadPreview(preview, 'Updated!');
   }
 
+  /**
+   * Downloads and installs a preview binary
+   * @param {Preview} preview - The preview to download
+   * @param {string} [doneMessage='Downloaded!'] - Message to display when download completes
+   * @returns {Promise<void>}
+   */
   async #downloadPreview (preview, doneMessage = 'Downloaded!') {
     const previewName = preview.name;
     const previewUrl = preview?.urls.find((u) => u.os === this.#os);
@@ -184,6 +203,11 @@ export class TerminalPreviews {
     }
   }
 
+  /**
+   * Deletes a preview binary from the local filesystem
+   * @param {Preview} preview - The preview to delete
+   * @returns {Promise<void>}
+   */
   async #deletePreview (preview) {
     const previewName = preview.name;
 
@@ -202,10 +226,21 @@ export class TerminalPreviews {
     }
   }
 
+  /**
+   * Gets the local filesystem path for a preview binary
+   * @param {string} previewName - Name of the preview
+   * @returns {string} The path to the binary file
+   */
   #getBinaryPath (previewName) {
     return `.preview-binaries/clever--${previewName}`;
   }
 
+  /**
+   * Updates the display state of a preview in the terminal table
+   * @param {Preview} preview - The preview to update
+   * @param {string} text - The status text to display
+   * @param {string} style - The color/style for the text
+   */
   #updatePreviewState (preview, text, style) {
     const previewRowIndex = this.#previewNames.indexOf(preview.name);
     const stateColumnIndex = this.#columns.length - 1;
