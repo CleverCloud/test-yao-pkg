@@ -75,7 +75,7 @@ function getUsage (message) {
  */
 async function listPreviews () {
   const remoteManifest = await fetchManifest();
-  const localManifest = createDefaultManifest();
+  const localManifest = await getLocalManifest();
   const terminalPreviews = new TerminalPreviews(remoteManifest, localManifest, getOs());
   terminalPreviews.initDisplay();
 }

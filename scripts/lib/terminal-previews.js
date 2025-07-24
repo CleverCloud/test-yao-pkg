@@ -67,6 +67,9 @@ export class TerminalPreviews {
         return `${getEmoji(u.os)} ${createTerminalLink(u.url, u.os)}`;
       });
 
+      // Calculate state
+      const state = this.#calculateState(remotePreview, localPreview);
+
       return [
         preview.name,
         preview.commitId.substring(0, 8),
@@ -74,7 +77,7 @@ export class TerminalPreviews {
         time,
         preview.author,
         links.join(' '),
-        '',
+        state,
       ];
     });
 
@@ -200,5 +203,33 @@ export class TerminalPreviews {
 
   #updatePreviewState (index, text, style) {
     this.#table.updateData(index, 6, text, style);
+  }
+
+  /**
+   * Calculate the state of a preview based on remote and local manifests
+   * @param {Preview|undefined} remotePreview
+   * @param {Preview|undefined} localPreview
+   * @returns {string}
+   */
+  #calculateState (remotePreview, localPreview) {
+    const remoteChecksum = remotePreview?.urls.find((u) => u.os === this.#os)?.checksum.value;
+    const localChecksum = localPreview?.urls.find((u) => u.os === this.#os)?.checksum.value;
+
+    if (remoteChecksum != null && localChecksum != null) {
+      if (remoteChecksum === localChecksum) {
+        return 'Up to date';
+      }
+      return 'Update available';
+    }
+
+    if (remoteChecksum != null && localChecksum == null) {
+      return 'Not downloaded';
+    }
+
+    if (remoteChecksum == null && localChecksum != null) {
+      return 'Local only';
+    }
+
+    return 'Unknown';
   }
 }
