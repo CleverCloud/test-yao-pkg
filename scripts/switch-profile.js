@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { argv } from 'node:process';
-import { run, readJson, writeJson } from './lib/utils.js';
+import { readJson, run, writeJson } from './lib/utils.js';
 import { execSync } from 'node:child_process';
 import { TerminalTable } from './lib/terminal-table.js';
 import { select } from '@inquirer/prompts';
@@ -13,24 +13,46 @@ const PROFILES_PATH = `${CONFIG_DIR}/profiles.json`;
 
 run(async function () {
 
-  const currentTokens = readJson(CONFIG_PATH);
+  let currentTokens;
+  try {
+    currentTokens = readJson(CONFIG_PATH);
+  }
+  catch (error) {
+    console.error('Failed to read config:', error.message);
+    return;
+  }
 
-  const selfJson = await execSync('clever curl -s https://api.clever-cloud.com/v2/self');
-  const self = JSON.parse(selfJson);
+  let self;
+  try {
+    const selfJson = execSync('clever curl -s https://api.clever-cloud.com/v2/self', { encoding: 'utf8' });
+    self = JSON.parse(selfJson);
+  }
+  catch (error) {
+    console.error('Failed to fetch user info:', error.message);
+    self = { type: 'error' };
+  }
 
-  const currentProfile = (self.type !== 'error')
-    ? {
+  let currentProfile = null;
+  if (self.type !== 'error') {
+    currentProfile = {
       name: self.name,
       email: self.email,
       id: self.id,
       ...currentTokens,
-    }
-    : null;
+    };
+  }
 
-  const profiles = readJson(PROFILES_PATH, []);
+  let profiles;
+  try {
+    profiles = readJson(PROFILES_PATH, []);
+  }
+  catch (error) {
+    console.error('Failed to read profiles:', error.message);
+    return;
+  }
 
-  const currentStoredProfile = profiles.find(({ id }) => id === currentProfile.id);
   if (currentProfile != null) {
+    const currentStoredProfile = profiles.find(({ id }) => id === currentProfile.id);
     if (currentStoredProfile == null) {
       profiles.push(currentProfile);
     }
@@ -47,13 +69,17 @@ run(async function () {
     p.current = (p.id === currentProfile?.id);
   }
 
-  writeJson(PROFILES_PATH, profiles);
+  try {
+    writeJson(PROFILES_PATH, profiles);
+  }
+  catch (error) {
+    console.error('Failed to save profiles:', error.message);
+    return;
+  }
 
-  const choices = profiles
-    .filter(({ current }) => !current)
-    .map(({ name, email, id }) => ({ name, email, id }));
+  const availableProfiles = profiles.filter(({ current }) => !current);
 
-  if (choices.length === 0) {
+  if (availableProfiles.length === 0) {
     return console.log('No profiles to switch to :-(');
   }
 
@@ -77,26 +103,29 @@ run(async function () {
   const terminalTable = new TerminalTable(columns, rows);
   terminalTable.renderInit();
 
+  const userIdArg = argv[2];
+
   let profileToSwitch;
-  if (argv[2] != null) {
-    profileToSwitch = profiles.find((profile) => profile.id === argv[2]);
+  if (userIdArg != null) {
+    if (!/^[a-zA-Z0-9_-]+$/.test(userIdArg)) {
+      return console.log('Invalid profile ID format');
+    }
+    profileToSwitch = profiles.find((profile) => profile.id === userIdArg);
   }
   else {
-    const choiceIndex = await select({
+    const selectedProfileId = await select({
       message: 'Select a user account',
-      choices: choices.map((profile, index) => {
-        return ({
-          name: profile.email,
-          value: index,
-        });
-      }),
+      choices: availableProfiles.map((profile) => ({
+        name: profile.email,
+        value: profile.id,
+      })),
     }).catch((error) => {
       if (error instanceof Error && error.name === 'ExitPromptError') {
         process.exit(1);
       }
       throw error;
     });
-    profileToSwitch = profiles[choiceIndex];
+    profileToSwitch = profiles.find((profile) => profile.id === selectedProfileId);
   }
 
   if (profileToSwitch == null) {
@@ -108,6 +137,13 @@ run(async function () {
     secret: profileToSwitch.secret,
   };
 
-  writeJson(CONFIG_PATH, tokens);
+  try {
+    writeJson(CONFIG_PATH, tokens);
+    console.log(`Switched to profile: ${profileToSwitch.email}`);
+  }
+  catch (error) {
+    console.error('Failed to save config:', error.message);
+    return;
+  }
 
 });
