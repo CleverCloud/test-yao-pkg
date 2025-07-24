@@ -10,6 +10,16 @@ import { fetchWithProgress } from './fetch-with-progress.js';
  * @typedef {import('./preview.types.d.ts').PreviewUrl} PreviewUrl
  */
 
+const COLUMNS = [
+  ['NAME', 'yellow'],
+  ['COMMIT ID', 'blue'],
+  ['DATE'],
+  ['TIME'],
+  ['AUTHOR', 'green'],
+  ['DOWNLOAD LINKS', 'blue'],
+  ['STATE'.padEnd(22, ' ')],
+];
+
 /**
  * Handles display and management of preview builds
  */
@@ -25,8 +35,6 @@ export class TerminalPreviews {
   #os;
   /** @type {TerminalTable} */
   #table;
-  /** @type {number} */
-  #stateColumnIndex = 6;
 
   /**
    * @param {Manifest} remoteManifest - Remote manifest containing preview information
@@ -83,17 +91,7 @@ export class TerminalPreviews {
       ];
     });
 
-    const columns = [
-      ['NAME', 'yellow'],
-      ['COMMIT ID', 'blue'],
-      ['DATE'],
-      ['TIME'],
-      ['AUTHOR', 'green'],
-      ['DOWNLOAD LINKS', 'blue'],
-      ['STATE'.padEnd(22, ' ')],
-    ];
-
-    this.#table = new TerminalTable(columns, rows);
+    this.#table = new TerminalTable(COLUMNS, rows);
     this.#table.renderInit();
   }
 
@@ -167,7 +165,7 @@ export class TerminalPreviews {
 
       this.#updatePreviewState(preview, 'Installing binary…', 'yellow');
       const sourcePath = `${tmpDir}/clever`;
-      const destPath = `.preview-binaries/clever--${previewName}`;
+      const destPath = this.#getBinaryPath(previewName);
       await fs.promises.copyFile(sourcePath, destPath);
       if (this.#os === 'macos') {
         this.#updatePreviewState(preview, 'Trusting binary…', 'yellow');
@@ -189,7 +187,7 @@ export class TerminalPreviews {
 
     try {
       this.#updatePreviewState(preview, 'Deleting binary…', 'yellow');
-      const binaryPath = `.preview-binaries/clever--${previewName}`;
+      const binaryPath = this.#getBinaryPath(previewName);
       await fs.promises.unlink(binaryPath);
 
       this.#updatePreviewState(preview, 'Deleted!', 'green');
@@ -202,10 +200,14 @@ export class TerminalPreviews {
     }
   }
 
+  #getBinaryPath (previewName) {
+    return `.preview-binaries/clever--${previewName}`;
+  }
+
   #updatePreviewState (preview, text, style) {
-    const index = this.#previewNames.indexOf(preview.name);
-    // TODO the stateColumnIndex is always the last column index, we can delete #stateColumnIndex
-    this.#table.updateData(index, this.#stateColumnIndex, text, style);
+    const previewRowIndex = this.#previewNames.indexOf(preview.name);
+    const stateColumnIndex = COLUMNS.length - 1;
+    this.#table.updateData(previewRowIndex, stateColumnIndex, text, style);
   }
 
   /**
