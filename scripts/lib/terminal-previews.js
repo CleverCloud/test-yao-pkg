@@ -25,6 +25,8 @@ export class TerminalPreviews {
   #os;
   /** @type {TerminalTable} */
   #table;
+  /** @type {number} */
+  #stateColumnIndex = 6;
 
   /**
    * @param {Manifest} remoteManifest - Remote manifest containing preview information
@@ -108,101 +110,102 @@ export class TerminalPreviews {
 
       if (remoteChecksum != null && localChecksum != null) {
         if (remoteChecksum === localChecksum) {
-          return this.#keep(index);
+          return this.#keep(remotePreview);
         }
-        return this.#updatePreview(index);
+        return this.#updatePreview(remotePreview);
       }
 
       if (remoteChecksum != null && localChecksum == null) {
         if (localPreview != null) {
-          return this.#updatePreview(index);
+          return this.#updatePreview(remotePreview);
         }
-        return this.#downloadPreview(index);
+        return this.#downloadPreview(remotePreview);
       }
 
       if (remoteChecksum == null && localChecksum != null) {
-        return this.#deletePreview(index);
+        return this.#deletePreview(localPreview);
       }
 
-      return this.#updatePreviewState(index, 'Ignored');
+      return this.#updatePreviewState(remotePreview || localPreview, 'Ignored', 'grey');
     }));
   }
 
-  #keep (index) {
-    this.#updatePreviewState(index, 'Up to date!', 'green');
+  #keep (preview) {
+    this.#updatePreviewState(preview, 'Up to date!', 'green');
   }
 
-  #updatePreview (index) {
-    return this.#downloadPreview(index, 'Updated!');
+  #updatePreview (preview) {
+    return this.#downloadPreview(preview, 'Updated!');
   }
 
-  async #downloadPreview (index, doneMessage = 'Downloaded!') {
-    const previewName = this.#previewNames[index];
-    const remotePreview = this.#remoteManifest.previews.find((p) => p.name === previewName);
-    const previewUrl = remotePreview?.urls.find((u) => u.os === this.#os);
+  async #downloadPreview (preview, doneMessage = 'Downloaded!') {
+    const previewName = preview.name;
+    const previewUrl = preview?.urls.find((u) => u.os === this.#os);
 
     if (!previewUrl) {
-      return this.#updatePreviewState(index, 'Error: No URL found', 'red');
+      return this.#updatePreviewState(preview, 'Error: No URL found', 'red');
     }
 
     const tmpDir = `/tmp/previews-${previewName}`;
 
     try {
-      this.#updatePreviewState(index, 'Downloading .tar.gz…', 'yellow');
+      this.#updatePreviewState(preview, 'Downloading .tar.gz…', 'yellow');
       await fs.promises.mkdir(tmpDir, { recursive: true });
       const [downloadBuffer, downloadError] = await fetchWithProgress(previewUrl.url, (message) => {
-        return this.#updatePreviewState(index, message, 'yellow');
+        return this.#updatePreviewState(preview, message, 'yellow');
       })
         .then((result) => [result])
         .catch((err) => [null, err]);
       if (downloadError != null) {
-        return this.#updatePreviewState(index, downloadError.message, 'red');
+        return this.#updatePreviewState(preview, downloadError.message, 'red');
       }
 
-      this.#updatePreviewState(index, 'Extracting .tar.gz…', 'yellow');
+      this.#updatePreviewState(preview, 'Extracting .tar.gz…', 'yellow');
       const tarPath = path.join(tmpDir, 'binary.tar.gz');
       await fs.promises.writeFile(tarPath, downloadBuffer);
       await exec(`tar -xzf binary.tar.gz`, { cwd: tmpDir, quiet: true });
 
-      this.#updatePreviewState(index, 'Installing binary…', 'yellow');
+      this.#updatePreviewState(preview, 'Installing binary…', 'yellow');
       const sourcePath = `${tmpDir}/clever`;
       const destPath = `.preview-binaries/clever--${previewName}`;
       await fs.promises.copyFile(sourcePath, destPath);
       if (this.#os === 'macos') {
-        this.#updatePreviewState(index, 'Trusting binary…', 'yellow');
+        this.#updatePreviewState(preview, 'Trusting binary…', 'yellow');
         await exec(`xattr -d com.apple.quarantine ${destPath}`, { quiet: true });
       }
 
-      this.#updatePreviewState(index, 'Cleaning…', 'blue');
+      this.#updatePreviewState(preview, 'Cleaning…', 'blue');
       await clearDirectory(tmpDir);
 
-      this.#updatePreviewState(index, doneMessage, 'green');
+      this.#updatePreviewState(preview, doneMessage, 'green');
     }
     catch (error) {
-      this.#updatePreviewState(index, `Error: ${error.message}`, 'red');
+      this.#updatePreviewState(preview, `Error: ${error.message}`, 'red');
     }
   }
 
-  async #deletePreview (index) {
-    const previewName = this.#previewNames[index];
+  async #deletePreview (preview) {
+    const previewName = preview.name;
 
     try {
-      this.#updatePreviewState(index, 'Deleting binary…', 'yellow');
+      this.#updatePreviewState(preview, 'Deleting binary…', 'yellow');
       const binaryPath = `.preview-binaries/clever--${previewName}`;
       await fs.promises.unlink(binaryPath);
 
-      this.#updatePreviewState(index, 'Deleted!', 'green');
+      this.#updatePreviewState(preview, 'Deleted!', 'green');
     }
     catch (error) {
       if (error.code === 'ENOENT') {
-        return this.#updatePreviewState(index, 'Already deleted!', 'green');
+        return this.#updatePreviewState(preview, 'Already deleted!', 'green');
       }
-      this.#updatePreviewState(index, `Error: ${error.message}`, 'red');
+      this.#updatePreviewState(preview, `Error: ${error.message}`, 'red');
     }
   }
 
-  #updatePreviewState (index, text, style) {
-    this.#table.updateData(index, 6, text, style);
+  #updatePreviewState (preview, text, style) {
+    // TODO the index is always the last column, we can delete #previewNames
+    const index = this.#previewNames.indexOf(preview.name);
+    this.#table.updateData(index, this.#stateColumnIndex, text, style);
   }
 
   /**
