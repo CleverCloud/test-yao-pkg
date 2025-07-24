@@ -1,8 +1,9 @@
-import { clearDirectory, createTerminalLink, exec, getEmoji } from './utils.js';
+import { clearDirectory, createTerminalLink, exec, getEmoji, highlight } from './utils.js';
 import { TerminalTable } from './terminal-table.js';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fetchWithProgress } from './fetch-with-progress.js';
+import { styleText } from 'node:util';
 
 /**
  * @typedef {import('./preview.types.d.ts').Manifest} Manifest
@@ -133,8 +134,16 @@ export class TerminalPreviews {
       return this.#updatePreviewState(remotePreview || localPreview, 'Ignored', 'grey');
     }));
 
-    // TODO find a way to detect if binaryPath directory is in the $PATH
-    // console log a tip if not
+    const binaryDir = path.resolve('.preview-binaries');
+    const pathEnv = process.env.PATH || '';
+    const pathDirs = pathEnv.split(path.delimiter);
+
+    if (!pathDirs.includes(binaryDir) || true) {
+      console.log();
+      console.log(highlight`💡 TIP: Add ${binaryDir} to your ${'PATH'} to use preview binaries from anywhere:`);
+      console.log(styleText('blue', `   export PATH="${binaryDir}:$PATH"`));
+      console.log();
+    }
   }
 
   /**
