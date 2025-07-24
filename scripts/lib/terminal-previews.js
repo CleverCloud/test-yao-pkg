@@ -132,6 +132,9 @@ export class TerminalPreviews {
 
       return this.#updatePreviewState(remotePreview || localPreview, 'Ignored', 'grey');
     }));
+
+    // TODO find a way to detect if binaryPath directory is in the $PATH
+    // console log a tip if not
   }
 
   /**
