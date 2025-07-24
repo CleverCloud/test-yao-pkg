@@ -13,9 +13,9 @@ import fs from 'node:fs';
 import { HtmlPreviews } from './lib/html-previews.js';
 
 /**
- * @typedef {import('./lib/preview-client.types.js').Manifest} Manifest
- * @typedef {import('./lib/preview-client.types.js').Preview} Preview
- * @typedef {import('./lib/preview-client.types.js').PreviewUrl} PreviewUrl
+ * @typedef {import('./lib/preview.types.d.ts').Manifest} Manifest
+ * @typedef {import('./lib/preview.types.d.ts').Preview} Preview
+ * @typedef {import('./lib/preview.types.d.ts').PreviewUrl} PreviewUrl
  */
 
 const MANIFEST_URL = 'https://6mt2ilnafne8nzomvlg2.cellar-c2.services.clever-cloud.com/previews/manifest.json';

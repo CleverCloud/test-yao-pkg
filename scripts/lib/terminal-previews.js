@@ -5,9 +5,9 @@ import path from 'node:path';
 import { fetchWithProgress } from './fetch-with-progress.js';
 
 /**
- * @typedef {import('./preview-client.types.d.ts').Manifest} Manifest
- * @typedef {import('./preview-client.types.d.ts').Preview} Preview
- * @typedef {import('./preview-client.types.d.ts').PreviewUrl} PreviewUrl
+ * @typedef {import('./preview.types.d.ts').Manifest} Manifest
+ * @typedef {import('./preview.types.d.ts').Preview} Preview
+ * @typedef {import('./preview.types.d.ts').PreviewUrl} PreviewUrl
  */
 
 /**
