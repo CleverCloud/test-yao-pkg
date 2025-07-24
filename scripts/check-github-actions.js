@@ -1,5 +1,15 @@
 #!/usr/bin/env node
 
+/**
+ * CLI script to analyze GitHub Actions workflows and check secrets/variables usage.
+ * 
+ * This script scans all workflow files in .github/workflows/, extracts required
+ * secrets and variables, compares them with what's actually configured in the
+ * repository, and generates a comprehensive report.
+ * 
+ * @usage node check-github-actions.js
+ */
+
 import { globSync, readFileSync } from 'node:fs';
 import { execSync } from 'node:child_process';
 import { run } from './lib/utils.js';
@@ -48,6 +58,12 @@ run(async () => {
   logList('Not used', notUsedVariables);
 });
 
+/**
+ * Executes a GitHub CLI command and extracts names from the JSON response.
+ * 
+ * @param {string} command - GitHub CLI command to execute
+ * @returns {Set<string>} Set of names extracted from the command output
+ */
 function getListFrom (command) {
   const listJson = execSync(command, { encoding: 'utf8' });
   const list = JSON.parse(listJson);

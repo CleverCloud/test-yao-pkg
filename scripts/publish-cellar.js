@@ -1,5 +1,20 @@
 #!/usr/bin/env node
 
+/**
+ * CLI script to publish build artifacts to Clever Cloud's Cellar storage.
+ * 
+ * This script uploads various types of build artifacts (archives, RPM, DEB packages)
+ * to Cellar S3-compatible object storage for distribution and releases.
+ * 
+ * @usage node publish-cellar.js <version> <artifact>
+ * @param {string} version - Version string (e.g., "1.2.3")
+ * @param {'archives'|'rpm'|'deb'} artifact - Type of artifact to upload
+ * @throws {Error} When arguments are missing or invalid
+ * @requires CC_CLEVER_TOOLS_RELEASES_CELLAR_BUCKET - Environment variable for Cellar bucket name
+ * @requires CC_CLEVER_TOOLS_RELEASES_CELLAR_KEY_ID - Environment variable for Cellar access key ID
+ * @requires CC_CLEVER_TOOLS_RELEASES_CELLAR_SECRET_KEY - Environment variable for Cellar secret key
+ */
+
 import dedent from 'dedent';
 import { CellarClient } from './lib/cellar-client.js';
 import { getAssetPath } from './lib/paths.js';

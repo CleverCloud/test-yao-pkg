@@ -1,5 +1,21 @@
 #!/usr/bin/env node
 
+/**
+ * CLI script to publish RPM and DEB packages to Nexus Repository Manager.
+ * 
+ * This script uploads built packages to the configured Nexus repository
+ * using HTTP PUT (for RPM) or POST (for DEB) methods with basic authentication.
+ * 
+ * @usage node publish-nexus.js <version> <packager>
+ * @param {string} version - Version string (e.g., "1.2.3")
+ * @param {'rpm'|'deb'} packager - Package format to upload
+ * @throws {Error} When arguments are missing or invalid
+ * @requires NEXUS_USER - Environment variable for Nexus username
+ * @requires NEXUS_PASSWORD - Environment variable for Nexus password
+ * @requires NEXUS_RPM_REPOSITORY - Environment variable for RPM repository name (when packager=rpm)
+ * @requires NEXUS_DEB_REPOSITORY - Environment variable for DEB repository name (when packager=deb)
+ */
+
 import fs from 'node:fs/promises';
 import { getAssetPath } from './lib/paths.js';
 import { highlight, readEnvVars, run } from './lib/utils.js';
