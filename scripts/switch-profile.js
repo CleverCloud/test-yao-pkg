@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { argv } from 'node:process';
+import process from 'node:process';
 import { readJson, run, writeJson } from './lib/utils.js';
 import { execSync } from 'node:child_process';
 import { TerminalTable } from './lib/terminal-table.js';
@@ -10,30 +10,27 @@ import { styleText } from 'node:util';
 const CONFIG_DIR = `${process.env.HOME}/.config/clever-cloud`;
 const CONFIG_PATH = `${CONFIG_DIR}/clever-tools.json`;
 const PROFILES_PATH = `${CONFIG_DIR}/profiles.json`;
+const USER_ID_REGEX = /^[a-zA-Z0-9_-]+$/;
 
 run(async function () {
 
+  // Read current tokens from clever-tools configuration
   let currentTokens;
   try {
     currentTokens = readJson(CONFIG_PATH);
   }
   catch (error) {
-    console.error('Failed to read config:', error.message);
-    return;
+    throw new Error(`Failed to read config: ${error.message}`);
   }
 
-  let self;
+  // Read existing profiles from storage
+  const savedProfiles = readJson(PROFILES_PATH, []);
+
+  // Fetch current user info from Clever Cloud API
+  let currentProfile = null;
   try {
     const selfJson = execSync('clever curl -s https://api.clever-cloud.com/v2/self', { encoding: 'utf8' });
-    self = JSON.parse(selfJson);
-  }
-  catch (error) {
-    console.error('Failed to fetch user info:', error.message);
-    self = { type: 'error' };
-  }
-
-  let currentProfile = null;
-  if (self.type !== 'error') {
+    const self = JSON.parse(selfJson);
     currentProfile = {
       name: self.name,
       email: self.email,
@@ -41,49 +38,47 @@ run(async function () {
       ...currentTokens,
     };
   }
-
-  let profiles;
-  try {
-    profiles = readJson(PROFILES_PATH, []);
-  }
   catch (error) {
-    console.error('Failed to read profiles:', error.message);
-    return;
+    console.error('Failed to fetch user info:', error.message);
   }
 
+  // Update profiles list with current profile
   if (currentProfile != null) {
-    const currentStoredProfile = profiles.find(({ id }) => id === currentProfile.id);
-    if (currentStoredProfile == null) {
-      profiles.push(currentProfile);
+    const currentSavedProfile = savedProfiles.find(({ id }) => id === currentProfile.id);
+    if (currentSavedProfile == null) {
+      savedProfiles.push(currentProfile);
     }
     else {
-      currentStoredProfile.name = currentProfile.name;
-      currentStoredProfile.email = currentProfile.email;
-      currentStoredProfile.token = currentProfile.token;
-      currentStoredProfile.secret = currentProfile.secret;
-      currentStoredProfile.expirationDate = currentProfile.expirationDate;
+      currentSavedProfile.name = currentProfile.name;
+      currentSavedProfile.email = currentProfile.email;
+      currentSavedProfile.token = currentProfile.token;
+      currentSavedProfile.secret = currentProfile.secret;
+      currentSavedProfile.expirationDate = currentProfile.expirationDate;
     }
   }
 
-  for (const p of profiles) {
+  // Mark current profile in the list
+  for (const p of savedProfiles) {
     p.current = (p.id === currentProfile?.id);
   }
 
+  // Save updated profiles back to storage
   try {
-    writeJson(PROFILES_PATH, profiles);
+    writeJson(PROFILES_PATH, savedProfiles);
   }
   catch (error) {
-    console.error('Failed to save profiles:', error.message);
-    return;
+    throw new Error(`Failed to save profiles: ${error.message}`);
   }
 
-  const availableProfiles = profiles.filter(({ current }) => !current);
+  // Filter profiles that can be switched to
+  const availableProfiles = savedProfiles.filter(({ current }) => !current);
 
   if (availableProfiles.length === 0) {
     return console.log('No profiles to switch to :-(');
   }
 
-  const rows = profiles.map((profile, index) => {
+  // Display all profiles in a table
+  const rows = savedProfiles.map((profile, index) => {
     const style = profile.current ? 'yellow' : 'none';
     return [
       styleText(style, profile.name),
@@ -103,14 +98,15 @@ run(async function () {
   const terminalTable = new TerminalTable(columns, rows);
   terminalTable.renderInit();
 
-  const userIdArg = argv[2];
+  const [userIdArg] = process.argv.slice(2);
 
-  let profileToSwitch;
+  // Select profile to switch to (from CLI arg or interactive prompt)
+  let newProfile;
   if (userIdArg != null) {
-    if (!/^[a-zA-Z0-9_-]+$/.test(userIdArg)) {
+    if (!USER_ID_REGEX.test(userIdArg)) {
       return console.log('Invalid profile ID format');
     }
-    profileToSwitch = profiles.find((profile) => profile.id === userIdArg);
+    newProfile = savedProfiles.find((profile) => profile.id === userIdArg);
   }
   else {
     const selectedProfileId = await select({
@@ -119,31 +115,31 @@ run(async function () {
         name: profile.email,
         value: profile.id,
       })),
-    }).catch((error) => {
-      if (error instanceof Error && error.name === 'ExitPromptError') {
-        process.exit(1);
-      }
-      throw error;
-    });
-    profileToSwitch = profiles.find((profile) => profile.id === selectedProfileId);
+    }).catch(exitOnPromptError);
+    newProfile = savedProfiles.find((profile) => profile.id === selectedProfileId);
   }
-
-  if (profileToSwitch == null) {
+  if (newProfile == null) {
     return console.log('Invalid choice :-(');
   }
 
-  const tokens = {
-    token: profileToSwitch.token,
-    secret: profileToSwitch.secret,
+  const newTokens = {
+    token: newProfile.token,
+    secret: newProfile.secret,
   };
 
   try {
-    writeJson(CONFIG_PATH, tokens);
-    console.log(`Switched to profile: ${profileToSwitch.email}`);
+    writeJson(CONFIG_PATH, newTokens);
+    console.log(`Switched to profile: ${newProfile.email}`);
   }
   catch (error) {
-    console.error('Failed to save config:', error.message);
-    return;
+    throw new Error(`Failed to save config: ${error.message}`);
   }
 
 });
+
+function exitOnPromptError (error) {
+  if (error instanceof Error && error.name === 'ExitPromptError') {
+    process.exit(1);
+  }
+  throw error;
+}
