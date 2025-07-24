@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 
 import { argv } from 'node:process';
-import fs from 'node:fs';
-import { run } from './lib/utils.js';
+import { run, readJson, writeJson } from './lib/utils.js';
 import { execSync } from 'node:child_process';
 import { TerminalTable } from './lib/terminal-table.js';
 import { select } from '@inquirer/prompts';
@@ -14,14 +13,7 @@ const PROFILES_PATH = `${CONFIG_DIR}/profiles.json`;
 
 run(async function () {
 
-  let currentTokens;
-  try {
-    const json = fs.readFileSync(CONFIG_PATH, 'utf8');
-    currentTokens = JSON.parse(json);
-  }
-  catch {
-    currentTokens = null;
-  }
+  const currentTokens = readJson(CONFIG_PATH);
 
   const selfJson = await execSync('clever curl -s https://api.clever-cloud.com/v2/self');
   const self = JSON.parse(selfJson);
@@ -35,14 +27,7 @@ run(async function () {
     }
     : null;
 
-  let profiles;
-  try {
-    const json = fs.readFileSync(PROFILES_PATH, 'utf8');
-    profiles = JSON.parse(json);
-  }
-  catch {
-    profiles = [];
-  }
+  const profiles = readJson(PROFILES_PATH, []);
 
   const currentStoredProfile = profiles.find(({ id }) => id === currentProfile.id);
   if (currentProfile != null) {
@@ -62,7 +47,7 @@ run(async function () {
     p.current = (p.id === currentProfile?.id);
   }
 
-  fs.writeFileSync(PROFILES_PATH, JSON.stringify(profiles, null, 2));
+  writeJson(PROFILES_PATH, profiles);
 
   const choices = profiles
     .filter(({ current }) => !current)
@@ -123,6 +108,6 @@ run(async function () {
     secret: profileToSwitch.secret,
   };
 
-  fs.writeFileSync(CONFIG_PATH, JSON.stringify(tokens, null, 2));
+  writeJson(CONFIG_PATH, tokens);
 
 });

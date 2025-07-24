@@ -178,6 +178,31 @@ export function readEnvVars (variableNames) {
 }
 
 /**
+ * Reads and parses a JSON file, returning the parsed object or a default value if the file doesn't exist or is invalid.
+ * @param {string} filePath - Path to the JSON file to read
+ * @param {any} defaultValue - Default value to return if file doesn't exist or parsing fails
+ * @returns {any} The parsed JSON object or the default value
+ */
+export function readJson (filePath, defaultValue = null) {
+  try {
+    const content = fs.readFileSync(filePath, 'utf8');
+    return JSON.parse(content);
+  }
+  catch {
+    return defaultValue;
+  }
+}
+
+/**
+ * Writes an object to a JSON file with pretty formatting.
+ * @param {string} filePath - Path to the JSON file to write
+ * @param {any} data - The data to write as JSON
+ */
+export function writeJson (filePath, data) {
+  fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+}
+
+/**
  * Runs a function and catches any errors, logging them to the console.
  * @param {Function} fn
  * @return {void}
