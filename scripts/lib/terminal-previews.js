@@ -10,16 +10,6 @@ import { fetchWithProgress } from './fetch-with-progress.js';
  * @typedef {import('./preview.types.d.ts').PreviewUrl} PreviewUrl
  */
 
-const COLUMNS = [
-  ['NAME', 'yellow'],
-  ['COMMIT ID', 'blue'],
-  ['DATE'],
-  ['TIME'],
-  ['AUTHOR', 'green'],
-  ['DOWNLOAD LINKS', 'blue'],
-  ['STATE'.padEnd(22, ' ')],
-];
-
 /**
  * Handles display and management of preview builds
  */
@@ -35,6 +25,8 @@ export class TerminalPreviews {
   #os;
   /** @type {TerminalTable} */
   #table;
+  /** @type {Array<[string, string?]>} */
+  #columns;
 
   /**
    * @param {Manifest} remoteManifest - Remote manifest containing preview information
@@ -91,7 +83,17 @@ export class TerminalPreviews {
       ];
     });
 
-    this.#table = new TerminalTable(COLUMNS, rows);
+    this.#columns = [
+      ['NAME', 'yellow'],
+      ['COMMIT ID', 'blue'],
+      ['DATE'],
+      ['TIME'],
+      ['AUTHOR', 'green'],
+      ['DOWNLOAD LINKS', 'blue'],
+      ['STATE'.padEnd(22, ' ')],
+    ];
+
+    this.#table = new TerminalTable(this.#columns, rows);
     this.#table.renderInit();
   }
 
@@ -206,7 +208,7 @@ export class TerminalPreviews {
 
   #updatePreviewState (preview, text, style) {
     const previewRowIndex = this.#previewNames.indexOf(preview.name);
-    const stateColumnIndex = COLUMNS.length - 1;
+    const stateColumnIndex = this.#columns.length - 1;
     this.#table.updateData(previewRowIndex, stateColumnIndex, text, style);
   }
 
