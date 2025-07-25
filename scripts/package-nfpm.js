@@ -46,7 +46,7 @@ runCommand(async () => {
     throw new ArgumentError('packager');
   }
   if (packager !== 'rpm' && packager !== 'deb') {
-    throw new ArgumentError('packager (must be "rpm" or "deb")');
+    throw new ArgumentError('packager', ['rpm', 'deb']);
   }
 
   const [rpmGpgPrivateKey, rpmGpgPassphrase] = (packager === 'rpm') ? readEnvVars(['RPM_GPG_PRIVATE_KEY', 'RPM_GPG_PASSPHRASE']) : [];

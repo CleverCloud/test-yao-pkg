@@ -28,6 +28,8 @@ import { getAssetPath } from './lib/paths.js';
 import { highlight } from './lib/terminal.js';
 import { ArgumentError, readEnvVars, runCommand } from './lib/command.js';
 
+const VALID_ARTIFACTS = ['archives', 'rpm', 'deb'];
+
 runCommand(async () => {
 
   const [bucket, accessKeyId, secretAccessKey] = readEnvVars([
@@ -46,13 +48,8 @@ runCommand(async () => {
   if (version == null) {
     throw new ArgumentError('version');
   }
-  if (artifact == null) {
-    throw new ArgumentError('artifact');
-  }
-
-  const validArtifacts = ['archives', 'rpm', 'deb'];
-  if (!validArtifacts.includes(artifact)) {
-    throw new ArgumentError(`artifact (must be one of: ${validArtifacts.join(', ')})`);
+  if (artifact == null || !VALID_ARTIFACTS.includes(artifact)) {
+    throw new ArgumentError('artifact', VALID_ARTIFACTS);
   }
 
   switch (artifact) {

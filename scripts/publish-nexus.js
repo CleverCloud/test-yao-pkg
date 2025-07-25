@@ -41,7 +41,7 @@ runCommand(async () => {
     throw new ArgumentError('packager');
   }
   if (packager !== 'rpm' && packager !== 'deb') {
-    throw new ArgumentError('packager (must be "rpm" or "deb")');
+    throw new ArgumentError('packager', ['rpm', 'deb']);
   }
 
   const [nexusUser, nexusPassword] = readEnvVars(['NEXUS_USER', 'NEXUS_PASSWORD']);

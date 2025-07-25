@@ -118,10 +118,17 @@ function extractUsage(filePath) {
 
 /**
  * Custom error for missing or invalid command-line arguments.
+ * @param {string} argumentName - The name of the argument
+ * @param {string[]} [allowedValues] - Array of allowed values for the argument
  */
 export class ArgumentError extends Error {
-  constructor(argumentName) {
-    const message = argumentName ? `Missing argument: ${argumentName}` : 'Missing required arguments';
+  constructor(argumentName, allowedValues) {
+    let message;
+    if (allowedValues && allowedValues.length > 0) {
+      message = `${argumentName} (must be one of: ${allowedValues.map(v => `"${v}"`).join(', ')})`;
+    } else {
+      message = argumentName ? `Missing argument: ${argumentName}` : 'Missing required arguments';
+    }
     super(message);
     this.name = 'ArgumentError';
   }
