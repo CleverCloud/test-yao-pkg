@@ -2,13 +2,13 @@
  * A simple client for interacting with Clever Cloud's Cellar object storage service.
  * This client only handles objects that are publicly accessible.
  */
-export class PublicCellarClient {
+export class CellarClientPublic {
 
   #host = 'cellar-c2.services.clever-cloud.com';
   #bucket;
 
   /**
-   * Creates a new PublicCellarClient instance.
+   * Creates a new CellarClientPublic instance.
    * @param {Object} config - Configuration object
    * @param {string} [config.host] - The Cellar host (defaults to cellar-c2.services.clever-cloud.com)
    * @param {string} config.bucket - The S3 bucket name

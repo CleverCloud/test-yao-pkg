@@ -42,22 +42,22 @@
 //   preview.js publish
 //   preview.js delete old-preview
 
-import { clearDirectory, getSha256 } from './lib/fs.js';
-import { getEmoji, getOs } from './lib/platform-os.js';
-import { highlight } from './lib/terminal.js';
-import { getVersion } from './lib/utils.js';
-import { ArgumentError, readEnvVars, runCommand, UnknownCommandError } from './lib/command.js';
-import { getCurrentAuthor, getCurrentBranch, getCurrentCommit } from './lib/git.js';
-import { CellarClient } from './lib/cellar-client.js';
-import { bundleToSingleCjs } from './lib/bundle-cjs.js';
-import { buildBinary } from './lib/build-binary.js';
-import { createArchive } from './lib/create-archive.js';
 import dedent from 'dedent';
-import { BUILD_DIR, getAssetParts, getAssetPath, PREVIEW_DIR } from './lib/paths.js';
-import { TerminalPreviews } from './lib/terminal-previews.js';
 import fs from 'node:fs';
+import { ArgumentError, readEnvVars, runCommand, UnknownCommandError } from './lib/command.js';
+import { BUILD_DIR, getAssetParts, getAssetPath, PREVIEW_DIR } from './lib/paths.js';
+import { CellarClient } from './lib/cellar-client.js';
+import { CellarClientPublic } from './lib/cellar-client-public.js';
 import { HtmlPreviews } from './lib/html-previews.js';
-import { PublicCellarClient } from './lib/public-cellar-client.js';
+import { TerminalPreviews } from './lib/terminal-previews.js';
+import { buildBinary } from './lib/build-binary.js';
+import { bundleToSingleCjs } from './lib/bundle-cjs.js';
+import { clearDirectory, getSha256 } from './lib/fs.js';
+import { createArchive } from './lib/create-archive.js';
+import { getCurrentAuthor, getCurrentBranch, getCurrentCommit } from './lib/git.js';
+import { getEmoji, getOs } from './lib/platform-os.js';
+import { getVersion } from './lib/utils.js';
+import { highlight } from './lib/terminal.js';
 
 /**
  * @typedef {import('./lib/common.types.d.ts').Manifest} Manifest
@@ -289,7 +289,6 @@ async function fetchManifest () {
     return manifest;
   }
   catch (e) {
-    console.log(e);
     return createDefaultManifest();
   }
 }
@@ -356,11 +355,11 @@ async function updateListIndex (cellarClient, manifest) {
 
 /**
  * Creates and configures a public (non-authenticated) Cellar client instance.
- * @return {PublicCellarClient} - The configured public Cellar client instance
+ * @return {CellarClientPublic} - The configured public Cellar client instance
  */
 function createCellarClientPublic () {
   const [bucket] = readEnvVars(['CC_CLEVER_TOOLS_PREVIEWS_CELLAR_BUCKET']);
-  return new PublicCellarClient({ bucket });
+  return new CellarClientPublic({ bucket });
 }
 
 /**
