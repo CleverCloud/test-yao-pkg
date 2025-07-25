@@ -13,7 +13,6 @@
 //
 // EXAMPLES:
 //   check-github-actions.js
-//
 
 import { globSync, readFileSync } from 'node:fs';
 import { execSync } from 'node:child_process';
@@ -65,7 +64,7 @@ runCommand(async () => {
 
 /**
  * Executes a GitHub CLI command and extracts names from the JSON response.
- * 
+ *
  * @param {string} command - GitHub CLI command to execute
  * @returns {Set<string>} Set of names extracted from the command output
  */

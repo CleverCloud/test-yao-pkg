@@ -11,7 +11,7 @@
 import { globSync } from 'tinyglobby';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { highlight } from './utils.js';
+import { highlight } from './terminal.js';
 
 /**
  * Simple template engine that replaces <%= variable %> patterns with values.

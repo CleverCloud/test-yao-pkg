@@ -23,9 +23,9 @@
 //   [preview-name]  Version (e.g., "1.2.3") or branch name (e.g., "my-feature"), defaults to current git branch
 //
 // ENVIRONMENT VARIABLES:
-//   CC_CLEVER_TOOLS_PREVIEWS_CELLAR_BUCKET      Environment variable for preview storage bucket
-//   CC_CLEVER_TOOLS_PREVIEWS_CELLAR_KEY_ID      Environment variable for Cellar access key
-//   CC_CLEVER_TOOLS_PREVIEWS_CELLAR_SECRET_KEY  Environment variable for Cellar secret key
+//   CC_CLEVER_TOOLS_PREVIEWS_CELLAR_BUCKET      Preview storage bucket
+//   CC_CLEVER_TOOLS_PREVIEWS_CELLAR_KEY_ID      Cellar access key
+//   CC_CLEVER_TOOLS_PREVIEWS_CELLAR_SECRET_KEY  Cellar secret key
 //
 // REQUIRED SYSTEM BINARIES:
 //   git             For getting current branch and commit information
@@ -38,10 +38,12 @@
 //   preview.js build feature-branch
 //   preview.js publish
 //   preview.js delete old-preview
-//
 
-import { clearDirectory, getEmoji, getOs, getSha256, getVersion, highlight, readEnvVars } from './lib/utils.js';
-import { runCommand, ArgumentError } from './lib/command.js';
+import { clearDirectory, getSha256 } from './lib/fs.js';
+import { getEmoji, getOs } from './lib/platform-os.js';
+import { highlight } from './lib/terminal.js';
+import { getVersion } from './lib/utils.js';
+import { runCommand, ArgumentError, readEnvVars } from './lib/command.js';
 import { getCurrentAuthor, getCurrentBranch, getCurrentCommit } from './lib/git.js';
 import { CellarClient } from './lib/cellar-client.js';
 import { bundleToSingleCjs } from './lib/bundle-cjs.js';
@@ -54,9 +56,9 @@ import fs from 'node:fs';
 import { HtmlPreviews } from './lib/html-previews.js';
 
 /**
- * @typedef {import('./lib/preview.types.d.ts').Manifest} Manifest
- * @typedef {import('./lib/preview.types.d.ts').Preview} Preview
- * @typedef {import('./lib/preview.types.d.ts').PreviewUrl} PreviewUrl
+ * @typedef {import('./lib/common.types.d.ts').Manifest} Manifest
+ * @typedef {import('./lib/common.types.d.ts').Preview} Preview
+ * @typedef {import('./lib/common.types.d.ts').PreviewUrl} PreviewUrl
  */
 
 const MANIFEST_URL = 'https://6mt2ilnafne8nzomvlg2.cellar-c2.services.clever-cloud.com/previews/manifest.json';
@@ -67,7 +69,7 @@ runCommand(async () => {
 
   const [command, rawPreviewName] = process.argv.slice(2);
   if (command == null || command.length === 0) {
-    throw new ArgumentError('Missing command');
+    throw new ArgumentError('command');
   }
 
   const previewName = getVersion(rawPreviewName ?? (await getCurrentBranch()));
@@ -91,7 +93,7 @@ runCommand(async () => {
       return deletePreview(previewName);
   }
 
-  throw new ArgumentError(`Unknown command "${command}"`)
+  throw new ArgumentError(`command (unknown: "${command}")`)
 });
 
 

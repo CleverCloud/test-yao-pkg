@@ -2,23 +2,69 @@ import { styleText } from 'node:util';
 import fs from 'node:fs';
 
 /**
- * Custom error for missing or invalid command-line arguments.
+ * Runs a function and catches any errors, logging them to the console.
+ * Handles help flags (-h, --help) and shows usage for ArgumentError and EnvironmentVariableError.
+ * @param {Function} fn - The async function to run
+ * @return {void}
  */
-export class ArgumentError extends Error {
-  constructor(message) {
-    super(message);
-    this.name = 'ArgumentError';
+export function runCommand(fn) {
+
+  // Check for help flags
+  const args = process.argv.slice(2);
+
+  if (args.includes('-h') || args.includes('--help')) {
+    const scriptPath = process.argv[1];
+    const usage = extractUsage(scriptPath);
+    if (usage) {
+      console.log(usage);
+    } else {
+      console.log(`Usage: ${scriptPath.split('/').pop()}`);
+    }
+    process.exit(0);
   }
+
+  fn().catch((e) => {
+    if (e instanceof SyntaxError || e instanceof TypeError) {
+      console.error(e);
+    } else {
+      console.error(`${styleText(['red', 'bold'], 'ERROR:')} ${e.message}`);
+
+      // Show usage for argument and environment variable errors
+      if (e instanceof ArgumentError || e instanceof EnvironmentVariableError) {
+        const scriptPath = process.argv[1];
+        const usage = extractUsage(scriptPath);
+        if (usage) {
+          console.log('\n' + usage);
+        }
+      }
+    }
+    process.exit(1);
+  });
 }
 
 /**
- * Custom error for missing or invalid environment variables.
+ * Reads environment variables and validates they are all present.
+ * @param {string[]} variableNames - Array of environment variable names to read
+ * @returns {string[]} Array of environment variable values in the same order
+ * @throws {EnvironmentVariableError} When any environment variable is null, undefined, or empty string
  */
-export class EnvironmentVariableError extends Error {
-  constructor(message) {
-    super(message);
-    this.name = 'EnvironmentVariableError';
+export function readEnvVars(variableNames) {
+  const values = [];
+  const missing = [];
+
+  for (const varName of variableNames) {
+    const value = process.env[varName];
+    values.push(value);
+    if (value == null || value === '') {
+      missing.push(varName);
+    }
   }
+
+  if (missing.length > 0) {
+    throw new EnvironmentVariableError(...missing);
+  }
+
+  return values;
 }
 
 /**
@@ -71,42 +117,29 @@ function extractUsage(filePath) {
 }
 
 /**
- * Runs a function and catches any errors, logging them to the console.
- * Handles help flags (-h, --help) and shows usage for ArgumentError and EnvironmentVariableError.
- * @param {Function} fn - The async function to run
- * @return {void}
+ * Custom error for missing or invalid command-line arguments.
  */
-export function runCommand(fn) {
-
-  // Check for help flags
-  const args = process.argv.slice(2);
-
-  if (args.includes('-h') || args.includes('--help')) {
-    const scriptPath = process.argv[1];
-    const usage = extractUsage(scriptPath);
-    if (usage) {
-      console.log(usage);
-    } else {
-      console.log(`Usage: ${scriptPath.split('/').pop()}`);
-    }
-    process.exit(0);
+export class ArgumentError extends Error {
+  constructor(argumentName) {
+    const message = argumentName ? `Missing argument: ${argumentName}` : 'Missing required arguments';
+    super(message);
+    this.name = 'ArgumentError';
   }
+}
 
-  fn().catch((e) => {
-    if (e instanceof SyntaxError || e instanceof TypeError) {
-      console.error(e);
+/**
+ * Custom error for missing or invalid environment variables.
+ */
+export class EnvironmentVariableError extends Error {
+  constructor(...variableNames) {
+    let message;
+    if (variableNames.length === 1) {
+      message = `Missing environment variable: ${variableNames[0]}`;
     } else {
-      console.error(`${styleText(['red', 'bold'], 'ERROR:')} ${e.message}`);
-
-      // Show usage for argument and environment variable errors
-      if (e instanceof ArgumentError || e instanceof EnvironmentVariableError) {
-        const scriptPath = process.argv[1];
-        const usage = extractUsage(scriptPath);
-        if (usage) {
-          console.log('\n' + usage);
-        }
-      }
+      const list = variableNames.map(name => `- ${name}`).join('\n');
+      message = `Missing environment variables:\n${list}`;
     }
-    process.exit(1);
-  });
+    super(message);
+    this.name = 'EnvironmentVariableError';
+  }
 }

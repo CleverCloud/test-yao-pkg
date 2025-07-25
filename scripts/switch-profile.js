@@ -17,10 +17,9 @@
 // EXAMPLES:
 //   switch-profile.js              # Interactive mode - shows profile list and prompts for selection
 //   switch-profile.js user_12345   # Direct mode - switches to specific user ID
-//
 
 import process from 'node:process';
-import { readJson, writeJson } from './lib/utils.js';
+import { readJson, writeJson } from './lib/fs.js';
 import { runCommand } from './lib/command.js';
 import { execSync } from 'node:child_process';
 import { TerminalTable } from './lib/terminal-table.js';
@@ -159,7 +158,7 @@ runCommand(async function () {
 
 /**
  * Handles prompt cancellation errors by exiting the process gracefully.
- * 
+ *
  * @param {Error} error - Error thrown by prompt cancellation
  * @throws {Error} Re-throws non-ExitPromptError errors
  */

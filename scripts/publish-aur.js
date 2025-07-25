@@ -12,21 +12,21 @@
 //   version         Version string (e.g., "1.2.3")
 //
 // ENVIRONMENT VARIABLES:
-//   AUR_GIT_URL     Environment variable for AUR repository URL
+//   AUR_GIT_URL     AUR repository URL
 //
 // REQUIRED SYSTEM BINARIES:
 //   git             For cloning, committing, and pushing to AUR repository
 //
 // EXAMPLES:
 //   publish-aur.js 1.2.3
-//
 
 import pkg from '../package.json' with { type: 'json' };
 import { applyTemplates } from './lib/templates.js';
 import { commitAndPush } from './lib/git.js';
 import { getAssetPath } from './lib/paths.js';
-import { getSha256, highlight, readEnvVars } from './lib/utils.js';
-import { runCommand, ArgumentError } from './lib/command.js';
+import { getSha256 } from './lib/fs.js';
+import { highlight } from './lib/terminal.js';
+import { runCommand, ArgumentError, readEnvVars } from './lib/command.js';
 import { simpleGit } from 'simple-git';
 
 const PKGBASE = 'clever-tools-bin';
@@ -37,7 +37,7 @@ runCommand(async () => {
 
   const [version] = process.argv.slice(2);
   if (version == null) {
-    throw new ArgumentError('Missing version');
+    throw new ArgumentError('version');
   }
 
   const [gitUrl] = readEnvVars(['AUR_GIT_URL']);

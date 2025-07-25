@@ -12,9 +12,9 @@
 //   artifact        Type of artifact to upload ('archives', 'rpm', or 'deb')
 //
 // ENVIRONMENT VARIABLES:
-//   CC_CLEVER_TOOLS_RELEASES_CELLAR_BUCKET      Environment variable for Cellar bucket name
-//   CC_CLEVER_TOOLS_RELEASES_CELLAR_KEY_ID      Environment variable for Cellar access key ID
-//   CC_CLEVER_TOOLS_RELEASES_CELLAR_SECRET_KEY  Environment variable for Cellar secret key
+//   CC_CLEVER_TOOLS_RELEASES_CELLAR_BUCKET      Cellar bucket name
+//   CC_CLEVER_TOOLS_RELEASES_CELLAR_KEY_ID      Cellar access key ID
+//   CC_CLEVER_TOOLS_RELEASES_CELLAR_SECRET_KEY  Cellar secret key
 //
 // REQUIRED SYSTEM BINARIES:
 //
@@ -22,13 +22,12 @@
 //   publish-cellar.js 1.2.3 archives
 //   publish-cellar.js 1.2.3 rpm
 //   publish-cellar.js 1.2.3 deb
-//
 
 import dedent from 'dedent';
 import { CellarClient } from './lib/cellar-client.js';
 import { getAssetPath } from './lib/paths.js';
-import { highlight, readEnvVars } from './lib/utils.js';
-import { runCommand, ArgumentError } from './lib/command.js';
+import { highlight } from './lib/terminal.js';
+import { runCommand, ArgumentError, readEnvVars } from './lib/command.js';
 
 runCommand(async () => {
 
@@ -46,15 +45,15 @@ runCommand(async () => {
 
   const [version, artifact] = process.argv.slice(2);
   if (version == null) {
-    throw new ArgumentError('Missing version parameter');
+    throw new ArgumentError('version');
   }
   if (artifact == null) {
-    throw new ArgumentError('Missing artifact parameter');
+    throw new ArgumentError('artifact');
   }
 
   const validArtifacts = ['archives', 'rpm', 'deb'];
   if (!validArtifacts.includes(artifact)) {
-    throw new ArgumentError(`Invalid artifact "${artifact}". Must be one of: ${validArtifacts.join(', ')}`)
+    throw new ArgumentError(`artifact (must be one of: ${validArtifacts.join(', ')})`)
   }
 
   switch (artifact) {

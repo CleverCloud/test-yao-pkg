@@ -12,22 +12,21 @@
 //   packager        Package format to upload ('rpm' or 'deb')
 //
 // ENVIRONMENT VARIABLES:
-//   NEXUS_USER              Environment variable for Nexus username
-//   NEXUS_PASSWORD          Environment variable for Nexus password
-//   NEXUS_RPM_REPOSITORY    Environment variable for RPM repository name (when packager=rpm)
-//   NEXUS_DEB_REPOSITORY    Environment variable for DEB repository name (when packager=deb)
+//   NEXUS_USER              Nexus username
+//   NEXUS_PASSWORD          Nexus password
+//   NEXUS_RPM_REPOSITORY    RPM repository name (when packager=rpm)
+//   NEXUS_DEB_REPOSITORY    DEB repository name (when packager=deb)
 //
 // REQUIRED SYSTEM BINARIES:
 //
 // EXAMPLES:
 //   publish-nexus.js 1.2.3 rpm
 //   publish-nexus.js 1.2.3 deb
-//
 
 import fs from 'node:fs/promises';
 import { getAssetPath } from './lib/paths.js';
-import { highlight, readEnvVars } from './lib/utils.js';
-import { runCommand, ArgumentError } from './lib/command.js';
+import { highlight } from './lib/terminal.js';
+import { runCommand, ArgumentError, readEnvVars } from './lib/command.js';
 import dedent from 'dedent';
 
 const NEXUS_SERVER_URL = 'https://nexus.clever-cloud.com';
@@ -36,13 +35,13 @@ runCommand(async () => {
 
   const [version, packager] = process.argv.slice(2);
   if (version == null) {
-    throw new ArgumentError('Missing version');
+    throw new ArgumentError('version');
   }
   if (packager == null) {
-    throw new ArgumentError('Missing packager, must be either "rpm" or "deb"');
+    throw new ArgumentError('packager');
   }
   if (packager !== 'rpm' && packager !== 'deb') {
-    throw new ArgumentError('Invalid packager, must be either "rpm" or "deb"');
+    throw new ArgumentError('packager (must be "rpm" or "deb")');
   }
 
   const [nexusUser, nexusPassword] = readEnvVars(['NEXUS_USER', 'NEXUS_PASSWORD']);

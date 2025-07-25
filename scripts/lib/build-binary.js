@@ -1,8 +1,7 @@
 import pkg from '@yao-pkg/pkg';
 import { getAssetPath } from './paths.js';
-import { highlight } from './utils.js';
-
-const NODE_VERSION = '22';
+import { highlight } from './terminal.js';
+import packageJson from '../../package.json' with { type: 'json' };
 
 const PLATFORMS = {
   linux: 'linux',
@@ -27,11 +26,12 @@ export async function buildBinary (version, os) {
   const input = getAssetPath('bundle', version, 'build');
   const output = getAssetPath('binary', version, 'build', os);
 
+  const [nodeMajorVersion] = packageJson.volta.node.split('.');
   const platform = PLATFORMS[os];
   const arch = ARCHS[os];
-  const target = `node${NODE_VERSION}-${platform}-${arch}`;
+  const target = `node${nodeMajorVersion}-${platform}-${arch}`;
 
-  console.log(highlight`=> Build script ${input} into binary ${output} for ${platform}-${arch} with Node.js ${NODE_VERSION}`);
+  console.log(highlight`=> Build script ${input} into binary ${output} for ${platform}-${arch} with Node.js ${nodeMajorVersion}`);
 
   await pkg.exec([input, '--target', target, '--output', output]);
 }

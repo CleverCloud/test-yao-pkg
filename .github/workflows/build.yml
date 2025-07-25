@@ -6,9 +6,6 @@ on:
       version:
         required: true
         type: string
-      node-version:
-        type: string
-        default: node22
       include-windows:
         type: boolean
         default: true

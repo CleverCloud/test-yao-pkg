@@ -15,7 +15,6 @@
 //
 // EXAMPLES:
 //   bundle-cjs.js 1.2.3
-//
 
 import { bundleToSingleCjs } from './lib/bundle-cjs.js';
 import { getVersion } from './lib/utils.js';
@@ -24,7 +23,7 @@ import { runCommand, ArgumentError } from './lib/command.js';
 runCommand(async () => {
   const [rawVersion] = process.argv.slice(2);
   if (rawVersion == null) {
-    throw new ArgumentError('Missing version');
+    throw new ArgumentError('version');
   }
 
   const version = getVersion(rawVersion);

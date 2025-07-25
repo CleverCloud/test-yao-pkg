@@ -12,16 +12,16 @@
 //
 // EXAMPLES:
 //   build-binary.js 1.2.3
-//
 
 import { buildBinary } from './lib/build-binary.js';
-import { getOs, getVersion } from './lib/utils.js';
+import { getOs } from './lib/platform-os.js';
+import { getVersion } from './lib/utils.js';
 import { runCommand, ArgumentError } from './lib/command.js';
 
 runCommand(async () => {
   const [rawVersion] = process.argv.slice(2);
   if (rawVersion == null) {
-    throw new ArgumentError('Missing version');
+    throw new ArgumentError('version');
   }
 
   const version = getVersion(rawVersion);

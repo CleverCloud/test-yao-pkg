@@ -1,4 +1,7 @@
-import { clearDirectory, createTerminalLink, exec, getEmoji, highlight } from './utils.js';
+import { clearDirectory } from './fs.js';
+import { getEmoji } from './platform-os.js';
+import { exec } from './process.js';
+import { createTerminalLink, highlight } from './terminal.js';
 import { TerminalTable } from './terminal-table.js';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -6,9 +9,9 @@ import { fetchWithProgress } from './fetch-with-progress.js';
 import { styleText } from 'node:util';
 
 /**
- * @typedef {import('./preview.types.d.ts').Manifest} Manifest
- * @typedef {import('./preview.types.d.ts').Preview} Preview
- * @typedef {import('./preview.types.d.ts').PreviewUrl} PreviewUrl
+ * @typedef {import('./common.types.d.ts').Manifest} Manifest
+ * @typedef {import('./common.types.d.ts').Preview} Preview
+ * @typedef {import('./common.types.d.ts').PreviewUrl} PreviewUrl
  */
 
 /**

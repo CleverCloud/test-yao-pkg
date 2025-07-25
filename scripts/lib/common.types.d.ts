@@ -1,3 +1,5 @@
+export type OS = 'linux' | 'macos' | 'win';
+
 export interface Manifest {
   version: '1';
   previews: Array<Preview>;
@@ -12,7 +14,7 @@ export interface Preview {
 }
 
 export interface PreviewUrl {
-  os: 'linux' | 'macos' | 'win';
+  os: OS;
   url: string;
   checksum: {
     type: 'sha256';

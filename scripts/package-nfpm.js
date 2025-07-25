@@ -12,8 +12,8 @@
 //   packager        Package format to create ('rpm' or 'deb')
 //
 // ENVIRONMENT VARIABLES:
-//   RPM_GPG_PRIVATE_KEY     Environment variable for RPM signing key
-//   RPM_GPG_PASSPHRASE      Environment variable for RPM signing passphrase
+//   RPM_GPG_PRIVATE_KEY     RPM signing key
+//   RPM_GPG_PASSPHRASE      RPM signing passphrase
 //
 // REQUIRED SYSTEM BINARIES:
 //   tar             For extracting nfpm binary
@@ -23,13 +23,13 @@
 // EXAMPLES:
 //   package-nfpm.js 1.2.3 rpm
 //   package-nfpm.js 1.2.3 deb
-//
 
 import fs from 'node:fs/promises';
 import { applyOneTemplate } from './lib/templates.js';
 import { getAssetPath } from './lib/paths.js';
-import { exec, highlight, readEnvVars } from './lib/utils.js';
-import { runCommand, ArgumentError } from './lib/command.js';
+import { exec } from './lib/process.js';
+import { highlight } from './lib/terminal.js';
+import { runCommand, ArgumentError, readEnvVars } from './lib/command.js';
 import dedent from 'dedent';
 
 const NFPM_VERSION = '2.43.0';
@@ -40,13 +40,13 @@ runCommand(async () => {
 
   const [version, packager] = process.argv.slice(2);
   if (version == null) {
-    throw new ArgumentError('Missing version');
+    throw new ArgumentError('version');
   }
   if (packager == null) {
-    throw new ArgumentError('Missing packager, must be either "rpm" or "deb"');
+    throw new ArgumentError('packager');
   }
   if (packager !== 'rpm' && packager !== 'deb') {
-    throw new ArgumentError('Invalid packager, must be either "rpm" or "deb"');
+    throw new ArgumentError('packager (must be "rpm" or "deb")');
   }
 
   const [rpmGpgPrivateKey, rpmGpgPassphrase] = (packager === 'rpm') ? readEnvVars(['RPM_GPG_PRIVATE_KEY', 'RPM_GPG_PASSPHRASE']) : [];

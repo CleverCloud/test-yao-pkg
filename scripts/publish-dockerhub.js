@@ -12,10 +12,10 @@
 //   version         Version string (e.g., "1.2.3")
 //
 // ENVIRONMENT VARIABLES:
-//   DOCKERHUB_USERNAME      Environment variable for Docker Hub username
-//   DOCKERHUB_TOKEN         Environment variable for Docker Hub access token
-//   DOCKER_IMAGE_NAME       Environment variable for Docker image name
-//   DOCKERHUB_GIT_URL       Environment variable for Docker repository URL
+//   DOCKERHUB_USERNAME      Docker Hub username
+//   DOCKERHUB_TOKEN         Docker Hub access token
+//   DOCKER_IMAGE_NAME       Docker image name
+//   DOCKERHUB_GIT_URL       Docker repository URL
 //
 // REQUIRED SYSTEM BINARIES:
 //   git             For cloning, committing, and pushing to Docker repository
@@ -23,13 +23,13 @@
 //
 // EXAMPLES:
 //   publish-dockerhub.js 1.2.3
-//
 
 import pkg from '../package.json' with { type: 'json' };
 import { applyTemplates } from './lib/templates.js';
 import { commitAndPush, tagAndPush } from './lib/git.js';
-import { exec, execWithStdin, highlight, readEnvVars } from './lib/utils.js';
-import { runCommand, ArgumentError } from './lib/command.js';
+import { exec, execWithStdin } from './lib/process.js';
+import { highlight } from './lib/terminal.js';
+import { runCommand, ArgumentError, readEnvVars } from './lib/command.js';
 import { simpleGit } from 'simple-git';
 
 const TEMPLATES_PATH = './scripts/templates/dockerhub';
@@ -39,7 +39,7 @@ runCommand(async () => {
 
   const [version] = process.argv.slice(2);
   if (version == null) {
-    throw new ArgumentError('Missing version');
+    throw new ArgumentError('version');
   }
 
   const [dockerHubUser, dockerHubToken, dockerImageName, gitUrl] = readEnvVars(['DOCKERHUB_USERNAME', 'DOCKERHUB_TOKEN', 'DOCKER_IMAGE_NAME', 'DOCKERHUB_GIT_URL']);
