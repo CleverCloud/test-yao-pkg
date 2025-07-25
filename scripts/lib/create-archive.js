@@ -13,8 +13,8 @@ export async function createArchive (version, os) {
   const binary = getAssetParts('binary', version, 'build', os);
 
   const command = (os === 'win')
-    ? `powershell -Command "Compress-Archive -DestinationPath ${archive.filename} -Path ${binary.filename}"`
-    : `tar czf ${archive.filename} ${binary.filename}`;
+    ? `powershell -Command "Compress-Archive -DestinationPath ${archive.filename} -Path ${binary.directory}"`
+    : `tar czf ${archive.filename} ${binary.directory}`;
 
   await exec(command, { cwd: archive.directory });
 }
