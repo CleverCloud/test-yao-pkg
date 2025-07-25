@@ -12,7 +12,7 @@
 //
 // USAGE:
 //   preview.js list
-//   preview.js update
+//   preview.js update [preview-name]
 //   preview.js build [preview-name]
 //   preview.js pr-comment [preview-name]
 //   preview.js publish [preview-name]
@@ -21,6 +21,7 @@
 // ARGUMENTS:
 //   command         Command to execute (list|update|build|pr-comment|publish|delete)
 //   [preview-name]  Version (e.g., "1.2.3") or branch name (e.g., "my-feature"), defaults to current git branch
+//                   For 'update' command: optionally specify a single preview to update
 //
 // ENVIRONMENT VARIABLES:
 //   CC_CLEVER_TOOLS_PREVIEWS_CELLAR_BUCKET      Preview storage bucket
@@ -35,6 +36,8 @@
 //
 // EXAMPLES:
 //   preview.js list
+//   preview.js update
+//   preview.js update feature-branch
 //   preview.js build feature-branch
 //   preview.js publish
 //   preview.js delete old-preview
@@ -82,7 +85,7 @@ runCommand(async () => {
       if (os === 'win') {
         throw new Error('The "update" command is not yet available on Windows');
       }
-      return updatePreviews();
+      return updatePreviews(rawPreviewName);
     case 'build':
       return buildPreview(previewName, os);
     case 'pr-comment':
@@ -110,14 +113,36 @@ async function listPreviews () {
 /**
  * Updates the local previews (download/update/delete...) and display progress.
  * Displays information including date, commit ID, name, author, and download links.
+ * @param {string} [previewName] - Optional preview name to update only a specific preview
  */
-async function updatePreviews () {
+async function updatePreviews (previewName) {
   const remoteManifest = await fetchManifest();
   const localManifest = await getLocalManifest();
   const terminalPreviews = new TerminalPreviews(remoteManifest, localManifest, getOs());
   terminalPreviews.initDisplay();
-  await terminalPreviews.updatePreviews();
-  await updateLocalManifest(remoteManifest);
+  await terminalPreviews.updatePreviews(previewName);
+
+  // Update local manifest: merge remote entries for processed previews only
+  const updatedLocalManifest = { ...localManifest };
+  const processedPreviewNames = previewName ? [previewName] : remoteManifest.previews.map(p => p.name);
+
+  processedPreviewNames.forEach(name => {
+    const remotePreview = remoteManifest.previews.find((p) => p.name === name);
+    const localPreview = updatedLocalManifest.previews.find((p) => p.name === name);
+
+    if (remotePreview) {
+      if (localPreview != null) {
+        updatedLocalManifest.previews[localPreview] = remotePreview;
+      } else {
+        updatedLocalManifest.previews.push(remotePreview);
+      }
+    } else if (localPreview != null) {
+      // Remote preview was deleted, remove from local
+      updatedLocalManifest.previews.splice(localPreview, 1);
+    }
+  });
+
+  await updateLocalManifest(updatedLocalManifest);
 }
 
 /**

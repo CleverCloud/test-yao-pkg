@@ -103,11 +103,17 @@ export class TerminalPreviews {
 
   /**
    * Updates all previews by downloading, updating, or deleting them based on manifest differences
+   * @param {string} [previewName] - Optional preview name to update only a specific preview
    * @returns {Promise<void>}
    */
-  async updatePreviews () {
+  async updatePreviews (previewName) {
     await fs.promises.mkdir('.preview-binaries', { recursive: true });
-    await Promise.all(this.#previewNames.map((previewName, index) => {
+
+    const previewsToUpdate = previewName != null
+      ? [previewName]
+      : this.#previewNames;
+
+    await Promise.all(previewsToUpdate.map((previewName, index) => {
       const remotePreview = this.#remoteManifest.previews.find((p) => p.name === previewName);
       const localPreview = this.#localManifest.previews.find((p) => p.name === previewName);
 
