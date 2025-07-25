@@ -22,18 +22,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: 'package.json'
-      - name: 'Restore node_modules'
-        uses: actions/cache/restore@v4
-        with:
-          path: node_modules
-          key: node-modules-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            node-modules-${{ runner.os }}-
-      - name: 'Install Node.js dependencies (fallback)'
-        run: |
-          if [ ! -d "node_modules" ]; then
-            npm ci
-          fi
+          cache: 'npm'
+      - name: 'Install Node.js dependencies'
+        run: npm ci
       - name: 'Download build-linux artifact'
         uses: actions/download-artifact@v4
         with:
@@ -62,18 +53,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: 'package.json'
-      - name: 'Restore node_modules'
-        uses: actions/cache/restore@v4
-        with:
-          path: node_modules
-          key: node-modules-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            node-modules-${{ runner.os }}-
-      - name: 'Install Node.js dependencies (fallback)'
-        run: |
-          if [ ! -d "node_modules" ]; then
-            npm ci
-          fi
+          cache: 'npm'
+      - name: 'Install Node.js dependencies'
+        run: npm ci
       - name: 'Download build-linux artifact'
         uses: actions/download-artifact@v4
         with:
@@ -99,6 +81,7 @@ jobs:
         with:
           node-version-file: 'package.json'
           registry-url: 'https://registry.npmjs.org'
+          cache: 'npm'
       - name: 'Publish to npm'
         run: npm publish --access public
         env:
@@ -138,18 +121,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: 'package.json'
-      - name: 'Restore node_modules'
-        uses: actions/cache/restore@v4
-        with:
-          path: node_modules
-          key: node-modules-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            node-modules-${{ runner.os }}-
-      - name: 'Install Node.js dependencies (fallback)'
-        run: |
-          if [ ! -d "node_modules" ]; then
-            npm ci
-          fi
+          cache: 'npm'
+      - name: 'Install Node.js dependencies'
+        run: npm ci
       - name: 'Download all build artifacts'
         uses: actions/download-artifact@v4
         with:
@@ -176,18 +150,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: 'package.json'
-      - name: 'Restore node_modules'
-        uses: actions/cache/restore@v4
-        with:
-          path: node_modules
-          key: node-modules-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            node-modules-${{ runner.os }}-
-      - name: 'Install Node.js dependencies (fallback)'
-        run: |
-          if [ ! -d "node_modules" ]; then
-            npm ci
-          fi
+          cache: 'npm'
+      - name: 'Install Node.js dependencies'
+        run: npm ci
       - name: 'Download .rpm artifact'
         uses: actions/download-artifact@v4
         with:
@@ -211,18 +176,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: 'package.json'
-      - name: 'Restore node_modules'
-        uses: actions/cache/restore@v4
-        with:
-          path: node_modules
-          key: node-modules-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            node-modules-${{ runner.os }}-
-      - name: 'Install Node.js dependencies (fallback)'
-        run: |
-          if [ ! -d "node_modules" ]; then
-            npm ci
-          fi
+          cache: 'npm'
+      - name: 'Install Node.js dependencies'
+        run: npm ci
       - name: 'Download .deb artifact'
         uses: actions/download-artifact@v4
         with:
@@ -250,18 +206,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: 'package.json'
-      - name: 'Restore node_modules'
-        uses: actions/cache/restore@v4
-        with:
-          path: node_modules
-          key: node-modules-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            node-modules-${{ runner.os }}-
-      - name: 'Install Node.js dependencies (fallback)'
-        run: |
-          if [ ! -d "node_modules" ]; then
-            npm ci
-          fi
+          cache: 'npm'
+      - name: 'Install Node.js dependencies'
+        run: npm ci
       - name: 'Download build-linux artifact'
         uses: actions/download-artifact@v4
         with:
@@ -287,18 +234,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: 'package.json'
-      - name: 'Restore node_modules'
-        uses: actions/cache/restore@v4
-        with:
-          path: node_modules
-          key: node-modules-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            node-modules-${{ runner.os }}-
-      - name: 'Install Node.js dependencies (fallback)'
-        run: |
-          if [ ! -d "node_modules" ]; then
-            npm ci
-          fi
+          cache: 'npm'
+      - name: 'Install Node.js dependencies'
+        run: npm ci
       - name: 'Download build-linux artifact'
         uses: actions/download-artifact@v4
         with:
@@ -324,18 +262,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: 'package.json'
-      - name: 'Restore node_modules'
-        uses: actions/cache/restore@v4
-        with:
-          path: node_modules
-          key: node-modules-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            node-modules-${{ runner.os }}-
-      - name: 'Install Node.js dependencies (fallback)'
-        run: |
-          if [ ! -d "node_modules" ]; then
-            npm ci
-          fi
+          cache: 'npm'
+      - name: 'Install Node.js dependencies'
+        run: npm ci
       - name: 'Publish to Docker Hub (and related GitHub project)'
         run: ./scripts/publish-dockerhub.js ${{ github.ref_name }}
         env:
@@ -360,18 +289,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: 'package.json'
-      - name: 'Restore node_modules'
-        uses: actions/cache/restore@v4
-        with:
-          path: node_modules
-          key: node-modules-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            node-modules-${{ runner.os }}-
-      - name: 'Install Node.js dependencies (fallback)'
-        run: |
-          if [ ! -d "node_modules" ]; then
-            npm ci
-          fi
+          cache: 'npm'
+      - name: 'Install Node.js dependencies'
+        run: npm ci
       - name: 'Publish to GitHub for exherbo'
         run: ./scripts/publish-exherbo.js ${{ github.ref_name }}
         env:
@@ -388,18 +308,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: 'package.json'
-      - name: 'Restore node_modules'
-        uses: actions/cache/restore@v4
-        with:
-          path: node_modules
-          key: node-modules-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            node-modules-${{ runner.os }}-
-      - name: 'Install Node.js dependencies (fallback)'
-        run: |
-          if [ ! -d "node_modules" ]; then
-            npm ci
-          fi
+          cache: 'npm'
+      - name: 'Install Node.js dependencies'
+        run: npm ci
       - name: 'Download .rpm artifact'
         uses: actions/download-artifact@v4
         with:
@@ -422,18 +333,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: 'package.json'
-      - name: 'Restore node_modules'
-        uses: actions/cache/restore@v4
-        with:
-          path: node_modules
-          key: node-modules-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            node-modules-${{ runner.os }}-
-      - name: 'Install Node.js dependencies (fallback)'
-        run: |
-          if [ ! -d "node_modules" ]; then
-            npm ci
-          fi
+          cache: 'npm'
+      - name: 'Install Node.js dependencies'
+        run: npm ci
       - name: 'Download .deb artifact'
         uses: actions/download-artifact@v4
         with:
@@ -458,18 +360,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: 'package.json'
-      - name: 'Restore node_modules'
-        uses: actions/cache/restore@v4
-        with:
-          path: node_modules
-          key: node-modules-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            node-modules-${{ runner.os }}-
-      - name: 'Install Node.js dependencies (fallback)'
-        run: |
-          if [ ! -d "node_modules" ]; then
-            npm ci
-          fi
+          cache: 'npm'
+      - name: 'Install Node.js dependencies'
+        run: npm ci
       - name: 'Publish to Winget'
         shell: bash
         run: ./scripts/publish-winget.js ${{ github.ref_name }}
