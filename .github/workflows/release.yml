@@ -81,6 +81,7 @@ jobs:
         with:
           node-version: '22'
           registry-url: 'https://registry.npmjs.org'
+          # don't use cache: 'npm' here since we don't use npm ci and it may cache without the deps
       - name: 'Publish to npm'
         run: npm publish --access public
         env:
