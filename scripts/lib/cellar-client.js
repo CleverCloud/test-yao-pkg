@@ -41,10 +41,15 @@ export class CellarClient {
 
   /**
    * Generates a public URL for a file in the bucket.
+   * If the bucket name contains dots, it's treated as a domain name.
    * @param {string} remoteFilepath - The path to the file in the bucket
    * @returns {string}
    */
-  url (remoteFilepath) {
+  getPublicUrl (remoteFilepath) {
+    // If bucket contains dots, we assume it's a domain
+    if (this.#bucket.includes('.')) {
+      return `https://${this.#bucket}/${remoteFilepath}`;
+    }
     return `https://${this.#bucket}.${this.#host}/${remoteFilepath}`;
   }
 

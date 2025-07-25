@@ -216,7 +216,7 @@ async function publishPreview (previewName) {
     await cellarClient.upload(localPath, remotePath);
     archiveDetails[os] = {
       os,
-      url: cellarClient.url(remotePath),
+      url: cellarClient.getPublicUrl(remotePath),
       checksum: {
         type: 'sha256',
         value: getSha256(localPath),
