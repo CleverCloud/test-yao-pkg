@@ -57,6 +57,7 @@ import { BUILD_DIR, getAssetParts, getAssetPath, PREVIEW_DIR } from './lib/paths
 import { TerminalPreviews } from './lib/terminal-previews.js';
 import fs from 'node:fs';
 import { HtmlPreviews } from './lib/html-previews.js';
+import { PublicCellarClient } from './lib/public-cellar-client.js';
 
 /**
  * @typedef {import('./lib/common.types.d.ts').Manifest} Manifest
@@ -64,7 +65,6 @@ import { HtmlPreviews } from './lib/html-previews.js';
  * @typedef {import('./lib/common.types.d.ts').PreviewUrl} PreviewUrl
  */
 
-const MANIFEST_URL = 'https://6mt2ilnafne8nzomvlg2.cellar-c2.services.clever-cloud.com/previews/manifest.json';
 const MANIFEST_PATH = `${PREVIEW_DIR}/manifest.json`;
 const LIST_INDEX_PATH = `${PREVIEW_DIR}/index.html`;
 
@@ -282,19 +282,14 @@ async function deletePreview (previewName) {
  */
 async function fetchManifest () {
   try {
-    const response = await fetch(MANIFEST_URL);
-    if (!response.ok) {
-      if (response.status === 404) {
-        return createDefaultManifest();
-      }
-      throw new Error(`Failed to fetch manifest: ${response.status} ${response.statusText}`);
-    }
-    const manifestJson = await response.text();
+    const cellarClient = createCellarClientPublic();
+    const manifestJson = await cellarClient.getObject(MANIFEST_PATH);
     /** @type {Manifest} */
     const manifest = JSON.parse(manifestJson);
     return manifest;
   }
   catch (e) {
+    console.log(e);
     return createDefaultManifest();
   }
 }
@@ -360,8 +355,17 @@ async function updateListIndex (cellarClient, manifest) {
 }
 
 /**
- * Creates and configures a Cellar client instance.
- * @returns {CellarClient} Configured cellar client
+ * Creates and configures a public (non-authenticated) Cellar client instance.
+ * @return {PublicCellarClient} - The configured public Cellar client instance
+ */
+function createCellarClientPublic () {
+  const [bucket] = readEnvVars(['CC_CLEVER_TOOLS_PREVIEWS_CELLAR_BUCKET']);
+  return new PublicCellarClient({ bucket });
+}
+
+/**
+ * Creates and configures an authenticated Cellar client instance.
+ * @return {CellarClient} - The configured authenticated Cellar client instance
  */
 function createCellarClient () {
   const [bucket, accessKeyId, secretAccessKey] = readEnvVars([

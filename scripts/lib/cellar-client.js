@@ -65,25 +65,6 @@ export class CellarClient {
     return content;
   }
 
-  // /**
-  //  * Checks if a file exists in the bucket.
-  //  * @param {string} remoteFilepath - The path to check in the bucket
-  //  * @returns {Promise<boolean>} True if the file exists, false otherwise
-  //  * @throws {Error} When there's an error other than file not found
-  //  */
-  // async exists (remoteFilepath) {
-  //   try {
-  //     await this.#client.send(new HeadObjectCommand({ Bucket: this.#bucket, Key: remoteFilepath }));
-  //     return true;
-  //   }
-  //   catch (error) {
-  //     if (error.name === 'NotFound' || error.$metadata?.httpStatusCode === 404) {
-  //       return false;
-  //     }
-  //     throw error;
-  //   }
-  // }
-
   /**
    * Uploads a local file to the bucket.
    *
