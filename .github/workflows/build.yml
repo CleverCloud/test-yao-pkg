@@ -12,11 +12,9 @@ on:
         description: 'Whether to include Windows in the build matrix'
 
 jobs:
-  setup-deps:
-    name: 'Setup dependencies'
+  bundle-cjs:
+    name: 'Bundle single clever.cjs'
     runs-on: ubuntu-latest
-    outputs:
-      cache-hit: ${{ steps.cache-deps.outputs.cache-hit }}
     steps:
       - name: 'Checkout sources'
         uses: actions/checkout@v4
@@ -25,41 +23,19 @@ jobs:
         with:
           node-version-file: 'package.json'
           cache: 'npm'
-      - name: 'Cache node_modules'
-        id: cache-deps
-        uses: actions/cache@v4
-        with:
-          path: node_modules
-          key: node-modules-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+      - name: 'Check npm cache effectiveness'
+        id: npm-cache-check
+        run: |
+          # Check if node_modules exists and is properly populated
+          if [ -d "node_modules" ] && [ -f "node_modules/.package-lock.json" ]; then
+            echo "cache-hit=true" >> $GITHUB_OUTPUT
+          else
+            echo "cache-hit=false" >> $GITHUB_OUTPUT
+          fi
       - name: 'Install Node.js dependencies'
-        if: steps.cache-deps.outputs.cache-hit != 'true'
+        if: steps.npm-cache-check.outputs.cache-hit != 'true'
         run: npm ci
-
-  bundle-cjs:
-    name: 'Bundle single clever.cjs'
-    needs: setup-deps
-    runs-on: ubuntu-latest
-    steps:
-      - name: 'Checkout sources'
-        uses: actions/checkout@v4
-      - name: 'Setup Node.js'
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: 'package.json'
-      - name: 'Cache bundle output'
-        id: cache-bundle
-        uses: actions/cache@v4
-        with:
-          path: build
-          key: bundle-cjs-${{ hashFiles('src/**', 'package.json', 'scripts/bundle-cjs.js') }}-${{ inputs.version }}
-      - name: 'Restore node_modules'
-        if: steps.cache-bundle.outputs.cache-hit != 'true'
-        uses: actions/cache/restore@v4
-        with:
-          path: node_modules
-          key: node-modules-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
       - name: 'Bundle to single clever.cjs'
-        if: steps.cache-bundle.outputs.cache-hit != 'true'
         run: ./scripts/bundle-cjs.js ${{ inputs.version }}
       - name: 'Upload bundle-cjs artifact'
         uses: actions/upload-artifact@v4
@@ -70,7 +46,7 @@ jobs:
 
   build-linux:
     name: 'Build for linux'
-    needs: [setup-deps, bundle-cjs]
+    needs: bundle-cjs
     runs-on: ubuntu-latest
     steps:
       - name: 'Checkout sources'
@@ -79,11 +55,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: 'package.json'
-      - name: 'Restore node_modules'
-        uses: actions/cache/restore@v4
-        with:
-          path: node_modules
-          key: node-modules-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
       - name: 'Download bundle-cjs artifact'
         uses: actions/download-artifact@v4
         with:
@@ -104,7 +75,7 @@ jobs:
 
   build-macos:
     name: 'Build for macos'
-    needs: [setup-deps, bundle-cjs]
+    needs: bundle-cjs
     runs-on: macos-14
     steps:
       - name: 'Checkout sources'
@@ -113,16 +84,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: 'package.json'
-      - name: 'Cache node_modules (macOS)'
-        uses: actions/cache/restore@v4
-        with:
-          path: node_modules
-          key: node-modules-macOS-${{ hashFiles('package-lock.json') }}
-      - name: 'Install Node.js dependencies (fallback)'
-        run: |
-          if [ ! -d "node_modules" ]; then
-            npm ci
-          fi
       - name: 'Download bundle-cjs artifact'
         uses: actions/download-artifact@v4
         with:
@@ -143,7 +104,7 @@ jobs:
 
   build-windows:
     name: 'Build for windows'
-    needs: [setup-deps, bundle-cjs]
+    needs: bundle-cjs
     runs-on: windows-latest
     if: ${{ inputs.include-windows }}
     steps:
@@ -153,16 +114,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: 'package.json'
-      - name: 'Cache node_modules (Windows)'
-        uses: actions/cache/restore@v4
-        with:
-          path: node_modules
-          key: node-modules-Windows-${{ hashFiles('package-lock.json') }}
-      - name: 'Install Node.js dependencies (fallback)'
-        run: |
-          if (!(Test-Path "node_modules")) {
-            npm ci
-          }
       - name: 'Download bundle-cjs artifact'
         uses: actions/download-artifact@v4
         with:
