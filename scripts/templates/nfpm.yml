@@ -8,7 +8,7 @@ vendor: "Clever Cloud"
 license: "Apache-2.0"
 
 contents:
-  - src: "build/<%= version %>/linux/clever"
+  - src: "build/<%= version %>/linux/clever-tools-<%= version %>_linux/clever"
     dst: "/usr/bin/clever"
     file_info:
       mode: 0755
