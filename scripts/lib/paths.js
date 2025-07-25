@@ -12,12 +12,18 @@ export const RELEASES_DIR = 'releases';
 function getDirectory (location, version, os, type) {
   switch (location) {
     case 'build':
-      if ((type === 'binary' || type === 'archive') && os != null) {
+      if (type === 'binary' && os != null) {
+        return `${BUILD_DIR}/${version}/${os}/clever-tools-${version}_${os}`;
+      }
+      if (type === 'archive' && os != null) {
         return `${BUILD_DIR}/${version}/${os}`;
       }
       return `${BUILD_DIR}/${version}`;
     case 'preview':
-      if ((type === 'binary' || type === 'archive') && os != null) {
+      if (type === 'binary' && os != null) {
+        return `${PREVIEW_DIR}/${version}/${os}/clever-tools-${version}_${os}`;
+      }
+      if (type === 'archive' && os != null) {
         return `${PREVIEW_DIR}/${version}/${os}`;
       }
       return `${PREVIEW_DIR}/${version}`;
