@@ -42,8 +42,18 @@ jobs:
       - name: 'Setup Node.js'
         uses: actions/setup-node@v4
         with: { node-version-file: 'package.json' }
-      - name: 'Install Node.js dependencies'
-        run: npm ci
+      - name: 'Restore node_modules'
+        uses: actions/cache/restore@v4
+        with:
+          path: node_modules
+          key: node-modules-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            node-modules-${{ runner.os }}-
+      - name: 'Install Node.js dependencies (fallback)'
+        run: |
+          if [ ! -d "node_modules" ]; then
+            npm ci
+          fi
       - name: 'Download build artifacts'
         uses: actions/download-artifact@v4
         with:
