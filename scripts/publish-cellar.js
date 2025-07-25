@@ -23,11 +23,10 @@
 //   publish-cellar.js 1.2.3 rpm
 //   publish-cellar.js 1.2.3 deb
 
-import dedent from 'dedent';
 import { CellarClient } from './lib/cellar-client.js';
 import { getAssetPath } from './lib/paths.js';
 import { highlight } from './lib/terminal.js';
-import { runCommand, ArgumentError, readEnvVars } from './lib/command.js';
+import { ArgumentError, readEnvVars, runCommand } from './lib/command.js';
 
 runCommand(async () => {
 
@@ -53,31 +52,39 @@ runCommand(async () => {
 
   const validArtifacts = ['archives', 'rpm', 'deb'];
   if (!validArtifacts.includes(artifact)) {
-    throw new ArgumentError(`artifact (must be one of: ${validArtifacts.join(', ')})`)
+    throw new ArgumentError(`artifact (must be one of: ${validArtifacts.join(', ')})`);
   }
 
   switch (artifact) {
     case 'archives':
       const osList = ['linux', 'macos', 'win'];
       for (const os of osList) {
-        const localPath = getAssetPath('archive', version, 'build', os);
-        const remotePath = getAssetPath('archive', version, 'release', os);
-        console.log(highlight`=> Upload ${localPath} to ${remotePath}`);
-        await cellarClient.upload(localPath, remotePath);
+        await uploadArtifact(cellarClient, 'archive', version, os);
       }
       break;
     case 'rpm':
-      const localPath = getAssetPath('rpm', version, 'build');
-      const remotePath = getAssetPath('rpm', version, 'release');
-      console.log(highlight`=> Upload ${localPath} to ${remotePath}`);
-      await cellarClient.upload(localPath, remotePath);
+      await uploadArtifact(cellarClient, 'rpm', version);
       break;
     case 'deb':
-      const debLocalPath = getAssetPath('deb', version, 'build');
-      const debRemotePath = getAssetPath('deb', version, 'release');
-      console.log(highlight`=> Upload ${debLocalPath} to ${debRemotePath}`);
-      await cellarClient.upload(debLocalPath, debRemotePath);
+      await uploadArtifact(cellarClient, 'deb', version);
       break;
   }
 });
 
+/**
+ * Uploads an artifact to both versioned and latest paths in Cellar storage
+ * @param {CellarClient} cellarClient - The Cellar client instance
+ * @param {'bundle'|'binary'|'archive'|'rpm'|'deb'} type - Asset type
+ * @param {string} version - The version string
+ * @param {'linux'|'macos'|'win'} [os] - Operating system (required for binary/archive)
+ */
+async function uploadArtifact (cellarClient, type, version, os = null) {
+  const localPath = getAssetPath(type, version, 'build', os);
+  const remotePath = getAssetPath(type, version, 'release', os);
+  const latestRemotePath = getAssetPath(type, 'latest', 'release', os);
+
+  console.log(highlight`=> Upload ${localPath} to ${remotePath}`);
+  await cellarClient.upload(localPath, remotePath);
+  console.log(highlight`=> Upload ${localPath} to ${latestRemotePath}`);
+  await cellarClient.upload(localPath, latestRemotePath);
+}

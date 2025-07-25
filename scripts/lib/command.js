@@ -3,7 +3,7 @@ import fs from 'node:fs';
 
 /**
  * Runs a function and catches any errors, logging them to the console.
- * Handles help flags (-h, --help) and shows usage for ArgumentError and EnvironmentVariableError.
+ * Handles help flags (-h, --help) and shows usage for ArgumentError, EnvironmentVariableError, and UnknownCommandError.
  * @param {Function} fn - The async function to run
  * @return {void}
  */
@@ -30,7 +30,7 @@ export function runCommand(fn) {
       console.error(`${styleText(['red', 'bold'], 'ERROR:')} ${e.message}`);
 
       // Show usage for argument and environment variable errors
-      if (e instanceof ArgumentError || e instanceof EnvironmentVariableError) {
+      if (e instanceof ArgumentError || e instanceof EnvironmentVariableError || e instanceof UnknownCommandError) {
         const scriptPath = process.argv[1];
         const usage = extractUsage(scriptPath);
         if (usage) {
@@ -141,5 +141,15 @@ export class EnvironmentVariableError extends Error {
     }
     super(message);
     this.name = 'EnvironmentVariableError';
+  }
+}
+
+/**
+ * Custom error for unknown commands.
+ */
+export class UnknownCommandError extends Error {
+  constructor(commandName) {
+    super(`Unknown command: ${commandName}`);
+    this.name = 'UnknownCommandError';
   }
 }

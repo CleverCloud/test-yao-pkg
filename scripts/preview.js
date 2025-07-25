@@ -43,7 +43,7 @@ import { clearDirectory, getSha256 } from './lib/fs.js';
 import { getEmoji, getOs } from './lib/platform-os.js';
 import { highlight } from './lib/terminal.js';
 import { getVersion } from './lib/utils.js';
-import { runCommand, ArgumentError, readEnvVars } from './lib/command.js';
+import { ArgumentError, readEnvVars, runCommand, UnknownCommandError } from './lib/command.js';
 import { getCurrentAuthor, getCurrentBranch, getCurrentCommit } from './lib/git.js';
 import { CellarClient } from './lib/cellar-client.js';
 import { bundleToSingleCjs } from './lib/bundle-cjs.js';
@@ -93,9 +93,8 @@ runCommand(async () => {
       return deletePreview(previewName);
   }
 
-  throw new ArgumentError(`command (unknown: "${command}")`)
+  throw new UnknownCommandError(command);
 });
-
 
 /**
  * Lists all available previews in a formatted table.
