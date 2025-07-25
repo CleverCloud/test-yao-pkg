@@ -55,9 +55,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: 'package.json'
-          cache: 'npm'
-      - name: 'Install Node.js dependencies'
-        run: npm ci
       - name: 'Download bundle-cjs artifact'
         uses: actions/download-artifact@v4
         with:
@@ -87,9 +84,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: 'package.json'
-          cache: 'npm'
-      - name: 'Install Node.js dependencies'
-        run: npm ci
       - name: 'Download bundle-cjs artifact'
         uses: actions/download-artifact@v4
         with:
@@ -120,9 +114,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: 'package.json'
-          cache: 'npm'
-      - name: 'Install Node.js dependencies'
-        run: npm ci
       - name: 'Download bundle-cjs artifact'
         uses: actions/download-artifact@v4
         with:
