@@ -60,22 +60,40 @@ runCommand(async () => {
   const totalSecrets = properlySetSecrets.length + missingSecrets.length + notUsedSecrets.length;
   const totalVariables = properlySetVariables.length + missingVariables.length + notUsedVariables.length;
 
-  console.log(`\n## Secrets (${totalSecrets})\n`);
-  logList('Properly set', properlySetSecrets, totalSecrets);
-  if (missingSecrets.length > 0) {
-    logList('Missing', missingSecrets, totalSecrets);
+  console.log(`\n## Secrets (${requiredSecrets.size})\n`);
+  
+  if (requiredSecrets.size === 0) {
+    console.log('No secrets required.');
+  } else {
+    const sortedRequiredSecrets = [...requiredSecrets].sort();
+    for (const secret of sortedRequiredSecrets) {
+      const status = currentSecrets.has(secret) ? '✅' : '❌';
+      console.log(`- ${status} ${secret}`);
+    }
   }
+  
   if (notUsedSecrets.length > 0) {
-    logList('Not used', notUsedSecrets, totalSecrets);
+    console.log(`\n${notUsedSecrets.length} unused secret(s): ${notUsedSecrets.join(', ')}`);
   }
 
-  console.log(`\n## Variables (${totalVariables})\n`);
-  logListWithValues('Properly set', properlySetVariables, totalVariables);
-  if (missingVariables.length > 0) {
-    logList('Missing', missingVariables, totalVariables);
+  console.log(`\n## Variables (${requiredVariables.size})\n`);
+  
+  if (requiredVariables.size === 0) {
+    console.log('No variables required.');
+  } else {
+    const sortedRequiredVariables = [...requiredVariables].sort();
+    for (const variable of sortedRequiredVariables) {
+      const currentVar = currentVariables.find(v => v.name === variable);
+      if (currentVar) {
+        console.log(`- ✅ ${variable}: ${currentVar.value}`);
+      } else {
+        console.log(`- ❌ ${variable}`);
+      }
+    }
   }
+  
   if (notUsedVariables.length > 0) {
-    logList('Not used', notUsedVariables, totalVariables);
+    console.log(`\n${notUsedVariables.length} unused variable(s): ${notUsedVariables.join(', ')}`);
   }
 
   if (missingSecrets.length > 0 || missingVariables.length > 0) {
@@ -107,38 +125,3 @@ function getVariablesWithValues () {
   return list;
 }
 
-/**
- * Formats an array of items as a bulleted list.
- * @param {string} title - The title to display before the list
- * @param {Array} items - The array of items to format
- * @param {number} total - Total count for displaying ratio
- */
-function logList (title, items, total = null) {
-  if (items.length === 0) {
-    const suffix = total ? ` (0/${total})` : '';
-    console.log(`- ${title}: none${suffix}`);
-  }
-  else {
-    const suffix = total ? ` (${items.length}/${total})` : ` (${items.length})`;
-    const formattedItems = items.map((item) => `  - ${item}`).join('\n');
-    console.log(`- ${title}${suffix}:\n${formattedItems}`);
-  }
-}
-
-/**
- * Formats an array of variable objects with values as a bulleted list.
- * @param {string} title - The title to display before the list
- * @param {Array<{name: string, value: string}>} items - The array of variable objects to format
- * @param {number} total - Total count for displaying ratio
- */
-function logListWithValues (title, items, total = null) {
-  if (items.length === 0) {
-    const suffix = total ? ` (0/${total})` : '';
-    console.log(`- ${title}: none${suffix}`);
-  }
-  else {
-    const suffix = total ? ` (${items.length}/${total})` : ` (${items.length})`;
-    const formattedItems = items.map((item) => `  - ${item.name}: ${item.value}`).join('\n');
-    console.log(`- ${title}${suffix}:\n${formattedItems}`);
-  }
-}
