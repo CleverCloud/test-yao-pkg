@@ -20,7 +20,8 @@
 //
 
 import process from 'node:process';
-import { readJson, run, writeJson } from './lib/utils.js';
+import { readJson, writeJson } from './lib/utils.js';
+import { runCommand } from './lib/command.js';
 import { execSync } from 'node:child_process';
 import { TerminalTable } from './lib/terminal-table.js';
 import { select } from '@inquirer/prompts';
@@ -31,7 +32,7 @@ const CONFIG_PATH = `${CONFIG_DIR}/clever-tools.json`;
 const PROFILES_PATH = `${CONFIG_DIR}/profiles.json`;
 const USER_ID_REGEX = /^[a-zA-Z0-9_-]+$/;
 
-run(async function () {
+runCommand(async function () {
 
   // Read current tokens from clever-tools configuration
   let currentTokens;

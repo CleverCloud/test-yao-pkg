@@ -19,12 +19,13 @@
 //
 
 import { createArchive } from './lib/create-archive.js';
-import { getOs, getVersion, run } from './lib/utils.js';
+import { getOs, getVersion } from './lib/utils.js';
+import { runCommand, ArgumentError } from './lib/command.js';
 
-run(async () => {
+runCommand(async () => {
   const [rawVersion] = process.argv.slice(2);
   if (rawVersion == null) {
-    throw new Error('Missing version');
+    throw new ArgumentError('Missing version');
   }
 
   const version = getVersion(rawVersion);

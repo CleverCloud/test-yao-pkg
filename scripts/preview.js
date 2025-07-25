@@ -40,7 +40,8 @@
 //   preview.js delete old-preview
 //
 
-import { clearDirectory, getEmoji, getOs, getSha256, getVersion, highlight, readEnvVars, run } from './lib/utils.js';
+import { clearDirectory, getEmoji, getOs, getSha256, getVersion, highlight, readEnvVars } from './lib/utils.js';
+import { runCommand, ArgumentError } from './lib/command.js';
 import { getCurrentAuthor, getCurrentBranch, getCurrentCommit } from './lib/git.js';
 import { CellarClient } from './lib/cellar-client.js';
 import { bundleToSingleCjs } from './lib/bundle-cjs.js';
@@ -62,11 +63,11 @@ const MANIFEST_URL = 'https://6mt2ilnafne8nzomvlg2.cellar-c2.services.clever-clo
 const MANIFEST_PATH = `${PREVIEW_DIR}/manifest.json`;
 const LIST_INDEX_PATH = `${PREVIEW_DIR}/index.html`;
 
-run(async () => {
+runCommand(async () => {
 
   const [command, rawPreviewName] = process.argv.slice(2);
   if (command == null || command.length === 0) {
-    throw new Error(getUsage(`Missing command`));
+    throw new ArgumentError('Missing command');
   }
 
   const previewName = getVersion(rawPreviewName ?? (await getCurrentBranch()));
@@ -90,27 +91,9 @@ run(async () => {
       return deletePreview(previewName);
   }
 
-  throw new Error(getUsage(`Unknown command "${command}"`));
+  throw new ArgumentError(`Unknown command "${command}"`)
 });
 
-/**
- * Generates a usage message for the CLI tool.
- * @param {string} message
- * @return {string}
- */
-function getUsage (message) {
-  return dedent`
-    ${message}
-
-    USAGE
-      preview.js list
-      preview.js update
-      preview.js build [preview-name]
-      preview.js pr-comment [preview-name]
-      preview.js publish [preview-name]
-      preview.js delete [preview-name]
-  `;
-}
 
 /**
  * Lists all available previews in a formatted table.

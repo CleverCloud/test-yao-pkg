@@ -3,6 +3,7 @@ import childProcess from 'node:child_process';
 import fs from 'node:fs';
 import { platform } from 'node:os';
 import crypto from 'node:crypto';
+import { EnvironmentVariableError } from './command.js';
 
 /**
  * Sanitizes a version string by replacing forward slashes with hyphens.
@@ -171,7 +172,7 @@ export function readEnvVars (variableNames) {
 
   if (missing.length > 0) {
     const missingList = missing.map(name => `- ${name}`).join('\n');
-    throw new Error('Missing environment variables:\n' + missingList);
+    throw new EnvironmentVariableError('Missing environment variables:\n' + missingList);
   }
 
   return values;
@@ -202,19 +203,3 @@ export function writeJson (filePath, data) {
   fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
 }
 
-/**
- * Runs a function and catches any errors, logging them to the console.
- * @param {Function} fn
- * @return {void}
- */
-export function run (fn) {
-  fn().catch((e) => {
-    if (e instanceof SyntaxError || e instanceof TypeError) {
-      console.error(e);
-    }
-    else {
-      console.error(`${styleText(['red', 'bold'], 'ERROR:')} ${e.message}`);
-    }
-    process.exit(1);
-  });
-}

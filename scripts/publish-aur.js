@@ -25,18 +25,19 @@ import pkg from '../package.json' with { type: 'json' };
 import { applyTemplates } from './lib/templates.js';
 import { commitAndPush } from './lib/git.js';
 import { getAssetPath } from './lib/paths.js';
-import { getSha256, highlight, readEnvVars, run } from './lib/utils.js';
+import { getSha256, highlight, readEnvVars } from './lib/utils.js';
+import { runCommand, ArgumentError } from './lib/command.js';
 import { simpleGit } from 'simple-git';
 
 const PKGBASE = 'clever-tools-bin';
 const TEMPLATES_PATH = './scripts/templates/aur';
 const GIT_PATH = './git-aur';
 
-run(async () => {
+runCommand(async () => {
 
   const [version] = process.argv.slice(2);
   if (version == null) {
-    throw new Error('Missing version');
+    throw new ArgumentError('Missing version');
   }
 
   const [gitUrl] = readEnvVars(['AUR_GIT_URL']);

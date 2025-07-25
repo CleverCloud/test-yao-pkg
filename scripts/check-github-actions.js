@@ -17,12 +17,12 @@
 
 import { globSync, readFileSync } from 'node:fs';
 import { execSync } from 'node:child_process';
-import { run } from './lib/utils.js';
+import { runCommand } from './lib/command.js';
 
 const SECRET_REGEX = /\$\{\{\s*secrets\.([A-Z_][A-Z0-9_]*)\s*}}/g;
 const VARIABLES_REGEX = /\$\{\{\s*vars\.([A-Z_][A-Z0-9_]*)\s*}}/g;
 
-run(async () => {
+runCommand(async () => {
 
   console.log('# GitHub Actions secrets and vars report\n');
 

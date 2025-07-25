@@ -28,17 +28,18 @@
 import pkg from '../package.json' with { type: 'json' };
 import { applyTemplates } from './lib/templates.js';
 import { commitAndPush, tagAndPush } from './lib/git.js';
-import { exec, execWithStdin, highlight, readEnvVars, run } from './lib/utils.js';
+import { exec, execWithStdin, highlight, readEnvVars } from './lib/utils.js';
+import { runCommand, ArgumentError } from './lib/command.js';
 import { simpleGit } from 'simple-git';
 
 const TEMPLATES_PATH = './scripts/templates/dockerhub';
 const GIT_PATH = './git-dockerhub';
 
-run(async () => {
+runCommand(async () => {
 
   const [version] = process.argv.slice(2);
   if (version == null) {
-    throw new Error('Missing version');
+    throw new ArgumentError('Missing version');
   }
 
   const [dockerHubUser, dockerHubToken, dockerImageName, gitUrl] = readEnvVars(['DOCKERHUB_USERNAME', 'DOCKERHUB_TOKEN', 'DOCKER_IMAGE_NAME', 'DOCKERHUB_GIT_URL']);

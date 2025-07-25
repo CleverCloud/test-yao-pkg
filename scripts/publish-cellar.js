@@ -27,9 +27,10 @@
 import dedent from 'dedent';
 import { CellarClient } from './lib/cellar-client.js';
 import { getAssetPath } from './lib/paths.js';
-import { highlight, readEnvVars, run } from './lib/utils.js';
+import { highlight, readEnvVars } from './lib/utils.js';
+import { runCommand, ArgumentError } from './lib/command.js';
 
-run(async () => {
+runCommand(async () => {
 
   const [bucket, accessKeyId, secretAccessKey] = readEnvVars([
     'CC_CLEVER_TOOLS_RELEASES_CELLAR_BUCKET',
@@ -45,15 +46,15 @@ run(async () => {
 
   const [version, artifact] = process.argv.slice(2);
   if (version == null) {
-    throw new Error(getUsage('Missing version parameter'));
+    throw new ArgumentError('Missing version parameter');
   }
   if (artifact == null) {
-    throw new Error(getUsage('Missing artifact parameter'));
+    throw new ArgumentError('Missing artifact parameter');
   }
 
   const validArtifacts = ['archives', 'rpm', 'deb'];
   if (!validArtifacts.includes(artifact)) {
-    throw new Error(getUsage(`Invalid artifact "${artifact}". Must be one of: ${validArtifacts.join(', ')}`));
+    throw new ArgumentError(`Invalid artifact "${artifact}". Must be one of: ${validArtifacts.join(', ')}`)
   }
 
   switch (artifact) {
@@ -81,25 +82,3 @@ run(async () => {
   }
 });
 
-/**
- * Generates a usage message for the CLI tool.
- * @param {string} message
- * @return {string}
- */
-function getUsage (message) {
-  return dedent`
-    ${message}
-
-    USAGE
-      publish-to-cellar.js <version> <artifact>
-
-    ARGUMENTS
-      version   Version directory name in build/
-      artifact  Type of artifact: archives, rpm, or deb
-
-    EXAMPLES
-      publish-to-cellar.js 1.2.3 archives
-      publish-to-cellar.js 1.2.3 rpm
-      publish-to-cellar.js 1.2.3 deb
-  `;
-}

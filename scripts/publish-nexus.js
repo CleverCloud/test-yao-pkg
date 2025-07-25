@@ -26,22 +26,23 @@
 
 import fs from 'node:fs/promises';
 import { getAssetPath } from './lib/paths.js';
-import { highlight, readEnvVars, run } from './lib/utils.js';
+import { highlight, readEnvVars } from './lib/utils.js';
+import { runCommand, ArgumentError } from './lib/command.js';
 import dedent from 'dedent';
 
 const NEXUS_SERVER_URL = 'https://nexus.clever-cloud.com';
 
-run(async () => {
+runCommand(async () => {
 
   const [version, packager] = process.argv.slice(2);
   if (version == null) {
-    throw new Error(getUsage('Missing version'));
+    throw new ArgumentError('Missing version');
   }
   if (packager == null) {
-    throw new Error(getUsage('Missing packager, must be either "rpm" or "deb"'));
+    throw new ArgumentError('Missing packager, must be either "rpm" or "deb"');
   }
   if (packager !== 'rpm' && packager !== 'deb') {
-    throw new Error(getUsage('Invalid packager, must be either "rpm" or "deb"'));
+    throw new ArgumentError('Invalid packager, must be either "rpm" or "deb"');
   }
 
   const [nexusUser, nexusPassword] = readEnvVars(['NEXUS_USER', 'NEXUS_PASSWORD']);
@@ -79,24 +80,3 @@ run(async () => {
   console.log(highlight`=> ${packager.toUpperCase()} upload successful with status ${response.status}`);
 });
 
-/**
- *
- * @param {string} message
- * @return {string}
- */
-function getUsage (message) {
-  return dedent`
-    ${message}
-
-    USAGE
-      publish-nexus.js <version> <packager>
-
-    ARGUMENTS
-      version   Version directory name in build/
-      packager  Type of package to create: "rpm" or "deb"
-
-    EXAMPLES
-      publish-nexus.js 1.2.3 rpm
-      publish-nexus.js 1.2.3 deb
-  `;
-}
