@@ -1,20 +1,29 @@
 #!/usr/bin/env node
-
-/**
- * CLI script to publish a new version to Docker Hub.
- * 
- * This script updates Docker-related files, builds Docker images for both
- * the specific version and latest tag, and pushes them to Docker Hub.
- * It also commits changes to the associated Git repository.
- * 
- * @usage node publish-dockerhub.js <version>
- * @param {string} version - Version string (e.g., "1.2.3")
- * @throws {Error} When version argument is missing
- * @requires DOCKERHUB_USERNAME - Environment variable for Docker Hub username
- * @requires DOCKERHUB_TOKEN - Environment variable for Docker Hub access token
- * @requires DOCKER_IMAGE_NAME - Environment variable for Docker image name
- * @requires DOCKERHUB_GIT_URL - Environment variable for Docker repository URL
- */
+//
+// CLI script to publish a new version to Docker Hub.
+//
+// This script updates Docker-related files, builds Docker images for both
+// the specific version and latest tag, and pushes them to Docker Hub.
+// It also commits changes to the associated Git repository.
+//
+// USAGE: node publish-dockerhub.js <version>
+//
+// ARGUMENTS:
+//   version         Version string (e.g., "1.2.3")
+//
+// ENVIRONMENT VARIABLES:
+//   DOCKERHUB_USERNAME      Environment variable for Docker Hub username
+//   DOCKERHUB_TOKEN         Environment variable for Docker Hub access token
+//   DOCKER_IMAGE_NAME       Environment variable for Docker image name
+//   DOCKERHUB_GIT_URL       Environment variable for Docker repository URL
+//
+// REQUIRED SYSTEM BINARIES:
+//   git             For cloning, committing, and pushing to Docker repository
+//   docker          For building and pushing Docker images
+//
+// EXAMPLES:
+//   node publish-dockerhub.js 1.2.3
+//
 
 import pkg from '../package.json' with { type: 'json' };
 import { applyTemplates } from './lib/templates.js';

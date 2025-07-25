@@ -1,21 +1,23 @@
 #!/usr/bin/env node
-
-/**
- * CLI script for managing and switching between Clever Cloud user profiles.
- * 
- * This script allows users to store multiple Clever Cloud authentication tokens
- * and switch between different user accounts. It maintains a list of saved profiles
- * and provides both interactive and command-line interfaces for profile switching.
- * 
- * @usage node switch-profile.js [userId]
- * @param {string=} userId - Optional user ID to switch to directly
- * @example
- * # Interactive mode - shows profile list and prompts for selection
- * node switch-profile.js
- * 
- * # Direct mode - switches to specific user ID
- * node switch-profile.js user_12345
- */
+//
+// CLI script for managing and switching between Clever Cloud user profiles.
+//
+// This script allows users to store multiple Clever Cloud authentication tokens
+// and switch between different user accounts. It maintains a list of saved profiles
+// and provides both interactive and command-line interfaces for profile switching.
+//
+// USAGE: node switch-profile.js [userId]
+//
+// ARGUMENTS:
+//   [userId]        Optional user ID to switch to directly
+//
+// REQUIRED SYSTEM BINARIES:
+//   clever          Clever Cloud CLI for fetching user information
+//
+// EXAMPLES:
+//   node switch-profile.js              # Interactive mode - shows profile list and prompts for selection
+//   node switch-profile.js user_12345   # Direct mode - switches to specific user ID
+//
 
 import process from 'node:process';
 import { readJson, run, writeJson } from './lib/utils.js';

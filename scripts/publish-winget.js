@@ -1,4 +1,21 @@
 #!/usr/bin/env node
+//
+// CLI script to publish a new version to Windows Package Manager (winget).
+//
+// This script is a placeholder for winget publishing functionality.
+// Currently only displays placeholder commands.
+//
+// USAGE: node publish-winget.js <version>
+//
+// ARGUMENTS:
+//   version         Version string (e.g., "1.2.3")
+//
+// REQUIRED SYSTEM BINARIES:
+//   winget          Windows Package Manager CLI (when implemented)
+//
+// EXAMPLES:
+//   node publish-winget.js 1.2.3
+//
 
 import { highlight, run } from './lib/utils.js';
 

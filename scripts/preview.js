@@ -1,24 +1,38 @@
 #!/usr/bin/env node
-
-/**
- * CLI script for managing preview builds and deployment to Cellar storage.
- * 
- * This script provides comprehensive preview management functionality including:
- * - Building preview binaries for different platforms
- * - Publishing previews to Cellar object storage
- * - Managing preview metadata and manifests
- * - Generating GitHub PR comments with download links
- * - Listing and updating local preview cache
- * - Cleaning up preview storage
- * 
- * @usage node preview.js <command> [preview-name]
- * @param {string} command - Command to execute (list|update|build|pr-comment|publish|delete)
- * @param {string=} preview-name - Optional preview name, defaults to current git branch
- * 
- * @requires CC_CLEVER_TOOLS_PREVIEWS_CELLAR_BUCKET - Environment variable for preview storage bucket
- * @requires CC_CLEVER_TOOLS_PREVIEWS_CELLAR_KEY_ID - Environment variable for Cellar access key
- * @requires CC_CLEVER_TOOLS_PREVIEWS_CELLAR_SECRET_KEY - Environment variable for Cellar secret key
- */
+//
+// CLI script for managing preview builds and deployment to Cellar storage.
+//
+// This script provides comprehensive preview management functionality including:
+// - Building preview binaries for different platforms
+// - Publishing previews to Cellar object storage
+// - Managing preview metadata and manifests
+// - Generating GitHub PR comments with download links
+// - Listing and updating local preview cache
+// - Cleaning up preview storage
+//
+// USAGE: node preview.js <command> [preview-name]
+//
+// ARGUMENTS:
+//   command         Command to execute (list|update|build|pr-comment|publish|delete)
+//   [preview-name]  Optional preview name, defaults to current git branch
+//
+// ENVIRONMENT VARIABLES:
+//   CC_CLEVER_TOOLS_PREVIEWS_CELLAR_BUCKET      Environment variable for preview storage bucket
+//   CC_CLEVER_TOOLS_PREVIEWS_CELLAR_KEY_ID      Environment variable for Cellar access key
+//   CC_CLEVER_TOOLS_PREVIEWS_CELLAR_SECRET_KEY  Environment variable for Cellar secret key
+//
+// REQUIRED SYSTEM BINARIES:
+//   git             For getting current branch and commit information
+//   npx             For running bundling and binary compilation tools
+//   tar             For creating archives (Unix-like systems)
+//   zip             For creating archives (Windows)
+//
+// EXAMPLES:
+//   node preview.js list
+//   node preview.js build feature-branch
+//   node preview.js publish
+//   node preview.js delete old-preview
+//
 
 import { clearDirectory, getEmoji, getOs, getSha256, getVersion, highlight, readEnvVars, run } from './lib/utils.js';
 import { getCurrentAuthor, getCurrentBranch, getCurrentCommit } from './lib/git.js';

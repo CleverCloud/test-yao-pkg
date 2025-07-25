@@ -1,18 +1,29 @@
 #!/usr/bin/env node
-
-/**
- * CLI script to generate RPM and DEB packages using nfpm (goreleaser's packager).
- * 
- * This script downloads the nfpm binary, processes package templates, and creates
- * Linux distribution packages. RPM packages are GPG-signed during creation.
- * 
- * @usage node package-nfpm.js <version> <packager>
- * @param {string} version - Version string (e.g., "1.2.3")
- * @param {'rpm'|'deb'} packager - Package format to create
- * @throws {Error} When arguments are missing or invalid
- * @requires RPM_GPG_PRIVATE_KEY - Environment variable for RPM signing key
- * @requires RPM_GPG_PASSPHRASE - Environment variable for RPM signing passphrase
- */
+//
+// CLI script to generate RPM and DEB packages using nfpm (goreleaser's packager).
+//
+// This script downloads the nfpm binary, processes package templates, and creates
+// Linux distribution packages. RPM packages are GPG-signed during creation.
+//
+// USAGE: node package-nfpm.js <version> <packager>
+//
+// ARGUMENTS:
+//   version         Version string (e.g., "1.2.3")
+//   packager        Package format to create ('rpm' or 'deb')
+//
+// ENVIRONMENT VARIABLES:
+//   RPM_GPG_PRIVATE_KEY     Environment variable for RPM signing key
+//   RPM_GPG_PASSPHRASE      Environment variable for RPM signing passphrase
+//
+// REQUIRED SYSTEM BINARIES:
+//   tar             For extracting nfpm binary
+//   chmod           For setting executable permissions
+//   curl            For downloading nfpm (via fetch)
+//
+// EXAMPLES:
+//   node package-nfpm.js 1.2.3 rpm
+//   node package-nfpm.js 1.2.3 deb
+//
 
 import fs from 'node:fs/promises';
 import { applyOneTemplate } from './lib/templates.js';

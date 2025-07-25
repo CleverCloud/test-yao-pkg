@@ -1,14 +1,19 @@
 #!/usr/bin/env node
-
-/**
- * CLI script to analyze GitHub Actions workflows and check secrets/variables usage.
- * 
- * This script scans all workflow files in .github/workflows/, extracts required
- * secrets and variables, compares them with what's actually configured in the
- * repository, and generates a comprehensive report.
- * 
- * @usage node check-github-actions.js
- */
+//
+// CLI script to analyze GitHub Actions workflows and check secrets/variables usage.
+//
+// This script scans all workflow files in .github/workflows/, extracts required
+// secrets and variables, compares them with what's actually configured in the
+// repository, and generates a comprehensive report.
+//
+// USAGE: node check-github-actions.js
+//
+// REQUIRED SYSTEM BINARIES:
+//   gh              GitHub CLI for listing secrets and variables
+//
+// EXAMPLES:
+//   node check-github-actions.js
+//
 
 import { globSync, readFileSync } from 'node:fs';
 import { execSync } from 'node:child_process';

@@ -1,17 +1,26 @@
 #!/usr/bin/env node
-
-/**
- * CLI script to publish a new version to Homebrew tap repository.
- * 
- * This script updates the Homebrew formula with new version information,
- * calculates the SHA256 hash of the macOS archive, and commits the changes
- * to the Homebrew tap repository.
- * 
- * @usage node publish-homebrew.js <version>
- * @param {string} version - Version string (e.g., "1.2.3")
- * @throws {Error} When version argument is missing
- * @requires HOMEBREW_GIT_URL - Environment variable for Homebrew tap repository URL
- */
+//
+// CLI script to publish a new version to Homebrew tap repository.
+//
+// This script updates the Homebrew formula with new version information,
+// calculates the SHA256 hash of the macOS archive, and commits the changes
+// to the Homebrew tap repository.
+//
+// USAGE: node publish-homebrew.js <version>
+//
+// ARGUMENTS:
+//   version         Version string (e.g., "1.2.3")
+//
+// ENVIRONMENT VARIABLES:
+//   HOMEBREW_GIT_URL        Environment variable for Homebrew tap repository URL
+//
+// REQUIRED SYSTEM BINARIES:
+//   git             For cloning, committing, and pushing to Homebrew repository
+//   sha256sum       For calculating archive checksums (via getSha256)
+//
+// EXAMPLES:
+//   node publish-homebrew.js 1.2.3
+//
 
 import pkg from '../package.json' with { type: 'json' };
 import { applyTemplates } from './lib/templates.js';

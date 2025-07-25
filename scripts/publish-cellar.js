@@ -1,19 +1,29 @@
 #!/usr/bin/env node
-
-/**
- * CLI script to publish build artifacts to Clever Cloud's Cellar storage.
- * 
- * This script uploads various types of build artifacts (archives, RPM, DEB packages)
- * to Cellar S3-compatible object storage for distribution and releases.
- * 
- * @usage node publish-cellar.js <version> <artifact>
- * @param {string} version - Version string (e.g., "1.2.3")
- * @param {'archives'|'rpm'|'deb'} artifact - Type of artifact to upload
- * @throws {Error} When arguments are missing or invalid
- * @requires CC_CLEVER_TOOLS_RELEASES_CELLAR_BUCKET - Environment variable for Cellar bucket name
- * @requires CC_CLEVER_TOOLS_RELEASES_CELLAR_KEY_ID - Environment variable for Cellar access key ID
- * @requires CC_CLEVER_TOOLS_RELEASES_CELLAR_SECRET_KEY - Environment variable for Cellar secret key
- */
+//
+// CLI script to publish build artifacts to Clever Cloud's Cellar storage.
+//
+// This script uploads various types of build artifacts (archives, RPM, DEB packages)
+// to Cellar S3-compatible object storage for distribution and releases.
+//
+// USAGE: node publish-cellar.js <version> <artifact>
+//
+// ARGUMENTS:
+//   version         Version string (e.g., "1.2.3")
+//   artifact        Type of artifact to upload ('archives', 'rpm', or 'deb')
+//
+// ENVIRONMENT VARIABLES:
+//   CC_CLEVER_TOOLS_RELEASES_CELLAR_BUCKET      Environment variable for Cellar bucket name
+//   CC_CLEVER_TOOLS_RELEASES_CELLAR_KEY_ID      Environment variable for Cellar access key ID
+//   CC_CLEVER_TOOLS_RELEASES_CELLAR_SECRET_KEY  Environment variable for Cellar secret key
+//
+// REQUIRED SYSTEM BINARIES:
+//   curl            For HTTP uploads (used internally by CellarClient)
+//
+// EXAMPLES:
+//   node publish-cellar.js 1.2.3 archives
+//   node publish-cellar.js 1.2.3 rpm
+//   node publish-cellar.js 1.2.3 deb
+//
 
 import dedent from 'dedent';
 import { CellarClient } from './lib/cellar-client.js';
