@@ -7,7 +7,7 @@ import fs from 'node:fs';
  * @param {Function} fn - The async function to run
  * @return {void}
  */
-export function runCommand(fn) {
+export function runCommand (fn) {
 
   // Check for help flags
   const args = process.argv.slice(2);
@@ -17,7 +17,8 @@ export function runCommand(fn) {
     const usage = extractUsage(scriptPath);
     if (usage) {
       console.log(usage);
-    } else {
+    }
+    else {
       console.log(`Usage: ${scriptPath.split('/').pop()}`);
     }
     process.exit(0);
@@ -26,7 +27,8 @@ export function runCommand(fn) {
   fn().catch((e) => {
     if (e instanceof SyntaxError || e instanceof TypeError) {
       console.error(e);
-    } else {
+    }
+    else {
       console.error(`${styleText(['red', 'bold'], 'ERROR:')} ${e.message}`);
 
       // Show usage for argument and environment variable errors
@@ -48,7 +50,7 @@ export function runCommand(fn) {
  * @returns {string[]} Array of environment variable values in the same order
  * @throws {EnvironmentVariableError} When any environment variable is null, undefined, or empty string
  */
-export function readEnvVars(variableNames) {
+export function readEnvVars (variableNames) {
   const values = [];
   const missing = [];
 
@@ -73,7 +75,7 @@ export function readEnvVars(variableNames) {
  * @param {string} filePath - Path to the JavaScript file
  * @returns {string|null} The extracted usage information or null if not found
  */
-function extractUsage(filePath) {
+function extractUsage (filePath) {
   try {
     const content = fs.readFileSync(filePath, 'utf8');
     const lines = content.split('\n');
@@ -84,7 +86,7 @@ function extractUsage(filePath) {
     for (const line of lines) {
       // Stop at the first import/require or actual code
       if (line.trim().startsWith('import ') || line.trim().startsWith('require(') ||
-          (line.trim() && !line.trim().startsWith('//') && !line.trim().startsWith('#!/'))) {
+        (line.trim() && !line.trim().startsWith('//') && !line.trim().startsWith('#!/'))) {
         break;
       }
 
@@ -111,7 +113,8 @@ function extractUsage(filePath) {
     }
 
     return null;
-  } catch {
+  }
+  catch {
     return null;
   }
 }
@@ -122,11 +125,12 @@ function extractUsage(filePath) {
  * @param {string[]} [allowedValues] - Array of allowed values for the argument
  */
 export class ArgumentError extends Error {
-  constructor(argumentName, allowedValues) {
+  constructor (argumentName, allowedValues) {
     let message;
     if (allowedValues && allowedValues.length > 0) {
       message = `${argumentName} (must be one of: ${allowedValues.map(v => `"${v}"`).join(', ')})`;
-    } else {
+    }
+    else {
       message = argumentName ? `Missing argument: ${argumentName}` : 'Missing required arguments';
     }
     super(message);
@@ -138,11 +142,12 @@ export class ArgumentError extends Error {
  * Custom error for missing or invalid environment variables.
  */
 export class EnvironmentVariableError extends Error {
-  constructor(...variableNames) {
+  constructor (...variableNames) {
     let message;
     if (variableNames.length === 1) {
       message = `Missing environment variable: ${variableNames[0]}`;
-    } else {
+    }
+    else {
       const list = variableNames.map(name => `- ${name}`).join('\n');
       message = `Missing environment variables:\n${list}`;
     }
@@ -155,7 +160,7 @@ export class EnvironmentVariableError extends Error {
  * Custom error for unknown commands.
  */
 export class UnknownCommandError extends Error {
-  constructor(commandName) {
+  constructor (commandName) {
     super(`Unknown command: ${commandName}`);
     this.name = 'UnknownCommandError';
   }

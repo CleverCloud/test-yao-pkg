@@ -26,8 +26,7 @@
 import fs from 'node:fs/promises';
 import { getAssetPath } from './lib/paths.js';
 import { highlight } from './lib/terminal.js';
-import { runCommand, ArgumentError, readEnvVars } from './lib/command.js';
-import dedent from 'dedent';
+import { ArgumentError, readEnvVars, runCommand } from './lib/command.js';
 
 const NEXUS_SERVER_URL = 'https://nexus.clever-cloud.com';
 
@@ -48,11 +47,11 @@ runCommand(async () => {
 
   let url;
   if (packager === 'rpm') {
-    const [rpmRepository]  = readEnvVars(['NEXUS_RPM_REPOSITORY']);
+    const [rpmRepository] = readEnvVars(['NEXUS_RPM_REPOSITORY']);
     url = `${NEXUS_SERVER_URL}/repository/${rpmRepository}/clever-tools-${version}.rpm`;
   }
   else {
-    const [debRepository]  = readEnvVars(['NEXUS_DEB_REPOSITORY']);
+    const [debRepository] = readEnvVars(['NEXUS_DEB_REPOSITORY']);
     url = `${NEXUS_SERVER_URL}/repository/${debRepository}/`;
   }
   const method = packager === 'rpm' ? 'PUT' : 'POST';

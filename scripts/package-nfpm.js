@@ -18,7 +18,6 @@
 // REQUIRED SYSTEM BINARIES:
 //   tar             For extracting nfpm binary
 //   chmod           For setting executable permissions
-//   curl            For downloading nfpm (via fetch)
 //
 // EXAMPLES:
 //   package-nfpm.js 1.2.3 rpm
@@ -29,8 +28,7 @@ import { applyOneTemplate } from './lib/templates.js';
 import { getAssetPath } from './lib/paths.js';
 import { exec } from './lib/process.js';
 import { highlight } from './lib/terminal.js';
-import { runCommand, ArgumentError, readEnvVars } from './lib/command.js';
-import dedent from 'dedent';
+import { ArgumentError, readEnvVars, runCommand } from './lib/command.js';
 
 const NFPM_VERSION = '2.43.0';
 const NFPM_URL = `https://github.com/goreleaser/nfpm/releases/download/v${NFPM_VERSION}/nfpm_${NFPM_VERSION}_Linux_x86_64.tar.gz`;

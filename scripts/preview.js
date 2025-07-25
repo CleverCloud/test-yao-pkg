@@ -133,10 +133,12 @@ async function updatePreviews (previewName) {
     if (remotePreview) {
       if (localPreview != null) {
         updatedLocalManifest.previews[localPreview] = remotePreview;
-      } else {
+      }
+      else {
         updatedLocalManifest.previews.push(remotePreview);
       }
-    } else if (localPreview != null) {
+    }
+    else if (localPreview != null) {
       // Remote preview was deleted, remove from local
       updatedLocalManifest.previews.splice(localPreview, 1);
     }

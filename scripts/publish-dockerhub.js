@@ -29,7 +29,7 @@ import { applyTemplates } from './lib/templates.js';
 import { commitAndPush, tagAndPush } from './lib/git.js';
 import { exec, execWithStdin } from './lib/process.js';
 import { highlight } from './lib/terminal.js';
-import { runCommand, ArgumentError, readEnvVars } from './lib/command.js';
+import { ArgumentError, readEnvVars, runCommand } from './lib/command.js';
 import { simpleGit } from 'simple-git';
 
 const TEMPLATES_PATH = './scripts/templates/dockerhub';

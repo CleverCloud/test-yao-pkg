@@ -17,7 +17,7 @@
 //   publish-winget.js 1.2.3
 
 import { highlight } from './lib/terminal.js';
-import { runCommand, ArgumentError } from './lib/command.js';
+import { ArgumentError, runCommand } from './lib/command.js';
 
 runCommand(async () => {
 

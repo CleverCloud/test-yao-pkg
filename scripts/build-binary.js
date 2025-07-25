@@ -16,7 +16,7 @@
 import { buildBinary } from './lib/build-binary.js';
 import { getOs } from './lib/platform-os.js';
 import { getVersion } from './lib/utils.js';
-import { runCommand, ArgumentError } from './lib/command.js';
+import { ArgumentError, runCommand } from './lib/command.js';
 
 runCommand(async () => {
   const [rawVersion] = process.argv.slice(2);

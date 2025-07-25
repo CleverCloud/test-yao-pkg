@@ -23,7 +23,7 @@
 import pkg from '../package.json' with { type: 'json' };
 import { applyOneTemplate } from './lib/templates.js';
 import { highlight } from './lib/terminal.js';
-import { runCommand, ArgumentError, readEnvVars } from './lib/command.js';
+import { ArgumentError, readEnvVars, runCommand } from './lib/command.js';
 import { simpleGit } from 'simple-git';
 import { commitAndPush } from './lib/git.js';
 

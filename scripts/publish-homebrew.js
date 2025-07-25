@@ -26,7 +26,7 @@ import { commitAndPush } from './lib/git.js';
 import { getAssetPath } from './lib/paths.js';
 import { getSha256 } from './lib/fs.js';
 import { highlight } from './lib/terminal.js';
-import { runCommand, ArgumentError, readEnvVars } from './lib/command.js';
+import { ArgumentError, readEnvVars, runCommand } from './lib/command.js';
 import { simpleGit } from 'simple-git';
 
 const GIT_PROJECT = 'homebrew-tap';
