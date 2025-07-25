@@ -12,10 +12,11 @@
 //   version         Version string (e.g., "1.2.3")
 //
 // ENVIRONMENT VARIABLES:
-//   DOCKERHUB_USERNAME      Environment variable for Docker Hub username
-//   DOCKERHUB_TOKEN         Environment variable for Docker Hub access token
-//   DOCKER_IMAGE_NAME       Environment variable for Docker image name
-//   DOCKERHUB_GIT_URL       Environment variable for Docker repository URL
+//   DOCKERHUB_USERNAME                        Docker Hub username
+//   DOCKERHUB_TOKEN                           Docker Hub access token
+//   DOCKER_IMAGE_NAME                         Docker image name
+//   DOCKERHUB_GIT_URL                         Docker repository URL
+//   CC_CLEVER_TOOLS_RELEASES_CELLAR_BUCKET    Cellar bucket for release downloads
 //
 // REQUIRED SYSTEM BINARIES:
 //   git             For cloning, committing, and pushing to Docker repository
@@ -23,33 +24,43 @@
 //
 // EXAMPLES:
 //   publish-dockerhub.js 1.2.3
-//
 
 import pkg from '../package.json' with { type: 'json' };
 import { applyTemplates } from './lib/templates.js';
 import { commitAndPush, tagAndPush } from './lib/git.js';
-import { exec, execWithStdin, highlight, readEnvVars, run } from './lib/utils.js';
+import { exec, execWithStdin } from './lib/process.js';
+import { highlight } from './lib/terminal.js';
+import { ArgumentError, readEnvVars, runCommand } from './lib/command.js';
 import { simpleGit } from 'simple-git';
+import { CellarClient } from './lib/cellar-client.js';
+import { getAssetPath } from './lib/paths.js';
 
 const TEMPLATES_PATH = './scripts/templates/dockerhub';
 const GIT_PATH = './git-dockerhub';
 
-run(async () => {
+runCommand(async () => {
 
   const [version] = process.argv.slice(2);
   if (version == null) {
-    throw new Error('Missing version');
+    throw new ArgumentError('version');
   }
 
-  const [dockerHubUser, dockerHubToken, dockerImageName, gitUrl] = readEnvVars(['DOCKERHUB_USERNAME', 'DOCKERHUB_TOKEN', 'DOCKER_IMAGE_NAME', 'DOCKERHUB_GIT_URL']);
+  const [dockerHubUser, dockerHubToken, dockerImageName, gitUrl, releaseBucket] = readEnvVars(['DOCKERHUB_USERNAME', 'DOCKERHUB_TOKEN', 'DOCKER_IMAGE_NAME', 'DOCKERHUB_GIT_URL', 'CC_CLEVER_TOOLS_RELEASES_CELLAR_BUCKET']);
+
+  const releaseClient = new CellarClient({
+    bucket: releaseBucket,
+  });
+  const releasePath = getAssetPath('archive', version, 'release', 'linux');
+  const downloadUrl = releaseClient.getPublicUrl(releasePath);
 
   console.log(highlight`=> Cloning dockerhub repository ${gitUrl} to ${GIT_PATH}`);
   await simpleGit().clone(gitUrl, GIT_PATH);
 
   await applyTemplates(GIT_PATH, TEMPLATES_PATH, {
     description: pkg.description,
+    downloadUrl,
     license: pkg.license,
-    maintainer: pkg.maintainer,
+    maintainer: pkg.author,
     version,
   });
 

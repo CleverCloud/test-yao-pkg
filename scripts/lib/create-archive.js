@@ -1,4 +1,4 @@
-import { exec } from './utils.js';
+import { exec } from './process.js';
 import { getAssetParts } from './paths.js';
 
 /**

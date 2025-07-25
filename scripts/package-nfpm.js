@@ -12,40 +12,39 @@
 //   packager        Package format to create ('rpm' or 'deb')
 //
 // ENVIRONMENT VARIABLES:
-//   RPM_GPG_PRIVATE_KEY     Environment variable for RPM signing key
-//   RPM_GPG_PASSPHRASE      Environment variable for RPM signing passphrase
+//   RPM_GPG_PRIVATE_KEY     RPM signing key
+//   RPM_GPG_PASSPHRASE      RPM signing passphrase
 //
 // REQUIRED SYSTEM BINARIES:
 //   tar             For extracting nfpm binary
 //   chmod           For setting executable permissions
-//   curl            For downloading nfpm (via fetch)
 //
 // EXAMPLES:
 //   package-nfpm.js 1.2.3 rpm
 //   package-nfpm.js 1.2.3 deb
-//
 
 import fs from 'node:fs/promises';
 import { applyOneTemplate } from './lib/templates.js';
 import { getAssetPath } from './lib/paths.js';
-import { exec, highlight, readEnvVars, run } from './lib/utils.js';
-import dedent from 'dedent';
+import { exec } from './lib/process.js';
+import { highlight } from './lib/terminal.js';
+import { ArgumentError, readEnvVars, runCommand } from './lib/command.js';
 
 const NFPM_VERSION = '2.43.0';
 const NFPM_URL = `https://github.com/goreleaser/nfpm/releases/download/v${NFPM_VERSION}/nfpm_${NFPM_VERSION}_Linux_x86_64.tar.gz`;
 const NFPM_BINARY_PATH = '/tmp/nfpm';
 
-run(async () => {
+runCommand(async () => {
 
   const [version, packager] = process.argv.slice(2);
   if (version == null) {
-    throw new Error(getUsage('Missing version'));
+    throw new ArgumentError('version');
   }
   if (packager == null) {
-    throw new Error(getUsage('Missing packager, must be either "rpm" or "deb"'));
+    throw new ArgumentError('packager');
   }
   if (packager !== 'rpm' && packager !== 'deb') {
-    throw new Error(getUsage('Invalid packager, must be either "rpm" or "deb"'));
+    throw new ArgumentError('packager', ['rpm', 'deb']);
   }
 
   const [rpmGpgPrivateKey, rpmGpgPassphrase] = (packager === 'rpm') ? readEnvVars(['RPM_GPG_PRIVATE_KEY', 'RPM_GPG_PASSPHRASE']) : [];
@@ -74,7 +73,7 @@ run(async () => {
     await exec(`chmod +x ${NFPM_BINARY_PATH}`);
   }
 
-  await applyOneTemplate(templatePath, './scripts/templates/nfpm.yaml', {
+  await applyOneTemplate(templatePath, './scripts/templates/nfpm.yml', {
     version,
     arch,
   });
@@ -93,24 +92,3 @@ run(async () => {
   console.log(highlight`=> ${packager.toUpperCase()} package created: ${outputPath}`);
 });
 
-/**
- *
- * @param {string} message
- * @return {string}
- */
-function getUsage (message) {
-  return dedent`
-    ${message}
-
-    USAGE
-      package-nfpm.js <version> <packager>
-
-    ARGUMENTS
-      version   Version directory name in build/
-      packager  Type of package to create: "rpm" or "deb"
-
-    EXAMPLES
-      package-nfpm.js 1.2.3 rpm
-      package-nfpm.js 1.2.3 deb
-  `;
-}

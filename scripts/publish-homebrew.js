@@ -12,31 +12,32 @@
 //   version         Version string (e.g., "1.2.3")
 //
 // ENVIRONMENT VARIABLES:
-//   HOMEBREW_GIT_URL        Environment variable for Homebrew tap repository URL
+//   HOMEBREW_GIT_URL        Homebrew tap repository URL
 //
 // REQUIRED SYSTEM BINARIES:
 //   git             For cloning, committing, and pushing to Homebrew repository
 //
 // EXAMPLES:
 //   publish-homebrew.js 1.2.3
-//
 
 import pkg from '../package.json' with { type: 'json' };
 import { applyTemplates } from './lib/templates.js';
 import { commitAndPush } from './lib/git.js';
 import { getAssetPath } from './lib/paths.js';
-import { getSha256, highlight, readEnvVars, run } from './lib/utils.js';
+import { getSha256 } from './lib/fs.js';
+import { highlight } from './lib/terminal.js';
+import { ArgumentError, readEnvVars, runCommand } from './lib/command.js';
 import { simpleGit } from 'simple-git';
 
 const GIT_PROJECT = 'homebrew-tap';
 const TEMPLATES_PATH = './scripts/templates/homebrew';
 const GIT_PATH = './git-homebrew';
 
-run(async () => {
+runCommand(async () => {
 
   const [version] = process.argv.slice(2);
   if (version == null) {
-    throw new Error('Missing version');
+    throw new ArgumentError('version');
   }
 
   const [gitUrl] = readEnvVars(['HOMEBREW_GIT_URL']);

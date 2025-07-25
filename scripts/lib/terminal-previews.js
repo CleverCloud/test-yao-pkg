@@ -1,4 +1,7 @@
-import { clearDirectory, createTerminalLink, exec, getEmoji, highlight } from './utils.js';
+import { clearDirectory } from './fs.js';
+import { getEmoji } from './platform-os.js';
+import { exec } from './process.js';
+import { createTerminalLink, highlight } from './terminal.js';
 import { TerminalTable } from './terminal-table.js';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -6,9 +9,9 @@ import { fetchWithProgress } from './fetch-with-progress.js';
 import { styleText } from 'node:util';
 
 /**
- * @typedef {import('./preview.types.d.ts').Manifest} Manifest
- * @typedef {import('./preview.types.d.ts').Preview} Preview
- * @typedef {import('./preview.types.d.ts').PreviewUrl} PreviewUrl
+ * @typedef {import('./common.types.d.ts').Manifest} Manifest
+ * @typedef {import('./common.types.d.ts').Preview} Preview
+ * @typedef {import('./common.types.d.ts').PreviewUrl} PreviewUrl
  */
 
 /**
@@ -100,11 +103,17 @@ export class TerminalPreviews {
 
   /**
    * Updates all previews by downloading, updating, or deleting them based on manifest differences
+   * @param {string} [previewName] - Optional preview name to update only a specific preview
    * @returns {Promise<void>}
    */
-  async updatePreviews () {
+  async updatePreviews (previewName) {
     await fs.promises.mkdir('.preview-binaries', { recursive: true });
-    await Promise.all(this.#previewNames.map((previewName, index) => {
+
+    const previewsToUpdate = previewName != null
+      ? [previewName]
+      : this.#previewNames;
+
+    await Promise.all(previewsToUpdate.map((previewName, index) => {
       const remotePreview = this.#remoteManifest.previews.find((p) => p.name === previewName);
       const localPreview = this.#localManifest.previews.find((p) => p.name === previewName);
 

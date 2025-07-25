@@ -15,15 +15,15 @@
 //
 // EXAMPLES:
 //   publish-winget.js 1.2.3
-//
 
-import { highlight, run } from './lib/utils.js';
+import { highlight } from './lib/terminal.js';
+import { ArgumentError, runCommand } from './lib/command.js';
 
-run(async () => {
+runCommand(async () => {
 
   const [version] = process.argv.slice(2);
   if (version == null) {
-    throw new Error('Missing version');
+    throw new ArgumentError('version');
   }
 
   console.log(highlight('=> winget command to prepare things'));

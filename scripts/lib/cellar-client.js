@@ -41,10 +41,15 @@ export class CellarClient {
 
   /**
    * Generates a public URL for a file in the bucket.
+   * If the bucket name contains dots, it's treated as a domain name.
    * @param {string} remoteFilepath - The path to the file in the bucket
    * @returns {string}
    */
-  url (remoteFilepath) {
+  getPublicUrl (remoteFilepath) {
+    // If bucket contains dots, we assume it's a domain
+    if (this.#bucket.includes('.')) {
+      return `https://${this.#bucket}/${remoteFilepath}`;
+    }
     return `https://${this.#bucket}.${this.#host}/${remoteFilepath}`;
   }
 
@@ -59,25 +64,6 @@ export class CellarClient {
     const content = await response.Body.transformToString();
     return content;
   }
-
-  // /**
-  //  * Checks if a file exists in the bucket.
-  //  * @param {string} remoteFilepath - The path to check in the bucket
-  //  * @returns {Promise<boolean>} True if the file exists, false otherwise
-  //  * @throws {Error} When there's an error other than file not found
-  //  */
-  // async exists (remoteFilepath) {
-  //   try {
-  //     await this.#client.send(new HeadObjectCommand({ Bucket: this.#bucket, Key: remoteFilepath }));
-  //     return true;
-  //   }
-  //   catch (error) {
-  //     if (error.name === 'NotFound' || error.$metadata?.httpStatusCode === 404) {
-  //       return false;
-  //     }
-  //     throw error;
-  //   }
-  // }
 
   /**
    * Uploads a local file to the bucket.

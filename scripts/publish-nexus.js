@@ -12,47 +12,46 @@
 //   packager        Package format to upload ('rpm' or 'deb')
 //
 // ENVIRONMENT VARIABLES:
-//   NEXUS_USER              Environment variable for Nexus username
-//   NEXUS_PASSWORD          Environment variable for Nexus password
-//   NEXUS_RPM_REPOSITORY    Environment variable for RPM repository name (when packager=rpm)
-//   NEXUS_DEB_REPOSITORY    Environment variable for DEB repository name (when packager=deb)
+//   NEXUS_USER              Nexus username
+//   NEXUS_PASSWORD          Nexus password
+//   NEXUS_RPM_REPOSITORY    RPM repository name (when packager=rpm)
+//   NEXUS_DEB_REPOSITORY    DEB repository name (when packager=deb)
 //
 // REQUIRED SYSTEM BINARIES:
 //
 // EXAMPLES:
 //   publish-nexus.js 1.2.3 rpm
 //   publish-nexus.js 1.2.3 deb
-//
 
 import fs from 'node:fs/promises';
 import { getAssetPath } from './lib/paths.js';
-import { highlight, readEnvVars, run } from './lib/utils.js';
-import dedent from 'dedent';
+import { highlight } from './lib/terminal.js';
+import { ArgumentError, readEnvVars, runCommand } from './lib/command.js';
 
 const NEXUS_SERVER_URL = 'https://nexus.clever-cloud.com';
 
-run(async () => {
+runCommand(async () => {
 
   const [version, packager] = process.argv.slice(2);
   if (version == null) {
-    throw new Error(getUsage('Missing version'));
+    throw new ArgumentError('version');
   }
   if (packager == null) {
-    throw new Error(getUsage('Missing packager, must be either "rpm" or "deb"'));
+    throw new ArgumentError('packager');
   }
   if (packager !== 'rpm' && packager !== 'deb') {
-    throw new Error(getUsage('Invalid packager, must be either "rpm" or "deb"'));
+    throw new ArgumentError('packager', ['rpm', 'deb']);
   }
 
   const [nexusUser, nexusPassword] = readEnvVars(['NEXUS_USER', 'NEXUS_PASSWORD']);
 
   let url;
   if (packager === 'rpm') {
-    const [rpmRepository]  = readEnvVars(['NEXUS_RPM_REPOSITORY']);
+    const [rpmRepository] = readEnvVars(['NEXUS_RPM_REPOSITORY']);
     url = `${NEXUS_SERVER_URL}/repository/${rpmRepository}/clever-tools-${version}.rpm`;
   }
   else {
-    const [debRepository]  = readEnvVars(['NEXUS_DEB_REPOSITORY']);
+    const [debRepository] = readEnvVars(['NEXUS_DEB_REPOSITORY']);
     url = `${NEXUS_SERVER_URL}/repository/${debRepository}/`;
   }
   const method = packager === 'rpm' ? 'PUT' : 'POST';
@@ -79,24 +78,3 @@ run(async () => {
   console.log(highlight`=> ${packager.toUpperCase()} upload successful with status ${response.status}`);
 });
 
-/**
- *
- * @param {string} message
- * @return {string}
- */
-function getUsage (message) {
-  return dedent`
-    ${message}
-
-    USAGE
-      publish-nexus.js <version> <packager>
-
-    ARGUMENTS
-      version   Version directory name in build/
-      packager  Type of package to create: "rpm" or "deb"
-
-    EXAMPLES
-      publish-nexus.js 1.2.3 rpm
-      publish-nexus.js 1.2.3 deb
-  `;
-}

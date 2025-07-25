@@ -4,7 +4,7 @@
  * @typedef {import('./lib/preview-client.types.js').PreviewUrl} PreviewUrl
  */
 import dedent from 'dedent';
-import { getEmoji } from './utils.js';
+import { getEmoji } from './platform-os.js';
 
 export class HtmlPreviews {
   #manifest;

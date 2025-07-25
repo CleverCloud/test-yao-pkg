@@ -12,7 +12,7 @@
 //
 // USAGE:
 //   preview.js list
-//   preview.js update
+//   preview.js update [preview-name]
 //   preview.js build [preview-name]
 //   preview.js pr-comment [preview-name]
 //   preview.js publish [preview-name]
@@ -21,11 +21,12 @@
 // ARGUMENTS:
 //   command         Command to execute (list|update|build|pr-comment|publish|delete)
 //   [preview-name]  Version (e.g., "1.2.3") or branch name (e.g., "my-feature"), defaults to current git branch
+//                   For 'update' command: optionally specify a single preview to update
 //
 // ENVIRONMENT VARIABLES:
-//   CC_CLEVER_TOOLS_PREVIEWS_CELLAR_BUCKET      Environment variable for preview storage bucket
-//   CC_CLEVER_TOOLS_PREVIEWS_CELLAR_KEY_ID      Environment variable for Cellar access key
-//   CC_CLEVER_TOOLS_PREVIEWS_CELLAR_SECRET_KEY  Environment variable for Cellar secret key
+//   CC_CLEVER_TOOLS_PREVIEWS_CELLAR_BUCKET      Preview storage bucket
+//   CC_CLEVER_TOOLS_PREVIEWS_CELLAR_KEY_ID      Cellar access key
+//   CC_CLEVER_TOOLS_PREVIEWS_CELLAR_SECRET_KEY  Cellar secret key
 //
 // REQUIRED SYSTEM BINARIES:
 //   git             For getting current branch and commit information
@@ -35,38 +36,43 @@
 //
 // EXAMPLES:
 //   preview.js list
+//   preview.js update
+//   preview.js update feature-branch
 //   preview.js build feature-branch
 //   preview.js publish
 //   preview.js delete old-preview
-//
 
-import { clearDirectory, getEmoji, getOs, getSha256, getVersion, highlight, readEnvVars, run } from './lib/utils.js';
-import { getCurrentAuthor, getCurrentBranch, getCurrentCommit } from './lib/git.js';
-import { CellarClient } from './lib/cellar-client.js';
-import { bundleToSingleCjs } from './lib/bundle-cjs.js';
-import { buildBinary } from './lib/build-binary.js';
-import { createArchive } from './lib/create-archive.js';
 import dedent from 'dedent';
-import { BUILD_DIR, getAssetParts, getAssetPath, PREVIEW_DIR } from './lib/paths.js';
-import { TerminalPreviews } from './lib/terminal-previews.js';
 import fs from 'node:fs';
+import { ArgumentError, readEnvVars, runCommand, UnknownCommandError } from './lib/command.js';
+import { BUILD_DIR, getAssetParts, getAssetPath, PREVIEW_DIR } from './lib/paths.js';
+import { CellarClient } from './lib/cellar-client.js';
+import { CellarClientPublic } from './lib/cellar-client-public.js';
 import { HtmlPreviews } from './lib/html-previews.js';
+import { TerminalPreviews } from './lib/terminal-previews.js';
+import { buildBinary } from './lib/build-binary.js';
+import { bundleToSingleCjs } from './lib/bundle-cjs.js';
+import { clearDirectory, getSha256 } from './lib/fs.js';
+import { createArchive } from './lib/create-archive.js';
+import { getCurrentAuthor, getCurrentBranch, getCurrentCommit } from './lib/git.js';
+import { getEmoji, getOs } from './lib/platform-os.js';
+import { getVersion } from './lib/utils.js';
+import { highlight } from './lib/terminal.js';
 
 /**
- * @typedef {import('./lib/preview.types.d.ts').Manifest} Manifest
- * @typedef {import('./lib/preview.types.d.ts').Preview} Preview
- * @typedef {import('./lib/preview.types.d.ts').PreviewUrl} PreviewUrl
+ * @typedef {import('./lib/common.types.d.ts').Manifest} Manifest
+ * @typedef {import('./lib/common.types.d.ts').Preview} Preview
+ * @typedef {import('./lib/common.types.d.ts').PreviewUrl} PreviewUrl
  */
 
-const MANIFEST_URL = 'https://6mt2ilnafne8nzomvlg2.cellar-c2.services.clever-cloud.com/previews/manifest.json';
 const MANIFEST_PATH = `${PREVIEW_DIR}/manifest.json`;
 const LIST_INDEX_PATH = `${PREVIEW_DIR}/index.html`;
 
-run(async () => {
+runCommand(async () => {
 
   const [command, rawPreviewName] = process.argv.slice(2);
   if (command == null || command.length === 0) {
-    throw new Error(getUsage(`Missing command`));
+    throw new ArgumentError('command');
   }
 
   const previewName = getVersion(rawPreviewName ?? (await getCurrentBranch()));
@@ -79,7 +85,7 @@ run(async () => {
       if (os === 'win') {
         throw new Error('The "update" command is not yet available on Windows');
       }
-      return updatePreviews();
+      return updatePreviews(rawPreviewName);
     case 'build':
       return buildPreview(previewName, os);
     case 'pr-comment':
@@ -90,27 +96,8 @@ run(async () => {
       return deletePreview(previewName);
   }
 
-  throw new Error(getUsage(`Unknown command "${command}"`));
+  throw new UnknownCommandError(command);
 });
-
-/**
- * Generates a usage message for the CLI tool.
- * @param {string} message
- * @return {string}
- */
-function getUsage (message) {
-  return dedent`
-    ${message}
-
-    USAGE
-      preview.js list
-      preview.js update
-      preview.js build [preview-name]
-      preview.js pr-comment [preview-name]
-      preview.js publish [preview-name]
-      preview.js delete [preview-name]
-  `;
-}
 
 /**
  * Lists all available previews in a formatted table.
@@ -126,14 +113,38 @@ async function listPreviews () {
 /**
  * Updates the local previews (download/update/delete...) and display progress.
  * Displays information including date, commit ID, name, author, and download links.
+ * @param {string} [previewName] - Optional preview name to update only a specific preview
  */
-async function updatePreviews () {
+async function updatePreviews (previewName) {
   const remoteManifest = await fetchManifest();
   const localManifest = await getLocalManifest();
   const terminalPreviews = new TerminalPreviews(remoteManifest, localManifest, getOs());
   terminalPreviews.initDisplay();
-  await terminalPreviews.updatePreviews();
-  await updateLocalManifest(remoteManifest);
+  await terminalPreviews.updatePreviews(previewName);
+
+  // Update local manifest: merge remote entries for processed previews only
+  const updatedLocalManifest = { ...localManifest };
+  const processedPreviewNames = previewName ? [previewName] : remoteManifest.previews.map(p => p.name);
+
+  processedPreviewNames.forEach(name => {
+    const remotePreview = remoteManifest.previews.find((p) => p.name === name);
+    const localPreview = updatedLocalManifest.previews.find((p) => p.name === name);
+
+    if (remotePreview) {
+      if (localPreview != null) {
+        updatedLocalManifest.previews[localPreview] = remotePreview;
+      }
+      else {
+        updatedLocalManifest.previews.push(remotePreview);
+      }
+    }
+    else if (localPreview != null) {
+      // Remote preview was deleted, remove from local
+      updatedLocalManifest.previews.splice(localPreview, 1);
+    }
+  });
+
+  await updateLocalManifest(updatedLocalManifest);
 }
 
 /**
@@ -205,7 +216,7 @@ async function publishPreview (previewName) {
     await cellarClient.upload(localPath, remotePath);
     archiveDetails[os] = {
       os,
-      url: cellarClient.url(remotePath),
+      url: cellarClient.getPublicUrl(remotePath),
       checksum: {
         type: 'sha256',
         value: getSha256(localPath),
@@ -271,14 +282,8 @@ async function deletePreview (previewName) {
  */
 async function fetchManifest () {
   try {
-    const response = await fetch(MANIFEST_URL);
-    if (!response.ok) {
-      if (response.status === 404) {
-        return createDefaultManifest();
-      }
-      throw new Error(`Failed to fetch manifest: ${response.status} ${response.statusText}`);
-    }
-    const manifestJson = await response.text();
+    const cellarClient = createCellarClientPublic();
+    const manifestJson = await cellarClient.getObject(MANIFEST_PATH);
     /** @type {Manifest} */
     const manifest = JSON.parse(manifestJson);
     return manifest;
@@ -349,8 +354,17 @@ async function updateListIndex (cellarClient, manifest) {
 }
 
 /**
- * Creates and configures a Cellar client instance.
- * @returns {CellarClient} Configured cellar client
+ * Creates and configures a public (non-authenticated) Cellar client instance.
+ * @return {CellarClientPublic} - The configured public Cellar client instance
+ */
+function createCellarClientPublic () {
+  const [bucket] = readEnvVars(['CC_CLEVER_TOOLS_PREVIEWS_CELLAR_BUCKET']);
+  return new CellarClientPublic({ bucket });
+}
+
+/**
+ * Creates and configures an authenticated Cellar client instance.
+ * @return {CellarClient} - The configured authenticated Cellar client instance
  */
 function createCellarClient () {
   const [bucket, accessKeyId, secretAccessKey] = readEnvVars([

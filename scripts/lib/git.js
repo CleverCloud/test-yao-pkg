@@ -1,5 +1,5 @@
 import { simpleGit } from 'simple-git';
-import { highlight } from './utils.js';
+import { highlight } from './terminal.js';
 
 /**
  * Gets the name of the current Git branch.

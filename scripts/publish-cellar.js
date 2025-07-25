@@ -12,9 +12,9 @@
 //   artifact        Type of artifact to upload ('archives', 'rpm', or 'deb')
 //
 // ENVIRONMENT VARIABLES:
-//   CC_CLEVER_TOOLS_RELEASES_CELLAR_BUCKET      Environment variable for Cellar bucket name
-//   CC_CLEVER_TOOLS_RELEASES_CELLAR_KEY_ID      Environment variable for Cellar access key ID
-//   CC_CLEVER_TOOLS_RELEASES_CELLAR_SECRET_KEY  Environment variable for Cellar secret key
+//   CC_CLEVER_TOOLS_RELEASES_CELLAR_BUCKET      Cellar bucket name
+//   CC_CLEVER_TOOLS_RELEASES_CELLAR_KEY_ID      Cellar access key ID
+//   CC_CLEVER_TOOLS_RELEASES_CELLAR_SECRET_KEY  Cellar secret key
 //
 // REQUIRED SYSTEM BINARIES:
 //
@@ -22,14 +22,15 @@
 //   publish-cellar.js 1.2.3 archives
 //   publish-cellar.js 1.2.3 rpm
 //   publish-cellar.js 1.2.3 deb
-//
 
-import dedent from 'dedent';
 import { CellarClient } from './lib/cellar-client.js';
 import { getAssetPath } from './lib/paths.js';
-import { highlight, readEnvVars, run } from './lib/utils.js';
+import { highlight } from './lib/terminal.js';
+import { ArgumentError, readEnvVars, runCommand } from './lib/command.js';
 
-run(async () => {
+const VALID_ARTIFACTS = ['archives', 'rpm', 'deb'];
+
+runCommand(async () => {
 
   const [bucket, accessKeyId, secretAccessKey] = readEnvVars([
     'CC_CLEVER_TOOLS_RELEASES_CELLAR_BUCKET',
@@ -45,61 +46,42 @@ run(async () => {
 
   const [version, artifact] = process.argv.slice(2);
   if (version == null) {
-    throw new Error(getUsage('Missing version parameter'));
+    throw new ArgumentError('version');
   }
-  if (artifact == null) {
-    throw new Error(getUsage('Missing artifact parameter'));
-  }
-
-  const validArtifacts = ['archives', 'rpm', 'deb'];
-  if (!validArtifacts.includes(artifact)) {
-    throw new Error(getUsage(`Invalid artifact "${artifact}". Must be one of: ${validArtifacts.join(', ')}`));
+  if (artifact == null || !VALID_ARTIFACTS.includes(artifact)) {
+    throw new ArgumentError('artifact', VALID_ARTIFACTS);
   }
 
   switch (artifact) {
     case 'archives':
       const osList = ['linux', 'macos', 'win'];
       for (const os of osList) {
-        const localPath = getAssetPath('archive', version, 'build', os);
-        const remotePath = getAssetPath('archive', version, 'release', os);
-        console.log(highlight`=> Upload ${localPath} to ${remotePath}`);
-        await cellarClient.upload(localPath, remotePath);
+        await uploadArtifact(cellarClient, 'archive', version, os);
       }
       break;
     case 'rpm':
-      const localPath = getAssetPath('rpm', version, 'build');
-      const remotePath = getAssetPath('rpm', version, 'release');
-      console.log(highlight`=> Upload ${localPath} to ${remotePath}`);
-      await cellarClient.upload(localPath, remotePath);
+      await uploadArtifact(cellarClient, 'rpm', version);
       break;
     case 'deb':
-      const debLocalPath = getAssetPath('deb', version, 'build');
-      const debRemotePath = getAssetPath('deb', version, 'release');
-      console.log(highlight`=> Upload ${debLocalPath} to ${debRemotePath}`);
-      await cellarClient.upload(debLocalPath, debRemotePath);
+      await uploadArtifact(cellarClient, 'deb', version);
       break;
   }
 });
 
 /**
- * Generates a usage message for the CLI tool.
- * @param {string} message
- * @return {string}
+ * Uploads an artifact to both versioned and latest paths in Cellar storage
+ * @param {CellarClient} cellarClient - The Cellar client instance
+ * @param {'bundle'|'binary'|'archive'|'rpm'|'deb'} type - Asset type
+ * @param {string} version - The version string
+ * @param {'linux'|'macos'|'win'} [os] - Operating system (required for binary/archive)
  */
-function getUsage (message) {
-  return dedent`
-    ${message}
+async function uploadArtifact (cellarClient, type, version, os = null) {
+  const localPath = getAssetPath(type, version, 'build', os);
+  const remotePath = getAssetPath(type, version, 'release', os);
+  const latestRemotePath = getAssetPath(type, 'latest', 'release', os);
 
-    USAGE
-      publish-to-cellar.js <version> <artifact>
-
-    ARGUMENTS
-      version   Version directory name in build/
-      artifact  Type of artifact: archives, rpm, or deb
-
-    EXAMPLES
-      publish-to-cellar.js 1.2.3 archives
-      publish-to-cellar.js 1.2.3 rpm
-      publish-to-cellar.js 1.2.3 deb
-  `;
+  console.log(highlight`=> Upload ${localPath} to ${remotePath}`);
+  await cellarClient.upload(localPath, remotePath);
+  console.log(highlight`=> Upload ${localPath} to ${latestRemotePath}`);
+  await cellarClient.upload(localPath, latestRemotePath);
 }

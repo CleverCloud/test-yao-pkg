@@ -16,15 +16,16 @@
 //
 // EXAMPLES:
 //   create-archive.js 1.2.3
-//
 
 import { createArchive } from './lib/create-archive.js';
-import { getOs, getVersion, run } from './lib/utils.js';
+import { getOs } from './lib/platform-os.js';
+import { getVersion } from './lib/utils.js';
+import { ArgumentError, runCommand } from './lib/command.js';
 
-run(async () => {
+runCommand(async () => {
   const [rawVersion] = process.argv.slice(2);
   if (rawVersion == null) {
-    throw new Error('Missing version');
+    throw new ArgumentError('version');
   }
 
   const version = getVersion(rawVersion);

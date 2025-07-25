@@ -12,18 +12,18 @@
 //   version         Version string (e.g., "1.2.3")
 //
 // ENVIRONMENT VARIABLES:
-//   EXHERBO_GIT_URL         Environment variable for Exherbo repository URL
+//   EXHERBO_GIT_URL         Exherbo repository URL
 //
 // REQUIRED SYSTEM BINARIES:
 //   git             For cloning, committing, and pushing to Exherbo repository
 //
 // EXAMPLES:
 //   publish-exherbo.js 1.2.3
-//
 
 import pkg from '../package.json' with { type: 'json' };
 import { applyOneTemplate } from './lib/templates.js';
-import { highlight, readEnvVars, run } from './lib/utils.js';
+import { highlight } from './lib/terminal.js';
+import { ArgumentError, readEnvVars, runCommand } from './lib/command.js';
 import { simpleGit } from 'simple-git';
 import { commitAndPush } from './lib/git.js';
 
@@ -31,11 +31,11 @@ const TEMPLATES_PATH = './scripts/templates/exherbo/clever-tools-bin.exheres-0';
 const GIT_PATH = './git-exherbo';
 const PACKAGE_DIR = `${GIT_PATH}/packages/dev-util/clever-tools-bin`;
 
-run(async () => {
+runCommand(async () => {
 
   const [version] = process.argv.slice(2);
   if (version == null) {
-    throw new Error('Missing version');
+    throw new ArgumentError('version');
   }
 
   const [gitUrl] = readEnvVars(['EXHERBO_GIT_URL']);

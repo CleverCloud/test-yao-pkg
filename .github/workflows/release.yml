@@ -73,7 +73,6 @@ jobs:
   publish-npm:
     name: 'Publish to npm'
     runs-on: ubuntu-latest
-    if: false
     steps:
       - name: 'Checkout sources'
         uses: actions/checkout@v4
@@ -136,7 +135,7 @@ jobs:
       - name: 'Publish archives to cellar'
         run: ./scripts/publish-cellar.js ${{ github.ref_name }} archives
         env:
-          CC_CLEVER_TOOLS_RELEASES_CELLAR_BUCKET: ${{ secrets.CC_CLEVER_TOOLS_RELEASES_CELLAR_BUCKET }}
+          CC_CLEVER_TOOLS_RELEASES_CELLAR_BUCKET: ${{ vars.CC_CLEVER_TOOLS_RELEASES_CELLAR_BUCKET }}
           CC_CLEVER_TOOLS_RELEASES_CELLAR_KEY_ID: ${{ secrets.CC_CLEVER_TOOLS_RELEASES_CELLAR_KEY_ID }}
           CC_CLEVER_TOOLS_RELEASES_CELLAR_SECRET_KEY: ${{ secrets.CC_CLEVER_TOOLS_RELEASES_CELLAR_SECRET_KEY }}
 
@@ -162,7 +161,7 @@ jobs:
       - name: 'Publish .rpm to cellar'
         run: ./scripts/publish-cellar.js ${{ github.ref_name }} rpm
         env:
-          CC_CLEVER_TOOLS_RELEASES_CELLAR_BUCKET: ${{ secrets.CC_CLEVER_TOOLS_RELEASES_CELLAR_BUCKET }}
+          CC_CLEVER_TOOLS_RELEASES_CELLAR_BUCKET: ${{ vars.CC_CLEVER_TOOLS_RELEASES_CELLAR_BUCKET }}
           CC_CLEVER_TOOLS_RELEASES_CELLAR_KEY_ID: ${{ secrets.CC_CLEVER_TOOLS_RELEASES_CELLAR_KEY_ID }}
           CC_CLEVER_TOOLS_RELEASES_CELLAR_SECRET_KEY: ${{ secrets.CC_CLEVER_TOOLS_RELEASES_CELLAR_SECRET_KEY }}
 
@@ -188,7 +187,7 @@ jobs:
       - name: 'Publish .deb to cellar'
         run: ./scripts/publish-cellar.js ${{ github.ref_name }} deb
         env:
-          CC_CLEVER_TOOLS_RELEASES_CELLAR_BUCKET: ${{ secrets.CC_CLEVER_TOOLS_RELEASES_CELLAR_BUCKET }}
+          CC_CLEVER_TOOLS_RELEASES_CELLAR_BUCKET: ${{ vars.CC_CLEVER_TOOLS_RELEASES_CELLAR_BUCKET }}
           CC_CLEVER_TOOLS_RELEASES_CELLAR_KEY_ID: ${{ secrets.CC_CLEVER_TOOLS_RELEASES_CELLAR_KEY_ID }}
           CC_CLEVER_TOOLS_RELEASES_CELLAR_SECRET_KEY: ${{ secrets.CC_CLEVER_TOOLS_RELEASES_CELLAR_SECRET_KEY }}
 
@@ -269,10 +268,11 @@ jobs:
       - name: 'Publish to Docker Hub (and related GitHub project)'
         run: ./scripts/publish-dockerhub.js ${{ github.ref_name }}
         env:
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_USERNAME: ${{ vars.DOCKERHUB_USERNAME }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
           DOCKER_IMAGE_NAME: ${{ vars.DOCKER_IMAGE_NAME }}
           DOCKERHUB_GIT_URL: ${{ vars.DOCKERHUB_GIT_URL }}
+          CC_CLEVER_TOOLS_RELEASES_CELLAR_BUCKET: ${{ vars.CC_CLEVER_TOOLS_RELEASES_CELLAR_BUCKET }}
 
   publish-exherbo:
     name: 'Publish to exherbo'
@@ -319,7 +319,7 @@ jobs:
       - name: 'Publish .rpm to Nexus Repository'
         run: ./scripts/publish-nexus.js ${{ github.ref_name }} rpm
         env:
-          NEXUS_USER: ${{ secrets.NEXUS_USER }}
+          NEXUS_USER: ${{ vars.NEXUS_USER }}
           NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
           NEXUS_RPM_REPOSITORY: ${{ vars.NEXUS_RPM_REPOSITORY }}
   publish-nexus-deb:
@@ -344,7 +344,7 @@ jobs:
       - name: 'Publish .deb to Nexus Repository'
         run: ./scripts/publish-nexus.js ${{ github.ref_name }} deb
         env:
-          NEXUS_USER: ${{ secrets.NEXUS_USER }}
+          NEXUS_USER: ${{ vars.NEXUS_USER }}
           NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
           NEXUS_DEB_REPOSITORY: ${{ vars.NEXUS_DEB_REPOSITORY }}
 
