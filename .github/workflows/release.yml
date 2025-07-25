@@ -273,6 +273,7 @@ jobs:
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
           DOCKER_IMAGE_NAME: ${{ vars.DOCKER_IMAGE_NAME }}
           DOCKERHUB_GIT_URL: ${{ vars.DOCKERHUB_GIT_URL }}
+          CC_CLEVER_TOOLS_RELEASES_CELLAR_BUCKET: ${{ secrets.CC_CLEVER_TOOLS_RELEASES_CELLAR_BUCKET }}
 
   publish-exherbo:
     name: 'Publish to exherbo'

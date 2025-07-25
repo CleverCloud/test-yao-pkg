@@ -73,7 +73,7 @@ runCommand(async () => {
     await exec(`chmod +x ${NFPM_BINARY_PATH}`);
   }
 
-  await applyOneTemplate(templatePath, './scripts/templates/nfpm.yaml', {
+  await applyOneTemplate(templatePath, './scripts/templates/nfpm.yml', {
     version,
     arch,
   });
