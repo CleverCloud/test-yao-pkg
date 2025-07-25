@@ -203,7 +203,7 @@ export class TerminalPreviews {
       this.#updatePreviewState(preview, 'Extracting .tar.gz…', 'yellow');
       const tarPath = path.join(tmpDir, 'binary.tar.gz');
       await fs.promises.writeFile(tarPath, downloadBuffer);
-      await exec(`tar -xzf binary.tar.gz`, { cwd: tmpDir, quiet: true });
+      await exec(`tar -xzf binary.tar.gz --strip-components=1`, { cwd: tmpDir, quiet: true });
 
       this.#updatePreviewState(preview, 'Installing binary…', 'yellow');
       const sourcePath = `${tmpDir}/clever`;
