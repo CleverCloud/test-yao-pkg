@@ -26,14 +26,19 @@ runCommand(async () => {
   console.log('# GitHub Actions secrets and vars report\n');
 
   const workflowFiles = globSync('.github/workflows/*.{yml,yaml}');
-  logList('Found workflows', workflowFiles);
+
+  console.log(`## Workflows (${workflowFiles.length})\n`);
+  const formattedWorkflows = workflowFiles.map((file) => `- ${file}`).join('\n');
+  console.log(`${formattedWorkflows}`);
 
   const requiredSecrets = new Set();
   const requiredVariables = new Set();
   for (const file of workflowFiles) {
     const content = readFileSync(file, 'utf8');
     for (const [_, match] of content.matchAll(SECRET_REGEX)) {
-      requiredSecrets.add(match);
+      if (match !== 'GITHUB_TOKEN') {
+        requiredSecrets.add(match);
+      }
     }
     for (const [_, match] of content.matchAll(VARIABLES_REGEX)) {
       requiredVariables.add(match);
@@ -41,25 +46,41 @@ runCommand(async () => {
   }
 
   const currentSecrets = getListFrom('gh secret list --json name', { encoding: 'utf8' });
-  const currentVariables = getListFrom('gh variable list --json name', { encoding: 'utf8' });
+  const currentVariables = getVariablesWithValues();
 
   const missingSecrets = [...requiredSecrets.difference(currentSecrets)].sort();
   const notUsedSecrets = [...currentSecrets.difference(requiredSecrets)].sort();
   const properlySetSecrets = [...currentSecrets.intersection(requiredSecrets)].sort();
 
-  const missingVariables = [...requiredVariables.difference(currentVariables)].sort();
-  const notUsedVariables = [...currentVariables.difference(requiredVariables)].sort();
-  const properlySetVariables = [...currentVariables.intersection(requiredVariables)].sort();
+  const currentVariableNames = new Set(currentVariables.map(v => v.name));
+  const missingVariables = [...requiredVariables.difference(currentVariableNames)].sort();
+  const notUsedVariables = [...currentVariableNames.difference(requiredVariables)].sort();
+  const properlySetVariables = currentVariables.filter(v => requiredVariables.has(v.name)).sort((a, b) => a.name.localeCompare(b.name));
 
-  console.log('\n## Secrets\n');
-  logList('Properly set', properlySetSecrets);
-  logList('Missing', missingSecrets);
-  logList('Not used', notUsedSecrets);
+  const totalSecrets = properlySetSecrets.length + missingSecrets.length + notUsedSecrets.length;
+  const totalVariables = properlySetVariables.length + missingVariables.length + notUsedVariables.length;
 
-  console.log('\n## Variables\n');
-  logList('Properly set', properlySetVariables);
-  logList('Missing', missingVariables);
-  logList('Not used', notUsedVariables);
+  console.log(`\n## Secrets (${totalSecrets})\n`);
+  logList('Properly set', properlySetSecrets, totalSecrets);
+  if (missingSecrets.length > 0) {
+    logList('Missing', missingSecrets, totalSecrets);
+  }
+  if (notUsedSecrets.length > 0) {
+    logList('Not used', notUsedSecrets, totalSecrets);
+  }
+
+  console.log(`\n## Variables (${totalVariables})\n`);
+  logListWithValues('Properly set', properlySetVariables, totalVariables);
+  if (missingVariables.length > 0) {
+    logList('Missing', missingVariables, totalVariables);
+  }
+  if (notUsedVariables.length > 0) {
+    logList('Not used', notUsedVariables, totalVariables);
+  }
+
+  if (missingSecrets.length > 0 || missingVariables.length > 0) {
+    process.exit(1);
+  }
 });
 
 /**
@@ -76,16 +97,48 @@ function getListFrom (command) {
 }
 
 /**
+ * Gets variables with their values from GitHub CLI.
+ *
+ * @returns {Array<{name: string, value: string}>} Array of variable objects with name and value
+ */
+function getVariablesWithValues () {
+  const listJson = execSync('gh variable list --json name,value', { encoding: 'utf8' });
+  const list = JSON.parse(listJson);
+  return list;
+}
+
+/**
  * Formats an array of items as a bulleted list.
  * @param {string} title - The title to display before the list
  * @param {Array} items - The array of items to format
+ * @param {number} total - Total count for displaying ratio
  */
-function logList (title, items) {
+function logList (title, items, total = null) {
   if (items.length === 0) {
-    console.log(`- ${title}: none`);
+    const suffix = total ? ` (0/${total})` : '';
+    console.log(`- ${title}: none${suffix}`);
   }
   else {
+    const suffix = total ? ` (${items.length}/${total})` : ` (${items.length})`;
     const formattedItems = items.map((item) => `  - ${item}`).join('\n');
-    console.log(`- ${title} (${items.length}):\n${formattedItems}`);
+    console.log(`- ${title}${suffix}:\n${formattedItems}`);
+  }
+}
+
+/**
+ * Formats an array of variable objects with values as a bulleted list.
+ * @param {string} title - The title to display before the list
+ * @param {Array<{name: string, value: string}>} items - The array of variable objects to format
+ * @param {number} total - Total count for displaying ratio
+ */
+function logListWithValues (title, items, total = null) {
+  if (items.length === 0) {
+    const suffix = total ? ` (0/${total})` : '';
+    console.log(`- ${title}: none${suffix}`);
+  }
+  else {
+    const suffix = total ? ` (${items.length}/${total})` : ` (${items.length})`;
+    const formattedItems = items.map((item) => `  - ${item.name}: ${item.value}`).join('\n');
+    console.log(`- ${title}${suffix}:\n${formattedItems}`);
   }
 }
