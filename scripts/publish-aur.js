@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 //
-// CLI script to publish a new version to Arch User Repository (AUR).
+// Publish a new version to Arch User Repository (AUR).
 //
 // This script updates the PKGBUILD file for the AUR package with new version
 // information, calculates the SHA256 hash of the Linux archive, and commits
 // the changes to the AUR repository.
 //
-// USAGE: node publish-aur.js <version>
+// USAGE: publish-aur.js <version>
 //
 // ARGUMENTS:
 //   version         Version string (e.g., "1.2.3")
@@ -16,10 +16,9 @@
 //
 // REQUIRED SYSTEM BINARIES:
 //   git             For cloning, committing, and pushing to AUR repository
-//   sha256sum       For calculating archive checksums (via getSha256)
 //
 // EXAMPLES:
-//   node publish-aur.js 1.2.3
+//   publish-aur.js 1.2.3
 //
 
 import pkg from '../package.json' with { type: 'json' };

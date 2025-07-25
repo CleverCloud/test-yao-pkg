@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 //
-// CLI script to publish RPM and DEB packages to Nexus Repository Manager.
+// Publish RPM and DEB packages to Nexus Repository Manager.
 //
 // This script uploads built packages to the configured Nexus repository
 // using HTTP PUT (for RPM) or POST (for DEB) methods with basic authentication.
 //
-// USAGE: node publish-nexus.js <version> <packager>
+// USAGE: publish-nexus.js <version> <packager>
 //
 // ARGUMENTS:
 //   version         Version string (e.g., "1.2.3")
@@ -18,11 +18,10 @@
 //   NEXUS_DEB_REPOSITORY    Environment variable for DEB repository name (when packager=deb)
 //
 // REQUIRED SYSTEM BINARIES:
-//   curl            For HTTP uploads (used internally by fetch)
 //
 // EXAMPLES:
-//   node publish-nexus.js 1.2.3 rpm
-//   node publish-nexus.js 1.2.3 deb
+//   publish-nexus.js 1.2.3 rpm
+//   publish-nexus.js 1.2.3 deb
 //
 
 import fs from 'node:fs/promises';

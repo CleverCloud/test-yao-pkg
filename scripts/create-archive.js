@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 //
-// CLI script to create platform-specific archive from built binary.
+// Create platform-specific archive from built binary.
 //
 // This script packages the compiled binary into a compressed archive
 // (tar.gz for Unix-like systems, zip for Windows) ready for distribution.
 //
-// USAGE: node create-archive.js <version>
+// USAGE: create-archive.js <version>
 //
 // ARGUMENTS:
 //   version         Version string (e.g., "1.2.3")
@@ -15,7 +15,7 @@
 //   zip             For creating zip archives (Windows)
 //
 // EXAMPLES:
-//   node create-archive.js 1.2.3
+//   create-archive.js 1.2.3
 //
 
 import { createArchive } from './lib/create-archive.js';

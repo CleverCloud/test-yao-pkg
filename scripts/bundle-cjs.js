@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 //
-// CLI script to bundle the application into a single CommonJS file.
+// Bundle the application into a single CommonJS file.
 //
 // This script creates a self-contained CJS bundle from the application source,
 // which is used as input for binary compilation.
 //
-// USAGE: node bundle-cjs.js <version>
+// USAGE: bundle-cjs.js <version>
 //
 // ARGUMENTS:
 //   version         Version string (e.g., "1.2.3")
@@ -14,7 +14,7 @@
 //   npx             For running bundling tools
 //
 // EXAMPLES:
-//   node bundle-cjs.js 1.2.3
+//   bundle-cjs.js 1.2.3
 //
 
 import { bundleToSingleCjs } from './lib/bundle-cjs.js';

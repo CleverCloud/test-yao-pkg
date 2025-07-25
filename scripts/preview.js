@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 //
-// CLI script for managing preview builds and deployment to Cellar storage.
+// Manage preview builds and deployment to Cellar storage.
 //
 // This script provides comprehensive preview management functionality including:
 // - Building preview binaries for different platforms
@@ -10,11 +10,17 @@
 // - Listing and updating local preview cache
 // - Cleaning up preview storage
 //
-// USAGE: node preview.js <command> [preview-name]
+// USAGE:
+//   preview.js list
+//   preview.js update
+//   preview.js build [preview-name]
+//   preview.js pr-comment [preview-name]
+//   preview.js publish [preview-name]
+//   preview.js delete [preview-name]
 //
 // ARGUMENTS:
 //   command         Command to execute (list|update|build|pr-comment|publish|delete)
-//   [preview-name]  Optional preview name, defaults to current git branch
+//   [preview-name]  Version (e.g., "1.2.3") or branch name (e.g., "my-feature"), defaults to current git branch
 //
 // ENVIRONMENT VARIABLES:
 //   CC_CLEVER_TOOLS_PREVIEWS_CELLAR_BUCKET      Environment variable for preview storage bucket
@@ -28,10 +34,10 @@
 //   zip             For creating archives (Windows)
 //
 // EXAMPLES:
-//   node preview.js list
-//   node preview.js build feature-branch
-//   node preview.js publish
-//   node preview.js delete old-preview
+//   preview.js list
+//   preview.js build feature-branch
+//   preview.js publish
+//   preview.js delete old-preview
 //
 
 import { clearDirectory, getEmoji, getOs, getSha256, getVersion, highlight, readEnvVars, run } from './lib/utils.js';

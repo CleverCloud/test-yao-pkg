@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 //
-// CLI script to publish a new version to Docker Hub.
+// Publish a new version to Docker Hub.
 //
 // This script updates Docker-related files, builds Docker images for both
 // the specific version and latest tag, and pushes them to Docker Hub.
 // It also commits changes to the associated Git repository.
 //
-// USAGE: node publish-dockerhub.js <version>
+// USAGE: publish-dockerhub.js <version>
 //
 // ARGUMENTS:
 //   version         Version string (e.g., "1.2.3")
@@ -22,7 +22,7 @@
 //   docker          For building and pushing Docker images
 //
 // EXAMPLES:
-//   node publish-dockerhub.js 1.2.3
+//   publish-dockerhub.js 1.2.3
 //
 
 import pkg from '../package.json' with { type: 'json' };

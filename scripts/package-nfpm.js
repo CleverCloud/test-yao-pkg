@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 //
-// CLI script to generate RPM and DEB packages using nfpm (goreleaser's packager).
+// Generate RPM and DEB packages using nfpm (goreleaser's packager).
 //
 // This script downloads the nfpm binary, processes package templates, and creates
 // Linux distribution packages. RPM packages are GPG-signed during creation.
 //
-// USAGE: node package-nfpm.js <version> <packager>
+// USAGE: package-nfpm.js <version> <packager>
 //
 // ARGUMENTS:
 //   version         Version string (e.g., "1.2.3")
@@ -21,8 +21,8 @@
 //   curl            For downloading nfpm (via fetch)
 //
 // EXAMPLES:
-//   node package-nfpm.js 1.2.3 rpm
-//   node package-nfpm.js 1.2.3 deb
+//   package-nfpm.js 1.2.3 rpm
+//   package-nfpm.js 1.2.3 deb
 //
 
 import fs from 'node:fs/promises';
