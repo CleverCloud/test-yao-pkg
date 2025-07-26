@@ -1,8 +1,0 @@
-name: Checkout sources
-runs:
-  using: composite
-  steps:
-    - name: Checkout sources
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
