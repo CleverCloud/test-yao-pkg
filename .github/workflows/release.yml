@@ -25,10 +25,10 @@ jobs:
           cache: 'npm'
       - name: 'Install Node.js dependencies'
         run: npm ci
-      - name: 'Download build-linux artifact'
+      - name: 'Download build-linux binary'
         uses: actions/download-artifact@v4
         with:
-          name: build-linux
+          name: build-linux-binary
           path: build
       - name: 'Build .rpm with nfpm'
         run: ./scripts/package-nfpm.js ${{ github.ref_name }} rpm
@@ -38,9 +38,10 @@ jobs:
       - name: 'Upload .rpm artifact'
         uses: actions/upload-artifact@v4
         with:
-          name: build-rpm
+          name: build-linux-package-rpm
           path: build/**/*.rpm
           retention-days: 1
+          compression-level: 0
 
   build-deb:
     name: 'Build .deb'
@@ -56,19 +57,20 @@ jobs:
           cache: 'npm'
       - name: 'Install Node.js dependencies'
         run: npm ci
-      - name: 'Download build-linux artifact'
+      - name: 'Download build-linux binary'
         uses: actions/download-artifact@v4
         with:
-          name: build-linux
+          name: build-linux-binary
           path: build
       - name: 'Build .deb with nfpm'
         run: ./scripts/package-nfpm.js ${{ github.ref_name }} deb
       - name: 'Upload .deb artifact'
         uses: actions/upload-artifact@v4
         with:
-          name: build-deb
+          name: build-linux-package-deb
           path: build/**/*.deb
           retention-days: 1
+          compression-level: 0
 
   publish-npm:
     name: 'Publish to npm'
@@ -94,10 +96,16 @@ jobs:
     steps:
       - name: 'Checkout sources'
         uses: actions/checkout@v4
-      - name: 'Download all build artifacts'
+      - name: 'Download archives for release'
         uses: actions/download-artifact@v4
         with:
-          pattern: build-*
+          pattern: build-*-archive
+          path: build
+          merge-multiple: true
+      - name: 'Download packages for release'
+        uses: actions/download-artifact@v4
+        with:
+          pattern: build-*-package-*
           path: build
           merge-multiple: true
       - name: 'Upload artifacts to GitHub release'
@@ -124,10 +132,10 @@ jobs:
           cache: 'npm'
       - name: 'Install Node.js dependencies'
         run: npm ci
-      - name: 'Download all build artifacts'
+      - name: 'Download all archive artifacts'
         uses: actions/download-artifact@v4
         with:
-          pattern: build-*
+          pattern: build-*-archive
           path: build
           merge-multiple: true
       - name: 'Publish archives to cellar'
@@ -154,7 +162,7 @@ jobs:
       - name: 'Download .rpm artifact'
         uses: actions/download-artifact@v4
         with:
-          name: build-rpm
+          name: build-linux-package-rpm
           path: build
       - name: 'Publish .rpm to cellar'
         run: ./scripts/publish-cellar.js ${{ github.ref_name }} rpm
@@ -180,7 +188,7 @@ jobs:
       - name: 'Download .deb artifact'
         uses: actions/download-artifact@v4
         with:
-          name: build-deb
+          name: build-linux-package-deb
           path: build
       - name: 'Publish .deb to cellar'
         run: ./scripts/publish-cellar.js ${{ github.ref_name }} deb
@@ -207,10 +215,10 @@ jobs:
           cache: 'npm'
       - name: 'Install Node.js dependencies'
         run: npm ci
-      - name: 'Download build-linux artifact'
+      - name: 'Download build-linux archive'
         uses: actions/download-artifact@v4
         with:
-          name: build-linux
+          name: build-linux-archive
           path: build
       - name: 'Publish to AUR'
         run: ./scripts/publish-aur.js ${{ github.ref_name }}
@@ -235,10 +243,10 @@ jobs:
           cache: 'npm'
       - name: 'Install Node.js dependencies'
         run: npm ci
-      - name: 'Download build-linux artifact'
+      - name: 'Download build-macos archive'
         uses: actions/download-artifact@v4
         with:
-          name: build-macos
+          name: build-macos-archive
           path: build
       - name: 'Publish to Homebrew'
         run: ./scripts/publish-homebrew.js ${{ github.ref_name }}
@@ -312,7 +320,7 @@ jobs:
       - name: 'Download .rpm artifact'
         uses: actions/download-artifact@v4
         with:
-          name: build-rpm
+          name: build-linux-package-rpm
           path: build
       - name: 'Publish .rpm to Nexus Repository'
         run: ./scripts/publish-nexus.js ${{ github.ref_name }} rpm
@@ -337,7 +345,7 @@ jobs:
       - name: 'Download .deb artifact'
         uses: actions/download-artifact@v4
         with:
-          name: build-deb
+          name: build-linux-package-deb
           path: build
       - name: 'Publish .deb to Nexus Repository'
         run: ./scripts/publish-nexus.js ${{ github.ref_name }} deb
