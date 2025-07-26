@@ -38,12 +38,8 @@ jobs:
       pull-requests: write
     steps:
       - uses: ./.github/actions/setup-node
-      - name: 'Download build artifacts'
-        uses: actions/download-artifact@v4
-        with:
-          pattern: build-*
-          path: build
-          merge-multiple: true
+      - uses: ./.github/actions/download-artifacts
+        with: { pattern: build-* }
       - name: 'Publish preview'
         run: ./scripts/preview.js publish ${{ github.event.pull_request.head.ref }}
       - name: 'Prepare PR comment'

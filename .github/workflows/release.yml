@@ -17,11 +17,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: ./.github/actions/setup-node
-      - name: 'Download build-linux binary'
-        uses: actions/download-artifact@v4
-        with:
-          name: build-linux-binary
-          path: build
+      - uses: ./.github/actions/download-artifacts
+        with: { pattern: build-linux-binary }
       - name: 'Build .rpm with nfpm'
         run: ./scripts/package-nfpm.js ${{ github.ref_name }} rpm
         env:
@@ -41,11 +38,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: ./.github/actions/setup-node
-      - name: 'Download build-linux binary'
-        uses: actions/download-artifact@v4
-        with:
-          name: build-linux-binary
-          path: build
+      - uses: ./.github/actions/download-artifacts
+        with: { pattern: build-linux-binary }
       - name: 'Build .deb with nfpm'
         run: ./scripts/package-nfpm.js ${{ github.ref_name }} deb
       - name: 'Upload .deb artifact'
@@ -80,18 +74,10 @@ jobs:
     steps:
       - name: 'Checkout sources'
         uses: actions/checkout@v4
-      - name: 'Download archives for release'
-        uses: actions/download-artifact@v4
-        with:
-          pattern: build-*-archive
-          path: build
-          merge-multiple: true
-      - name: 'Download packages for release'
-        uses: actions/download-artifact@v4
-        with:
-          pattern: package-*
-          path: build
-          merge-multiple: true
+      - uses: ./.github/actions/download-artifacts
+        with: { pattern: build-*-archive }
+      - uses: ./.github/actions/download-artifacts
+        with: { pattern: package-* }
       - name: 'Upload artifacts to GitHub release'
         run: |
           gh release upload "${{ github.ref_name }}" build/${{ github.ref_name }}/linux/clever-tools-${{ github.ref_name }}_linux.tar.gz
@@ -108,12 +94,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: ./.github/actions/setup-node
-      - name: 'Download all archive artifacts'
-        uses: actions/download-artifact@v4
-        with:
-          pattern: build-*-archive
-          path: build
-          merge-multiple: true
+      - uses: ./.github/actions/download-artifacts
+        with: { pattern: build-*-archive }
       - name: 'Publish archives to cellar'
         run: ./scripts/publish-cellar.js ${{ github.ref_name }} archives
         env:
@@ -127,11 +109,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: ./.github/actions/setup-node
-      - name: 'Download .rpm artifact'
-        uses: actions/download-artifact@v4
-        with:
-          name: package-rpm
-          path: build
+      - uses: ./.github/actions/download-artifacts
+        with: { pattern: package-rpm }
       - name: 'Publish .rpm to cellar'
         run: ./scripts/publish-cellar.js ${{ github.ref_name }} rpm
         env:
@@ -145,11 +124,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: ./.github/actions/setup-node
-      - name: 'Download .deb artifact'
-        uses: actions/download-artifact@v4
-        with:
-          name: package-deb
-          path: build
+      - uses: ./.github/actions/download-artifacts
+        with: { pattern: package-deb }
       - name: 'Publish .deb to cellar'
         run: ./scripts/publish-cellar.js ${{ github.ref_name }} deb
         env:
@@ -167,11 +143,8 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
       - uses: ./.github/actions/setup-node
-      - name: 'Download build-linux archive'
-        uses: actions/download-artifact@v4
-        with:
-          name: build-linux-archive
-          path: build
+      - uses: ./.github/actions/download-artifacts
+        with: { pattern: build-linux-archive }
       - name: 'Publish to AUR'
         run: ./scripts/publish-aur.js ${{ github.ref_name }}
         env:
@@ -187,11 +160,8 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
       - uses: ./.github/actions/setup-node
-      - name: 'Download build-macos archive'
-        uses: actions/download-artifact@v4
-        with:
-          name: build-macos-archive
-          path: build
+      - uses: ./.github/actions/download-artifacts
+        with: { pattern: build-macos-archive }
       - name: 'Publish to Homebrew'
         run: ./scripts/publish-homebrew.js ${{ github.ref_name }}
         env:
@@ -237,11 +207,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: ./.github/actions/setup-node
-      - name: 'Download .rpm artifact'
-        uses: actions/download-artifact@v4
-        with:
-          name: package-rpm
-          path: build
+      - uses: ./.github/actions/download-artifacts
+        with: { pattern: package-rpm }
       - name: 'Publish .rpm to Nexus Repository'
         run: ./scripts/publish-nexus.js ${{ github.ref_name }} rpm
         env:
@@ -254,11 +221,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: ./.github/actions/setup-node
-      - name: 'Download .deb artifact'
-        uses: actions/download-artifact@v4
-        with:
-          name: package-deb
-          path: build
+      - uses: ./.github/actions/download-artifacts
+        with: { pattern: package-deb }
       - name: 'Publish .deb to Nexus Repository'
         run: ./scripts/publish-nexus.js ${{ github.ref_name }} deb
         env:
