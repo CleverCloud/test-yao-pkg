@@ -138,8 +138,10 @@ jobs:
     needs: publish-cellar-archives
     runs-on: ubuntu-latest
     steps:
-      - uses: ./.github/actions/setup-ssh
-        with: { ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }} }
+      - name: 'Setup SSH key'
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-node
       - uses: ./.github/actions/download-artifacts
@@ -154,8 +156,10 @@ jobs:
     needs: publish-cellar-archives
     runs-on: ubuntu-latest
     steps:
-      - uses: ./.github/actions/setup-ssh
-        with: { ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }} }
+      - name: 'Setup SSH key'
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-node
       - uses: ./.github/actions/download-artifacts
@@ -170,8 +174,10 @@ jobs:
     needs: publish-cellar-archives
     runs-on: ubuntu-latest
     steps:
-      - uses: ./.github/actions/setup-ssh
-        with: { ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }} }
+      - name: 'Setup SSH key'
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-node
       - name: 'Publish to Docker Hub (and related GitHub project)'
@@ -188,8 +194,10 @@ jobs:
     needs: publish-cellar-archives
     runs-on: ubuntu-latest
     steps:
-      - uses: ./.github/actions/setup-ssh
-        with: { ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }} }
+      - name: 'Setup SSH key'
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-node
       - name: 'Publish to GitHub for exherbo'
