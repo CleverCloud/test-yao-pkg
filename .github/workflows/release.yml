@@ -75,13 +75,9 @@ jobs:
         with: { pattern: build-*-archive }
       - uses: ./.github/actions/download-artifacts
         with: { pattern: package-* }
+      - uses: ./.github/actions/setup-node
       - name: 'Upload artifacts to GitHub release'
-        run: |
-          gh release upload "${{ github.ref_name }}" build/${{ github.ref_name }}/linux/clever-tools-${{ github.ref_name }}_linux.tar.gz
-          gh release upload "${{ github.ref_name }}" build/${{ github.ref_name }}/macos/clever-tools-${{ github.ref_name }}_macos.tar.gz
-          gh release upload "${{ github.ref_name }}" build/${{ github.ref_name }}/win/clever-tools-${{ github.ref_name }}_win.zip
-          gh release upload "${{ github.ref_name }}" build/${{ github.ref_name }}/clever-tools-${{ github.ref_name }}.deb
-          gh release upload "${{ github.ref_name }}" build/${{ github.ref_name }}/clever-tools-${{ github.ref_name }}.rpm
+        run: ./scripts/update-github-release.js ${{ github.ref_name }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
