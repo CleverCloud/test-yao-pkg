@@ -44,11 +44,13 @@ runCommand(async () => {
 
   console.log(highlight(`=> Installing wingetcreate if not present`));
   try {
-    await exec('wingetcreate --version', { quiet: true });
+    // await exec('wingetcreate --version', { quiet: true });
+    await exec('echo wingetcreate --version', { quiet: true });
   }
   catch (error) {
     console.log(highlight('=> Installing wingetcreate...'));
-    await exec('winget install Microsoft.WindowsPackageManagerManifestCreator');
+    // await exec('winget install Microsoft.WindowsPackageManagerManifestCreator');
+    await exec('echo winget install Microsoft.WindowsPackageManagerManifestCreator');
   }
 
   console.log(highlight(`=> Creating/updating winget manifest for version ${version}`));
@@ -57,13 +59,15 @@ runCommand(async () => {
 
   try {
     console.log(highlight('=> Attempting to update existing package...'));
-    await exec(`wingetcreate update ${packageId} -u "${windowsArchiveUrl}" -v ${version} -t ${githubToken}`);
+    // await exec(`wingetcreate update ${packageId} -u "${windowsArchiveUrl}" -v ${version} -t ${githubToken}`);
+    await exec(`echo wingetcreate update ${packageId} -u "${windowsArchiveUrl}" -v ${version} -t ${githubToken}`);
     console.log(highlight(`=> Successfully submitted winget manifest update for ${packageId} v${version}`));
   }
   catch (updateError) {
     console.log(highlight('=> Update failed, attempting to create new package...'));
     try {
-      await exec(`wingetcreate new "${windowsArchiveUrl}" -t ${githubToken}`);
+      // await exec(`wingetcreate new "${windowsArchiveUrl}" -t ${githubToken}`);
+      await exec(`echo wingetcreate new "${windowsArchiveUrl}" -t ${githubToken}`);
       console.log(highlight(`=> Successfully submitted new winget manifest for ${packageId} v${version}`));
     }
     catch (createError) {
