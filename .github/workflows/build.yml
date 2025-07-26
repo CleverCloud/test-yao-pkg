@@ -20,12 +20,10 @@ jobs:
       - uses: ./.github/actions/setup-node
       - name: 'Bundle to single clever.cjs'
         run: ./scripts/bundle-cjs.js ${{ inputs.version }}
-      - name: 'Upload bundle-cjs artifact'
-        uses: actions/upload-artifact@v4
+      - uses: ./.github/actions/upload-artifact
         with:
-          name: bundle-cjs
+          artifact-name: bundle-cjs
           path: build/**/clever.cjs
-          retention-days: 1
 
   build-linux:
     name: 'Build for linux'
@@ -40,19 +38,14 @@ jobs:
         run: ./scripts/build-binary.js ${{ inputs.version }}
       - name: 'Create archive'
         run: ./scripts/create-archive.js ${{ inputs.version }}
-      - name: 'Upload build-linux binary'
-        uses: actions/upload-artifact@v4
+      - uses: ./.github/actions/upload-artifact
         with:
-          name: build-linux-binary
+          artifact-name: build-linux-binary
           path: build/**/clever
-          retention-days: 1
-      - name: 'Upload build-linux archive'
-        uses: actions/upload-artifact@v4
+      - uses: ./.github/actions/upload-artifact
         with:
-          name: build-linux-archive
+          artifact-name: build-linux-archive
           path: build/**/*.tar.gz
-          retention-days: 1
-          compression-level: 0
 
   build-macos:
     name: 'Build for macos'
@@ -67,13 +60,10 @@ jobs:
         run: ./scripts/build-binary.js ${{ inputs.version }}
       - name: 'Create archive'
         run: ./scripts/create-archive.js ${{ inputs.version }}
-      - name: 'Upload build-macos archive'
-        uses: actions/upload-artifact@v4
+      - uses: ./.github/actions/upload-artifact
         with:
-          name: build-macos-archive
+          artifact-name: build-macos-archive
           path: build/**/*.tar.gz
-          retention-days: 1
-          compression-level: 0
 
   build-windows:
     name: 'Build for windows'
@@ -91,10 +81,7 @@ jobs:
       - name: 'Create archive'
         shell: bash
         run: ./scripts/create-archive.js ${{ inputs.version }}
-      - name: 'Upload build-win archive'
-        uses: actions/upload-artifact@v4
+      - uses: ./.github/actions/upload-artifact
         with:
-          name: build-win-archive
+          artifact-name: build-win-archive
           path: build/**/*.zip
-          retention-days: 1
-          compression-level: 0
