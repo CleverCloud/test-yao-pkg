@@ -16,15 +16,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: 'Checkout sources'
-        uses: actions/checkout@v4
-      - name: 'Setup Node.js'
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: 'package.json'
-          cache: 'npm'
-      - name: 'Install Node.js dependencies'
-        run: npm ci
+      - uses: ./.github/actions/setup-node
       - name: 'Download build-linux binary'
         uses: actions/download-artifact@v4
         with:
@@ -48,15 +40,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: 'Checkout sources'
-        uses: actions/checkout@v4
-      - name: 'Setup Node.js'
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: 'package.json'
-          cache: 'npm'
-      - name: 'Install Node.js dependencies'
-        run: npm ci
+      - uses: ./.github/actions/setup-node
       - name: 'Download build-linux binary'
         uses: actions/download-artifact@v4
         with:
@@ -123,15 +107,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: 'Checkout sources'
-        uses: actions/checkout@v4
-      - name: 'Setup Node.js'
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: 'package.json'
-          cache: 'npm'
-      - name: 'Install Node.js dependencies'
-        run: npm ci
+      - uses: ./.github/actions/setup-node
       - name: 'Download all archive artifacts'
         uses: actions/download-artifact@v4
         with:
@@ -150,15 +126,7 @@ jobs:
     needs: package-rpm
     runs-on: ubuntu-latest
     steps:
-      - name: 'Checkout sources'
-        uses: actions/checkout@v4
-      - name: 'Setup Node.js'
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: 'package.json'
-          cache: 'npm'
-      - name: 'Install Node.js dependencies'
-        run: npm ci
+      - uses: ./.github/actions/setup-node
       - name: 'Download .rpm artifact'
         uses: actions/download-artifact@v4
         with:
@@ -176,15 +144,7 @@ jobs:
     needs: package-deb
     runs-on: ubuntu-latest
     steps:
-      - name: 'Checkout sources'
-        uses: actions/checkout@v4
-      - name: 'Setup Node.js'
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: 'package.json'
-          cache: 'npm'
-      - name: 'Install Node.js dependencies'
-        run: npm ci
+      - uses: ./.github/actions/setup-node
       - name: 'Download .deb artifact'
         uses: actions/download-artifact@v4
         with:
@@ -202,19 +162,11 @@ jobs:
     needs: publish-cellar-archives
     runs-on: ubuntu-latest
     steps:
-      - name: 'Checkout sources'
-        uses: actions/checkout@v4
       - name: 'Setup SSH key'
         uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-      - name: 'Setup Node.js'
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: 'package.json'
-          cache: 'npm'
-      - name: 'Install Node.js dependencies'
-        run: npm ci
+      - uses: ./.github/actions/setup-node
       - name: 'Download build-linux archive'
         uses: actions/download-artifact@v4
         with:
@@ -230,19 +182,11 @@ jobs:
     needs: publish-cellar-archives
     runs-on: ubuntu-latest
     steps:
-      - name: 'Checkout sources'
-        uses: actions/checkout@v4
       - name: 'Setup SSH key'
         uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-      - name: 'Setup Node.js'
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: 'package.json'
-          cache: 'npm'
-      - name: 'Install Node.js dependencies'
-        run: npm ci
+      - uses: ./.github/actions/setup-node
       - name: 'Download build-macos archive'
         uses: actions/download-artifact@v4
         with:
@@ -258,19 +202,11 @@ jobs:
     needs: publish-cellar-archives
     runs-on: ubuntu-latest
     steps:
-      - name: 'Checkout sources'
-        uses: actions/checkout@v4
       - name: 'Setup SSH key'
         uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-      - name: 'Setup Node.js'
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: 'package.json'
-          cache: 'npm'
-      - name: 'Install Node.js dependencies'
-        run: npm ci
+      - uses: ./.github/actions/setup-node
       - name: 'Publish to Docker Hub (and related GitHub project)'
         run: ./scripts/publish-dockerhub.js ${{ github.ref_name }}
         env:
@@ -285,19 +221,11 @@ jobs:
     needs: publish-cellar-archives
     runs-on: ubuntu-latest
     steps:
-      - name: 'Checkout sources'
-        uses: actions/checkout@v4
       - name: 'Setup SSH key'
         uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-      - name: 'Setup Node.js'
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: 'package.json'
-          cache: 'npm'
-      - name: 'Install Node.js dependencies'
-        run: npm ci
+      - uses: ./.github/actions/setup-node
       - name: 'Publish to GitHub for exherbo'
         run: ./scripts/publish-exherbo.js ${{ github.ref_name }}
         env:
@@ -308,15 +236,7 @@ jobs:
     needs: package-rpm
     runs-on: ubuntu-latest
     steps:
-      - name: 'Checkout sources'
-        uses: actions/checkout@v4
-      - name: 'Setup Node.js'
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: 'package.json'
-          cache: 'npm'
-      - name: 'Install Node.js dependencies'
-        run: npm ci
+      - uses: ./.github/actions/setup-node
       - name: 'Download .rpm artifact'
         uses: actions/download-artifact@v4
         with:
@@ -333,15 +253,7 @@ jobs:
     needs: package-deb
     runs-on: ubuntu-latest
     steps:
-      - name: 'Checkout sources'
-        uses: actions/checkout@v4
-      - name: 'Setup Node.js'
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: 'package.json'
-          cache: 'npm'
-      - name: 'Install Node.js dependencies'
-        run: npm ci
+      - uses: ./.github/actions/setup-node
       - name: 'Download .deb artifact'
         uses: actions/download-artifact@v4
         with:
@@ -360,15 +272,7 @@ jobs:
     runs-on: windows-latest
     if: false
     steps:
-      - name: 'Checkout sources'
-        uses: actions/checkout@v4
-      - name: 'Setup Node.js'
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: 'package.json'
-          cache: 'npm'
-      - name: 'Install Node.js dependencies'
-        run: npm ci
+      - uses: ./.github/actions/setup-node
       - name: 'Publish to Winget'
         shell: bash
         run: ./scripts/publish-winget.js ${{ github.ref_name }}

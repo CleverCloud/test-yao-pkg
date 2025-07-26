@@ -16,15 +16,7 @@ jobs:
     name: 'Bundle single clever.cjs'
     runs-on: ubuntu-latest
     steps:
-      - name: 'Checkout sources'
-        uses: actions/checkout@v4
-      - name: 'Setup Node.js'
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: 'package.json'
-          cache: 'npm'
-      - name: 'Install Node.js dependencies'
-        run: npm ci
+      - uses: ./.github/actions/setup-node
       - name: 'Bundle to single clever.cjs'
         run: ./scripts/bundle-cjs.js ${{ inputs.version }}
       - name: 'Upload bundle-cjs artifact'
@@ -39,15 +31,7 @@ jobs:
     needs: bundle-cjs
     runs-on: ubuntu-latest
     steps:
-      - name: 'Checkout sources'
-        uses: actions/checkout@v4
-      - name: 'Setup Node.js'
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: 'package.json'
-          cache: 'npm'
-      - name: 'Install Node.js dependencies'
-        run: npm ci
+      - uses: ./.github/actions/setup-node
       - name: 'Download bundle-cjs artifact'
         uses: actions/download-artifact@v4
         with:
@@ -78,15 +62,7 @@ jobs:
     needs: bundle-cjs
     runs-on: macos-14
     steps:
-      - name: 'Checkout sources'
-        uses: actions/checkout@v4
-      - name: 'Setup Node.js'
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: 'package.json'
-          cache: 'npm'
-      - name: 'Install Node.js dependencies'
-        run: npm ci
+      - uses: ./.github/actions/setup-node
       - name: 'Download bundle-cjs artifact'
         uses: actions/download-artifact@v4
         with:
@@ -112,15 +88,7 @@ jobs:
     runs-on: windows-latest
     if: ${{ inputs.include-windows }}
     steps:
-      - name: 'Checkout sources'
-        uses: actions/checkout@v4
-      - name: 'Setup Node.js'
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: 'package.json'
-          cache: 'npm'
-      - name: 'Install Node.js dependencies'
-        run: npm ci
+      - uses: ./.github/actions/setup-node
       - name: 'Download bundle-cjs artifact'
         uses: actions/download-artifact@v4
         with:
