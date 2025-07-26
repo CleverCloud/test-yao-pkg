@@ -78,36 +78,6 @@ Most CI/CD operations are implemented as Node.js scripts rather than inline shel
 
 Scripts are located in the `/scripts` directory and use shared utilities from `/scripts/lib` for common operations like file paths, process execution, and terminal formatting.
 
-### Environment Variables and Secrets
-
-The following table lists all environment variables and secrets used across workflows and scripts:
-
-| Variable                                     | Type     | Description                                      | Used By                  |
-|----------------------------------------------|----------|--------------------------------------------------|--------------------------|
-| `CI_TOKEN`                                   | Secret   | GitHub token for release-please automation       | release-please.yml       |
-| `GITHUB_TOKEN`                               | Secret   | GitHub token for release uploads                 | update-github-release.js |
-| `NPM_TOKEN`                                  | Secret   | npm registry authentication token                | release.yml              |
-| `RPM_GPG_PRIVATE_KEY`                        | Secret   | GPG private key for signing RPM packages         | package-nfpm.js          |
-| `RPM_GPG_PASSPHRASE`                         | Secret   | Passphrase for RPM GPG key                       | package-nfpm.js          |
-| `SSH_PRIVATE_KEY`                            | Secret   | SSH key for Git operations (AUR, Homebrew, etc.) | Multiple publish scripts |
-| `DOCKERHUB_TOKEN`                            | Secret   | Docker Hub authentication token                  | publish-dockerhub.js     |
-| `NEXUS_PASSWORD`                             | Secret   | Nexus repository password                        | publish-nexus.js         |
-| `CC_CLEVER_TOOLS_PREVIEWS_CELLAR_KEY_ID`     | Secret   | Cellar S3 access key for previews                | preview scripts          |
-| `CC_CLEVER_TOOLS_PREVIEWS_CELLAR_SECRET_KEY` | Secret   | Cellar S3 secret key for previews                | preview scripts          |
-| `CC_CLEVER_TOOLS_RELEASES_CELLAR_KEY_ID`     | Secret   | Cellar S3 access key for releases                | publish-cellar.js        |
-| `CC_CLEVER_TOOLS_RELEASES_CELLAR_SECRET_KEY` | Secret   | Cellar S3 secret key for releases                | publish-cellar.js        |
-| `CC_CLEVER_TOOLS_PREVIEWS_CELLAR_BUCKET`     | Variable | Cellar S3 bucket name for preview builds         | preview scripts          |
-| `CC_CLEVER_TOOLS_RELEASES_CELLAR_BUCKET`     | Variable | Cellar S3 bucket name for release builds         | publish-cellar.js        |
-| `AUR_GIT_URL`                                | Variable | Git URL for AUR package repository               | publish-aur.js           |
-| `HOMEBREW_GIT_URL`                           | Variable | Git URL for Homebrew formula repository          | publish-homebrew.js      |
-| `DOCKERHUB_GIT_URL`                          | Variable | Git URL for Docker Hub repository                | publish-dockerhub.js     |
-| `EXHERBO_GIT_URL`                            | Variable | Git URL for Exherbo package repository           | publish-exherbo.js       |
-| `DOCKERHUB_USERNAME`                         | Variable | Docker Hub username                              | publish-dockerhub.js     |
-| `DOCKER_IMAGE_NAME`                          | Variable | Docker image name for publishing                 | publish-dockerhub.js     |
-| `NEXUS_USER`                                 | Variable | Nexus repository username                        | publish-nexus.js         |
-| `NEXUS_RPM_REPOSITORY`                       | Variable | Nexus RPM repository identifier                  | publish-nexus.js         |
-| `NEXUS_DEB_REPOSITORY`                       | Variable | Nexus DEB repository identifier                  | publish-nexus.js         |
-
 ## Development Workflow
 
 ### Branch Strategy
