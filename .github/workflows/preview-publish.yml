@@ -41,7 +41,7 @@ jobs:
         uses: actions/checkout@v4
       - name: 'Setup Node.js'
         uses: actions/setup-node@v4
-        with: { node-version: '22' }
+        with: { node-version-file: 'package.json' }
       - name: 'Install Node.js dependencies'
         run: npm ci
       - name: 'Download build artifacts'

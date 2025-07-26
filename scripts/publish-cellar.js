@@ -54,10 +54,11 @@ runCommand(async () => {
 
   switch (artifact) {
     case 'archives':
-      const osList = ['linux', 'macos', 'win'];
-      for (const os of osList) {
-        await uploadArtifact(cellarClient, 'archive', version, os);
-      }
+      await Promise.all([
+        uploadArtifact(cellarClient, 'archive', version, 'linux'),
+        uploadArtifact(cellarClient, 'archive', version, 'macos'),
+        uploadArtifact(cellarClient, 'archive', version, 'win')
+      ]);
       break;
     case 'rpm':
       await uploadArtifact(cellarClient, 'rpm', version);
@@ -81,7 +82,9 @@ async function uploadArtifact (cellarClient, type, version, os = null) {
   const latestRemotePath = getAssetPath(type, 'latest', 'release', os);
 
   console.log(highlight`=> Upload ${localPath} to ${remotePath}`);
-  await cellarClient.upload(localPath, remotePath);
   console.log(highlight`=> Upload ${localPath} to ${latestRemotePath}`);
-  await cellarClient.upload(localPath, latestRemotePath);
+  await Promise.all([
+    cellarClient.upload(localPath, remotePath),
+    cellarClient.upload(localPath, latestRemotePath)
+  ]);
 }

@@ -21,7 +21,7 @@ jobs:
       - name: 'Setup Node.js'
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version-file: 'package.json'
           cache: 'npm'
       - name: 'Install Node.js dependencies'
         run: npm ci
@@ -52,7 +52,7 @@ jobs:
       - name: 'Setup Node.js'
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version-file: 'package.json'
           cache: 'npm'
       - name: 'Install Node.js dependencies'
         run: npm ci
@@ -79,7 +79,7 @@ jobs:
       - name: 'Setup Node.js'
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version-file: 'package.json'
           registry-url: 'https://registry.npmjs.org'
           # don't use cache: 'npm' here since we don't use npm ci and it may cache without the deps
       - name: 'Publish to npm'
@@ -120,7 +120,7 @@ jobs:
       - name: 'Setup Node.js'
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version-file: 'package.json'
           cache: 'npm'
       - name: 'Install Node.js dependencies'
         run: npm ci
@@ -130,8 +130,6 @@ jobs:
           pattern: build-*
           path: build
           merge-multiple: true
-      - name: 'TODO debug'
-        run: tree
       - name: 'Publish archives to cellar'
         run: ./scripts/publish-cellar.js ${{ github.ref_name }} archives
         env:
@@ -149,7 +147,7 @@ jobs:
       - name: 'Setup Node.js'
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version-file: 'package.json'
           cache: 'npm'
       - name: 'Install Node.js dependencies'
         run: npm ci
@@ -175,7 +173,7 @@ jobs:
       - name: 'Setup Node.js'
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version-file: 'package.json'
           cache: 'npm'
       - name: 'Install Node.js dependencies'
         run: npm ci
@@ -205,7 +203,7 @@ jobs:
       - name: 'Setup Node.js'
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version-file: 'package.json'
           cache: 'npm'
       - name: 'Install Node.js dependencies'
         run: npm ci
@@ -233,7 +231,7 @@ jobs:
       - name: 'Setup Node.js'
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version-file: 'package.json'
           cache: 'npm'
       - name: 'Install Node.js dependencies'
         run: npm ci
@@ -261,7 +259,7 @@ jobs:
       - name: 'Setup Node.js'
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version-file: 'package.json'
           cache: 'npm'
       - name: 'Install Node.js dependencies'
         run: npm ci
@@ -288,7 +286,7 @@ jobs:
       - name: 'Setup Node.js'
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version-file: 'package.json'
           cache: 'npm'
       - name: 'Install Node.js dependencies'
         run: npm ci
@@ -307,7 +305,7 @@ jobs:
       - name: 'Setup Node.js'
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version-file: 'package.json'
           cache: 'npm'
       - name: 'Install Node.js dependencies'
         run: npm ci
@@ -332,7 +330,7 @@ jobs:
       - name: 'Setup Node.js'
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version-file: 'package.json'
           cache: 'npm'
       - name: 'Install Node.js dependencies'
         run: npm ci
@@ -359,7 +357,7 @@ jobs:
       - name: 'Setup Node.js'
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version-file: 'package.json'
           cache: 'npm'
       - name: 'Install Node.js dependencies'
         run: npm ci
