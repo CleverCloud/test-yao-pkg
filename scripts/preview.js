@@ -124,16 +124,9 @@ async function updatePreviews (previewName) {
 
   if (previewName != null) {
     const remotePreview = remoteManifest.previews.find((p) => p.name === previewName);
-    const localPreviewIndex = localManifest.previews.findIndex((p) => p.name === previewName);
-
+    localManifest.previews = localManifest.previews.filter((p) => p.name !== previewName);
     if (remotePreview != null) {
-      if (localPreviewIndex !== -1) {
-        localManifest.previews[localPreviewIndex] = remotePreview;
-      } else {
-        localManifest.previews.push(remotePreview);
-      }
-    } else if (localPreviewIndex !== -1) {
-      localManifest.previews.splice(localPreviewIndex, 1);
+      localManifest.previews.push(remotePreview);
     }
     await updateLocalManifest(localManifest);
   } else {
