@@ -122,29 +122,23 @@ async function updatePreviews (previewName) {
   terminalPreviews.initDisplay();
   await terminalPreviews.updatePreviews(previewName);
 
-  // Update local manifest: merge remote entries for processed previews only
-  const updatedLocalManifest = { ...localManifest };
-  const processedPreviewNames = previewName ? [previewName] : remoteManifest.previews.map(p => p.name);
+  if (previewName != null) {
+    const remotePreview = remoteManifest.previews.find((p) => p.name === previewName);
+    const localPreviewIndex = localManifest.previews.findIndex((p) => p.name === previewName);
 
-  processedPreviewNames.forEach(name => {
-    const remotePreview = remoteManifest.previews.find((p) => p.name === name);
-    const localPreview = updatedLocalManifest.previews.find((p) => p.name === name);
-
-    if (remotePreview) {
-      if (localPreview != null) {
-        updatedLocalManifest.previews[localPreview] = remotePreview;
+    if (remotePreview != null) {
+      if (localPreviewIndex !== -1) {
+        localManifest.previews[localPreviewIndex] = remotePreview;
+      } else {
+        localManifest.previews.push(remotePreview);
       }
-      else {
-        updatedLocalManifest.previews.push(remotePreview);
-      }
+    } else if (localPreviewIndex !== -1) {
+      localManifest.previews.splice(localPreviewIndex, 1);
     }
-    else if (localPreview != null) {
-      // Remote preview was deleted, remove from local
-      updatedLocalManifest.previews.splice(localPreview, 1);
-    }
-  });
-
-  await updateLocalManifest(updatedLocalManifest);
+    await updateLocalManifest(localManifest);
+  } else {
+    await updateLocalManifest(remoteManifest);
+  }
 }
 
 /**

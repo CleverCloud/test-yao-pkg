@@ -160,7 +160,7 @@ export class TerminalPreviews {
    * @param {Preview} preview - The preview to mark as up to date
    */
   #keep (preview) {
-    this.#updatePreviewState(preview, 'Up to date!', 'green');
+    this.#updatePreviewState(preview, 'Up to date');
   }
 
   /**
@@ -235,7 +235,7 @@ export class TerminalPreviews {
     try {
       this.#updatePreviewState(preview, 'Deleting binary…', 'yellow');
       const binaryPath = this.#getBinaryPath(previewName);
-      await fs.promises.unlink(binaryPath);
+      // await fs.promises.unlink(binaryPath);
 
       this.#updatePreviewState(preview, 'Deleted!', 'green');
     }
