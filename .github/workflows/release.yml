@@ -11,7 +11,7 @@ jobs:
     with:
       version: ${{ github.ref_name }}
 
-  build-rpm:
+  package-rpm:
     name: 'Build .rpm'
     needs: build
     runs-on: ubuntu-latest
@@ -38,12 +38,12 @@ jobs:
       - name: 'Upload .rpm artifact'
         uses: actions/upload-artifact@v4
         with:
-          name: build-linux-package-rpm
+          name: package-rpm
           path: build/**/*.rpm
           retention-days: 1
           compression-level: 0
 
-  build-deb:
+  package-deb:
     name: 'Build .deb'
     needs: build
     runs-on: ubuntu-latest
@@ -67,7 +67,7 @@ jobs:
       - name: 'Upload .deb artifact'
         uses: actions/upload-artifact@v4
         with:
-          name: build-linux-package-deb
+          name: package-deb
           path: build/**/*.deb
           retention-days: 1
           compression-level: 0
@@ -92,7 +92,7 @@ jobs:
   update-github-release:
     name: 'Update GitHub release'
     runs-on: ubuntu-latest
-    needs: [ build, build-rpm, build-deb ]
+    needs: [ build, package-rpm, package-deb ]
     steps:
       - name: 'Checkout sources'
         uses: actions/checkout@v4
@@ -105,7 +105,7 @@ jobs:
       - name: 'Download packages for release'
         uses: actions/download-artifact@v4
         with:
-          pattern: build-*-package-*
+          pattern: package-*
           path: build
           merge-multiple: true
       - name: 'Upload artifacts to GitHub release'
@@ -147,7 +147,7 @@ jobs:
 
   publish-cellar-rpm:
     name: 'Publish .rpm to cellar'
-    needs: build-rpm
+    needs: package-rpm
     runs-on: ubuntu-latest
     steps:
       - name: 'Checkout sources'
@@ -162,7 +162,7 @@ jobs:
       - name: 'Download .rpm artifact'
         uses: actions/download-artifact@v4
         with:
-          name: build-linux-package-rpm
+          name: package-rpm
           path: build
       - name: 'Publish .rpm to cellar'
         run: ./scripts/publish-cellar.js ${{ github.ref_name }} rpm
@@ -173,7 +173,7 @@ jobs:
 
   publish-cellar-deb:
     name: 'Publish .deb to cellar'
-    needs: build-deb
+    needs: package-deb
     runs-on: ubuntu-latest
     steps:
       - name: 'Checkout sources'
@@ -188,7 +188,7 @@ jobs:
       - name: 'Download .deb artifact'
         uses: actions/download-artifact@v4
         with:
-          name: build-linux-package-deb
+          name: package-deb
           path: build
       - name: 'Publish .deb to cellar'
         run: ./scripts/publish-cellar.js ${{ github.ref_name }} deb
@@ -305,7 +305,7 @@ jobs:
 
   publish-nexus-rpm:
     name: 'Publish .rpm to Nexus'
-    needs: build-rpm
+    needs: package-rpm
     runs-on: ubuntu-latest
     steps:
       - name: 'Checkout sources'
@@ -320,7 +320,7 @@ jobs:
       - name: 'Download .rpm artifact'
         uses: actions/download-artifact@v4
         with:
-          name: build-linux-package-rpm
+          name: package-rpm
           path: build
       - name: 'Publish .rpm to Nexus Repository'
         run: ./scripts/publish-nexus.js ${{ github.ref_name }} rpm
@@ -330,7 +330,7 @@ jobs:
           NEXUS_RPM_REPOSITORY: ${{ vars.NEXUS_RPM_REPOSITORY }}
   publish-nexus-deb:
     name: 'Publish .deb to Nexus'
-    needs: build-deb
+    needs: package-deb
     runs-on: ubuntu-latest
     steps:
       - name: 'Checkout sources'
@@ -345,7 +345,7 @@ jobs:
       - name: 'Download .deb artifact'
         uses: actions/download-artifact@v4
         with:
-          name: build-linux-package-deb
+          name: package-deb
           path: build
       - name: 'Publish .deb to Nexus Repository'
         run: ./scripts/publish-nexus.js ${{ github.ref_name }} deb
