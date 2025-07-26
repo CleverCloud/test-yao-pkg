@@ -26,13 +26,13 @@ graph TD
     
     %% Release workflow
     REL --> BUILD2[build.yml<br/>Reusable Workflow]
-    REL --> BUILD_RPM[build-rpm job]
-    REL --> BUILD_DEB[build-deb job]
+    REL --> PACKAGE_RPM[package-rpm job]
+    REL --> PACKAGE_DEB[package-deb job]
     
     BUILD2 --> GITHUB_REL[update-github-release]
     BUILD2 --> CELLAR_ARC[publish-cellar-archives]
-    BUILD_RPM --> CELLAR_RPM[publish-cellar-rpm]
-    BUILD_DEB --> CELLAR_DEB[publish-cellar-deb]
+    PACKAGE_RPM --> CELLAR_RPM[publish-cellar-rpm]
+    PACKAGE_DEB --> CELLAR_DEB[publish-cellar-deb]
     
     %% Package managers (depend on cellar archives)
     CELLAR_ARC --> AUR[publish-aur]
@@ -41,8 +41,8 @@ graph TD
     CELLAR_ARC --> EXHERBO[publish-exherbo]
     
     %% Nexus (depend on specific builds)
-    BUILD_RPM --> NEXUS_RPM[publish-nexus-rpm]
-    BUILD_DEB --> NEXUS_DEB[publish-nexus-deb]
+    PACKAGE_RPM --> NEXUS_RPM[publish-nexus-rpm]
+    PACKAGE_DEB --> NEXUS_DEB[publish-nexus-deb]
     
     %% Cleanup workflow
     PR_CLOSE[PR Closed] --> CLEANUP[preview-cleanup.yml]
@@ -55,7 +55,7 @@ graph TD
     
     class PR,PUSH_MASTER,TAG,PR_CLOSE trigger
     class PRP,RP,REL,CLEANUP,BUILD1,BUILD2 workflow
-    class BUNDLE,BUILD_LINUX,BUILD_MACOS,BUILD_WIN,BUILD_RPM,BUILD_DEB job
+    class BUNDLE,BUILD_LINUX,BUILD_MACOS,BUILD_WIN,PACKAGE_RPM,PACKAGE_DEB job
     class PUB_PREVIEW,GITHUB_REL,CELLAR_ARC,CELLAR_RPM,CELLAR_DEB,AUR,HOMEBREW,DOCKER,EXHERBO,NEXUS_RPM,NEXUS_DEB publish
 ```
 
