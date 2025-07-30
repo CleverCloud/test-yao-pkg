@@ -236,8 +236,19 @@ async function getPreviewPrComment(previewName) {
 
   // TODO add command example before table
   console.log(dedent`
-    🔎 A preview has been automatically published:
+    🔎 A preview has been automatically published!
   
+    If you created the alias to the preview scripts, you can run this command to download and install this preview:
+  
+    \`\`\`bash
+    clever-update-previews ${previewName}
+    \`\`\`
+  
+    You can also run it from your local repository:
+  
+    \`\`\`bash
+    ./scripts/preview.js update ${previewName}
+    \`\`\`
   
     | OS | SHA256 checksum |
     |-|-|
