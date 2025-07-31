@@ -12,9 +12,10 @@ import { highlight } from './terminal.js';
  * @returns {string} Template with variables replaced
  */
 function applyTemplate(template, variables) {
+  console.log(template, variables);
   return template.replace(/<%= (.*?) %>/g, (_, variableName) => {
     if (typeof variables[variableName] !== 'string') {
-      throw new Error(`Missing template variable ${variables}`);
+      throw new Error(`Missing template variable ${variableName}`);
     }
     return variables[variableName];
   });
@@ -63,7 +64,7 @@ export async function writeStringToFile(content, destFilepath) {
  *
  * @param {string} destFilepath - Path where the processed template will be written
  * @param {string} templateFilepath - Path to the template file to process
- * @param {Record<string, any>} templateData - Variables to substitute in the template
+ * @param {Record<string, string>} templateData - Variables to substitute in the template
  * @returns {Promise<void>}
  */
 export async function applyOneTemplate(destFilepath, templateFilepath, templateData) {

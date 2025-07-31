@@ -44,7 +44,7 @@ runCommand(async () => {
   await simpleGit().clone(gitUrl, GIT_PATH);
 
   await applyOneTemplate(`${PACKAGE_DIR}/clever-tools-bin-${version}.exheres-0`, TEMPLATES_PATH, {
-    copyrightYear: new Date().getFullYear(),
+    copyrightYear: new Date().getFullYear().toString(),
     description: pkg.description,
     license: pkg.license,
     maintainer: getPackageAuthor().email,

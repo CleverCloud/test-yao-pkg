@@ -236,23 +236,16 @@ jobs:
   publish-winget:
     name: 'Publish to Winget'
     needs: publish-cellar-archives
-    runs-on: windows-latest
+    runs-on: windows-2025
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-node
       - name: 'Install Winget'
         shell: powershell
         run: |
-          $vcLibsBundleFile = "Microsoft.VCLibs.x64.14.00.Desktop.appx"
-          $appxBundleFile = "wingetcreate.msixbundle"
-        
-          # Download and install C++ Runtime framework package
-          iwr https://aka.ms/Microsoft.VCLibs.x64.14.00.Desktop.appx -OutFile $vcLibsBundleFile
-          Add-AppxPackage $vcLibsBundleFile
-        
           # Download Winget-Create msixbundle, install, and execute update
-          iwr https://aka.ms/wingetcreate/latest/msixbundle -OutFile $appxBundleFile
-          Add-AppxPackage $appxBundleFile
+          iwr https://aka.ms/wingetcreate/latest/msixbundle -OutFile "wingetcreate.msixbundle"
+          Add-AppxPackage "wingetcreate.msixbundle"
       - name: 'Publish to Winget'
         shell: bash
         run: ./scripts/publish-winget.js ${{ github.ref_name }}

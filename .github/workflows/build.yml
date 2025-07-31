@@ -68,7 +68,7 @@ jobs:
   build-windows:
     name: 'Build for windows'
     needs: bundle-cjs
-    runs-on: windows-latest
+    runs-on: windows-2025
     if: ${{ inputs.include-windows }}
     steps:
       - uses: actions/checkout@v4
