@@ -13,6 +13,7 @@ concurrency:
 
 jobs:
   code-quality:
+    if: ${{ !startsWith(github.event.pull_request.head.ref, 'release-please--') }}
     name: 'Code quality'
     runs-on: ubuntu-latest
     steps:
