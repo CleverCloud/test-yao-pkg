@@ -238,23 +238,23 @@ async function getPreviewPrComment(previewName) {
   // TODO add command example before table
   console.log(dedent`
     🔎 A preview has been automatically published!
-  
+
     If you created the alias to the preview script, you can run this command to download and install this preview:
-  
+
     \`\`\`bash
     clever-update-previews ${previewName}
     \`\`\`
-  
+
     You can also run it from your local repository:
-  
+
     \`\`\`bash
     ./scripts/preview.js update ${previewName}
     \`\`\`
-  
+
     | OS | SHA256 checksum |
     |-|-|
     ${links}
-  
+
     _This preview will be deleted once this PR is closed._
   `);
 }
@@ -437,12 +437,6 @@ async function downloadPreview(previewName, preview, os, updateState) {
 
     updateState('Installing binary…', 'yellow');
     await installBinary(previewName, os, true);
-
-    if (os === 'macos') {
-      updateState('Trusting binary…', 'yellow');
-      const destination = getAssetPath('binary', previewName, 'local');
-      await exec(`xattr -d com.apple.quarantine ${destination}`, { quiet: true });
-    }
 
     updateState('Up to date', 'green');
   } catch (error) {

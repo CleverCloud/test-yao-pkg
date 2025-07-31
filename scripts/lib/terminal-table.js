@@ -36,6 +36,9 @@ export class TerminalTable {
   /** @type {number} */
   #tableHeight;
 
+  /** @type {number} */
+  #tableStartLine;
+
   /**
    * Creates a new TerminalTable instance.
    * @param {Array<[string, StyleTextFormat]>} columns - Array of [title, style] pairs for columns
@@ -52,6 +55,7 @@ export class TerminalTable {
     this.#rows = rows;
     // Table height is always header + rows + borders
     this.#tableHeight = this.#rows.length + 1 + 3;
+    this.#tableStartLine = 0; // Will be set when table is rendered
   }
 
   /**
@@ -83,9 +87,7 @@ export class TerminalTable {
       console.log('│ ' + styleText('italic', EMPTY_MESSAGE) + ' '.repeat(totalWidth - EMPTY_MESSAGE.length - 3) + '│');
     }
     console.log('╰' + '─'.repeat(totalWidth - 2) + '╯');
-  }
-
-  /**
+  }  /**
    * Updates a specific cell in the table data and refreshes only that cell.
    * @param {number} rowIndex - The row index to update
    * @param {number} columnIndex - The column index to update
@@ -138,46 +140,38 @@ export class TerminalTable {
    * @returns {void}
    */
   #updateCell(rowIndex, columnIndex, newValue, style) {
-    // Calculate the absolute row position in the table
-    // Table structure: top border (1) + header (1) + separator (1) + data rows (0-based)
-    const absoluteRowPosition = 1 + 1 + 1 + +rowIndex;
+    // Simple approach: just disable live updates for macOS compatibility
+    // On problematic terminals, we'll simply not update the display
+    // The data is still updated internally via updateData()
 
-    // Calculate column position within the row
-    // Row format from #formatRow: '│ content1padding1  content2padding2  content3padding3 │'
-    // Each cell is ` ${content}${padding} ` and cells are joined with ' '
-    // Between cells: trailing_space + join_space + leading_space = 3 spaces total
-    let columnPosition = 2; // Start after '│ ' (position where first cell content starts)
-
-    for (let i = 0; i < columnIndex; i++) {
-      columnPosition += this.#columnWidths[i]; // content width of previous cell
-      columnPosition += 1; // trailing space from previous cell ` content `
-      columnPosition += 1; // join space from cells.join(' ')
-      columnPosition += 1; // leading space from current cell ` content `
+    if (process.platform === 'darwin') {
+      // On macOS, skip live updates to avoid display issues
+      return;
     }
 
-    // Format the new cell content with proper padding
-    let content = newValue || '';
-    const visibleLength = this.#getVisibleLength(content);
-    const cellStyle = style || this.#columnStyles[columnIndex];
-    if (cellStyle !== 'none') {
-      content = styleText(cellStyle, content);
-    }
-    const padding = ' '.repeat(Math.max(0, this.#columnWidths[columnIndex] - visibleLength));
-    const cellContent = `${content}${padding}`;
+    // For other platforms, keep the row redraw approach
+    const rowData = this.#rows[rowIndex].map((cell, i) => {
+      let content = cell || '';
+      const cellStyle = (i === columnIndex && style) ? style : this.#columnStyles[i];
+      if (cellStyle !== 'none') {
+        content = styleText(cellStyle, content);
+      }
+      return content;
+    });
+
+    const formattedRow = '│' + this.#formatRow(rowData, this.#columnWidths) + '│';
+    const targetRowFromBottom = this.#tableHeight - (3 + rowIndex);
 
     process.stdout.write(ANSI.SAVE_CURSOR);
 
-    const linesToMoveUp = this.#tableHeight - absoluteRowPosition;
-    if (linesToMoveUp !== 0) {
-      process.stdout.moveCursor(0, -linesToMoveUp);
+    if (targetRowFromBottom > 0) {
+      process.stdout.write(`\x1b[${targetRowFromBottom}A`);
     }
 
-    process.stdout.cursorTo(columnPosition);
-    process.stdout.write(cellContent);
+    process.stdout.write('\r\x1b[K');
+    process.stdout.write(formattedRow);
     process.stdout.write(ANSI.RESTORE_CURSOR);
-  }
-
-  /**
+  }  /**
    * Calculates the visible length of a string by stripping VT control characters.
    * @param {string} text - The text to measure
    * @returns {number} - The visible character count
