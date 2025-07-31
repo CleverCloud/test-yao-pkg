@@ -42,7 +42,7 @@ runCommand(async () => {
 
   // Construct the Windows archive URL from cellar using public client
   const cellarClient = new CellarClientPublic({ bucket: cellarBucket });
-  const releasePath = getAssetPath('archive', version, 'build', 'win');
+  const releasePath = getAssetPath('archive', version, 'release', 'win');
   const windowsArchiveUrl = cellarClient.getPublicUrl(releasePath);
 
   console.log(highlight`=> Creating/updating winget manifest for version ${version}`);
