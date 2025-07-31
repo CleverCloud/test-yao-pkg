@@ -51,7 +51,8 @@ runCommand(async () => {
 
   try {
     console.log('=> Attempting to update existing package...');
-    await exec(`wingetcreate update ${packageId} -u "${windowsArchiveUrl}" -v ${version} -t ${githubToken}`);
+    await exec(`wingetcreate update ${packageId} -u "${windowsArchiveUrl}" -v ${version}`);
+    // await exec(`wingetcreate update ${packageId} -u "${windowsArchiveUrl}" -v ${version} -t ${githubToken} --submit`);
     console.log(highlight`=> Successfully submitted winget manifest update for ${packageId} v${version}`);
   } catch (updateError) {
     console.error('Failed to update winget manifest');
