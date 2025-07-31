@@ -45,14 +45,6 @@ runCommand(async () => {
   const releasePath = getAssetPath('archive', version, 'build', 'win');
   const windowsArchiveUrl = cellarClient.getPublicUrl(releasePath);
 
-  console.log(highlight`=> Installing wingetcreate if not present`);
-  try {
-    await exec('wingetcreate info', { quiet: false });
-  } catch {
-    console.log('=> Installing wingetcreate...');
-    await exec('winget install Microsoft.WingetCreate');
-  }
-
   console.log(highlight`=> Creating/updating winget manifest for version ${version}`);
   console.log(highlight`Package ID: ${packageId}`);
   console.log(highlight`Archive URL: ${windowsArchiveUrl}`);

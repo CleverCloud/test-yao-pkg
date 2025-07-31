@@ -240,6 +240,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-node
+      - name: 'Install Winget'
+        shell: powershell
+        run: |
+          # Download and install C++ Runtime framework package.
+          iwr https://aka.ms/Microsoft.VCLibs.x64.14.00.Desktop.appx -OutFile $(vcLibsBundleFile)
+          Add-AppxPackage $(vcLibsBundleFile)
+          # Download Winget-Create msixbundle, install, and execute update.
+          iwr https://aka.ms/wingetcreate/latest/msixbundle -OutFile $(appxBundleFile)
+          Add-AppxPackage $(appxBundleFile)
       - name: 'Publish to Winget'
         shell: bash
         run: ./scripts/publish-winget.js ${{ github.ref_name }}
