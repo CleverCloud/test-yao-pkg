@@ -1,6 +1,21 @@
 # clever-tools changelog
 
 
+## [3.15.0](https://github.com/CleverCloud/test-yao-pkg/compare/3.14.0...3.15.0) (2025-07-31)
+
+
+### 🚀 Features
+
+* add PR preview build system ([4802d1a](https://github.com/CleverCloud/test-yao-pkg/commit/4802d1a661a8a53183db099adaf1649a815982f4))
+* omg ([2da1b17](https://github.com/CleverCloud/test-yao-pkg/commit/2da1b17aa0dce87eff30c1882f8d09413ffbc41e))
+* update to Node.js 22 ([8f8fe8d](https://github.com/CleverCloud/test-yao-pkg/commit/8f8fe8dd1feaae8ef192db2b7387c324fe89e47f))
+* wow amazing ([e6bbc97](https://github.com/CleverCloud/test-yao-pkg/commit/e6bbc97c1c28fb274d4b0e16ee3570010e3c4987))
+
+
+### 🐛 Bug Fixes
+
+* resolve ESLint errors throughout codebase ([1f5dab6](https://github.com/CleverCloud/test-yao-pkg/commit/1f5dab6fd151afe2cdee41d46ee34220f2e22124))
+
 ## [3.14.0](https://github.com/CleverCloud/clever-tools/compare/3.13.1...3.14.0) (2025-07-29)
 
 
